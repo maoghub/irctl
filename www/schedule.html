@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<link rel="stylesheet" type="text/css" href="css/table.css" />
+
+<link rel="stylesheet" type="text/css"
+  href="css/ui-lightness/jquery-ui-1.10.1.custom.css" />
+<link rel="stylesheet" type="text/css" href="css/form.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery.countdown.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery.jqplot.css" />
+<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="css/bootstrap-responsive.css" />
+
+<!-- BEGIN: load jquery -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script
+  src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="js/jquery.easy-confirm-dialog.js"></script>
+<script src="js/jquery.countdown.min.js"></script>
+<script src="js/jquery.plugin.min.js"></script>
+<script src="js/bootstrap-dropdown.js"></script>
+<script src="js/globalize.js"></script>
+<script src="js/jquery.dropdownPlain.js"></script>
+<script src="js/hoverIntent.js"></script>
+<script src="js/raty-2.5.2/jquery.raty.min.js"></script>
+<!-- END: load jquery -->
+
+<!-- BEGIN: load jqplot -->
+<script src="js/jqplot/jquery.jqplot.js"></script>
+<script src="js/jqplot/jqplot.barRenderer.min.js"></script>
+<script src="js/jqplot/jqplot.canvasAxisTickRenderer.js"></script>
+<script src="js/jqplot/jqplot.canvasTextRenderer.js"></script>
+<script src="js/jqplot/jqplot.categoryAxisRenderer.min.js"></script>
+<script src="js/jqplot/jqplot.dateAxisRenderer.js"></script>
+<script src="js/jqplot/jqplot.enhancedLegendRenderer.js"></script>
+<script src="js/jqplot/jqplot.highlighter.js"></script>
+<script src="js/jqplot/jqplot.pointLabels.min.js"></script>
+<!-- END: load jqplot -->
+
+<script src="js/common.js"></script>
+<script src="js/defines.js"></script>
+<script src="js/tables.js"></script>
+<script src="js/schedule.js"></script>
+<script src="js/zone_run.js"></script>
+<script src="js/server.js"></script>
+<script src="js/graphs.js"></script>
+
+<style type="text/css" media="screen">
+.jqplot-axis {
+  font-size: 1.0em;
+  margin-right: 10px;
+}
+
+.jqplot-yaxis {
+  position: absolute;
+}
+
+.jqplot-yaxis-label {
+  margin-right: 20px;
+  font-size: 1.0em;
+  position: right;
+}
+
+.data-chart {
+  margin-top: 0em;
+  z-index: 100;
+}
+
+.data-chart .jqplot-point-label {
+  border: 1.5px solid #aaaaaa;
+  padding: 5px 5px;
+  background-color: #eeccdd;
+}
+</style>
+
+</head>
+
+<body>
+  <div id="run_totals_totals_div"
+    style="display: none; position: absolute; top: 0px; left: 260px; height: 400px; width: 490px; z-index: 99; background-color: white; opacity: 1.0">
+    <div
+      style="display: inline-block; position: absolute; top: 20px; left: 40px; width: 250px; padding: 10px 100px; font-size: 1.5em; color: #eee; background: #666">
+      Total weekly amount
+      <button class="large-del-button" id="close_graphs_button"
+        style="position: absolute; top: 5px; left: 410px; margin: 0px; padding: 0px; width: 25px; height: 25px"></button>
+    </div>
+    <div id="zone_run_chart" class="data-chart"
+      style="position: absolute; top: 72px; left: -10px; height: 270px; width: 510px;"></div>
+  </div>
+  <div id="zone_run_chart_select"
+    style="display: none; position: absolute; top: 80px; left: 230px; height: 260px; width: 30px; z-index: 99">
+    <table id="zone_run_chart_select_table" style="width: 50px;"></table>
+  </div>
+
+  <!------------------------------------------------------------------------------>
+  <!-- ************************ BUTTONS *************************************** -->
+  <!------------------------------------------------------------------------------>
+
+  <img id="water_now_button" src="img/buttons/water_now.png"
+    class="button has-help" onclick="displayRunNowTable()"
+    style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 10px;">
+
+  <img id="settings_button" src="img/buttons/settings.png"
+    class="button has-help" onclick="displaySystemSettingsTable()"
+    style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 60px;">
+
+  <img id="graphs_button" src="img/buttons/graphs.png" class="button has-help"
+    onclick="redrawGraphs()"
+    style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 110px;">
+
+  <img id="alarms_button" src="img/buttons/alarm.png" class="button has-help"
+    style="position: absolute; display: none; top: 10px; left: 160px;">
+
+  <img id="left_arrow_button" src="img/buttons/left.png" class="button has-help"
+    style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 230px;">
+
+  <img id="right_arrow_button" src="img/buttons/right.png"
+    class="button has-help"
+    style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 750px;">
+
+  <div id="help_box" class="help-box"
+    style="z-index: -1; position: absolute; top: 380px; left: 15px; width: 500px;"></div>
+
+  <!--button id="save_button" style="position:absolute; display: inline-block; z-index: 99; font-size:0.9em; text-align: center; color: green; top:350px; left: 630px; width: 120px;">Save changes</button>
+	<button id="cancel_button" style="position:absolute; display: inline-block; z-index: 99; font-size:0.9em; text-align: center; color: grey; top:380px; left: 630px; width: 120px;">Revert changes</button-->
+
+  <!------------------------------------------------------------------------------>
+  <!-- ************************ DYNAMIC TABLES ******************************** -->
+  <!------------------------------------------------------------------------------>
+
+  <div id="schedule_table_div"
+    style="z-index: 1; position: absolute; height 300px; top: 0px; left: 5px;"></div>
+  <div id="run_now_table_div"
+    style="z-index: 10; display: none; position: absolute; height 300px; width: 600px; opacity: 1.0; background-color: white; top: 0px; left: 260px;"></div>
+
+  <!------------------------------------------------------------------------------>
+  <!-- ************************ ZONE PLANT TABLE ****************************** -->
+  <!------------------------------------------------------------------------------>
+
+  <div id="zone_config_table_div"
+    style="display: none; position: absolute; z-index: 199; opacity: 1.0; background-color: white; width: 800px; height: 600px; left: 0px">
+
+    <table class="plant-table-header" style="position: absolute;">
+      <colgroup>
+        <col style="width: 80px" />
+        <col style="width: 200px" />
+        <col style="width: 60px" />
+        <col style="width: 160px" />
+      </colgroup>
+      <thead>
+        <tr>
+          <td colspan="4" id="zone_config_table_zone_name"
+            style="text-align: center"></td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Light:</td>
+          <td id="light_amount_div"><div class="light_amount"
+              style="margin-top: -15px;"></div></td>
+          <td>Soil:</td>
+          <td>
+            <div class="styled-select" style="width: 130px">
+              <select id="zone_config_table_soil_type" style="width: 152px">
+                <option value="clay">clay</option>
+                <option value="clay loam">clay loam</option>
+                <option value="loam">loam</option>
+                <option value="potting soil">potting soil</option>
+                <option value="potting mix">potting mix</option>
+                <option value="sandy loam">sandy loam</option>
+              </select>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!------------------------------------------------------------------------------>
+    <!-- ************************ SYSTEM SETTINGS TABLE ************************* -->
+    <!------------------------------------------------------------------------------>
+
+    <div id="system_settings_table" class="menu-table left-table"
+      style="display: none; position: absolute; z-index: 40; top: 0px; left: 0px; width: 800px; height: 600px">
+      <button class="large-del-button2" id="close_plant_list_button"
+        style="position: absolute; z-index: 200; top: 10px; left: 770px; width: 25px; height: 25px"></button>
+      <div id="config_tabs" style="width: 800px; height: 400px">
+        <ul>
+          <li><a href="#config_tabs_settings">Settings</a></li>
+          <li><a href="#config_tabs_alerts">Alerts</a></li>
+        </ul>
+        <div id="config_tabs_settings">
+          <table id="system_settings_table" style="margin: 0px; padding: 0px;">
+            <colgroup>
+              <col style="width: 150px" />
+              <col style="width: 150px" />
+              <col style="width: 150px" />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td>Zip code:</td>
+                <td><input id="weather_station_text"
+                  style="margin: 0px 0px 0px -70px; width: 50px; height: 20px;"
+                  type="text" /></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Watering time:</td>
+                <td><input id="watering_time_spinner"
+                  style="padding-left: -30px; width: 60px; height: 20px;"></td>
+             </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+
+

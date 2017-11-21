@@ -1,0 +1,456 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <link rel="stylesheet" type="text/css" href="css/ui-lightness/jquery-ui-1.8.10.custom.css" />	
+  <link rel="stylesheet" type="text/css" href="css/form.css" />
+  <link rel="stylesheet" type="text/css" href="css/jquery.countdown.css" />
+  
+  <!-- BEGIN: load jquery -->
+  <script type="text/javascript" src="js/jquery/jquery-1.5.1.min.js"></script>
+  <script type="text/javascript" src="js/jquery_ui/jquery-ui-1.8.18.custom.min.js"></script>
+  <script src="js/jquery_ui/jquery.easy-confirm-dialog.js"></script>
+  <script src="js/jquery_ui/jquery.countdown.min.js"></script>
+  <!-- END: load jquery -->
+  <script language="javascript" type="text/javascript" src="js/side.js"></script>
+
+  <script>
+    $(function() {
+    $( "#accordion" ).accordion({ active:3 });
+    });
+  </script>
+  
+  <style media="screen" type="text/css">
+    table#schedule_table {
+    width: 100%;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+    }
+    
+    table#schedule_table td {
+    }
+    
+    .data {
+    color: #000000;
+    text-align: right;
+    background-color: #CCCCCC;
+    
+    }
+    
+    .toprow {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: center;
+    vertical-align:middle;
+    }
+    
+    .leftcol {
+    color: #333333;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: left;
+    }
+
+    .small_checkbox {
+    width: 3px;
+    height: 3px;
+    }  
+  </style>
+
+</head>
+
+<body style="margin-top:5px; margin-left:5px;" >
+  <div id="accordion" style="width:300px;" class="onchange-alert-element">
+    <h3><a href="#" style="font-size: 2em; font-weight: bold; margin-top:0px;">Run</a></h3>
+      <div class="wbs-st-form" style="font-size: 1.5em; top: 10px; width: 230px">
+	<button id="zone_run_button" style="width: 45px; height:30px; margin-left: -25px; font-size: 1.0em; font-weight: bold" onclick="runZone()">RUN</button> zone
+	<input type="text" id="zone_run_number" class="input_field text" style="width: 0.8em; font-size:1em" > for
+	<input type="text" id="zone_run_time" class="input_field text" style="width: 1.1em; font-size:1em"> mins
+	<hr/>
+	<table id="run_zone_table" style="margin-left: -30px; width: 120%;" border="0">
+	  <colgroup>
+	    <col style="width: 90%"/>
+	    <col style="width: 20%"/>	      
+	  </colgroup>
+	  <tr> 
+	    <td><div class="countdown_timer" data-array-index="0" style="width: 190px; font-size: 1.0em; margin: 0px"></div></td>
+	    <td><div class="stop_button" data-array-index="0" style="margin-left: -10px; font-size: 1.0em; font-weight: bold; width: 50px; "></div></td>
+	  </tr>
+	  <tr> 
+	    <td><div class="countdown_timer" data-array-index="1" style="width: 190px; font-size: 1.0em; margin: 0px"></div></td>
+	    <td><div class="stop_button" data-array-index="1" style="margin-left: -10px; font-size: 1.0em; font-weight: bold; width: 50px; "></div></td>
+	  </tr>
+	  <tr> 
+	    <td><div class="countdown_timer" data-array-index="2" style="width: 190px; font-size: 1.0em; margin: 0px"></div></td>
+	    <td><div class="stop_button" data-array-index="2" style="margin-left: -10px; font-size: 1.0em; font-weight: bold; width: 50px; "></div></td>
+	  </tr>
+	  <tr> 
+	    <td><div class="countdown_timer" data-array-index="3" style="width: 190px; font-size: 1.0em; margin: 0px"></div></td>
+	    <td><div class="stop_button" data-array-index="3" style="margin-left: -10px; font-size: 1.0em; font-weight: bold; width: 50px; "></div></td>
+	  </tr>
+	  <tr> 
+	    <td><div class="countdown_timer" data-array-index="4" style="width: 190px; font-size: 1.0em; margin: 0px"></div></td>
+	    <td><div class="stop_button" data-array-index="4" style="margin-left: -10px; font-size: 1.0em; font-weight: bold; width: 50px; "></div></td>
+	  </tr>
+	  <tr> 
+	    <td><div class="countdown_timer" data-array-index="5" style="width: 190px; font-size: 1.0em; margin: 0px"></div></td>
+	    <td><div class="stop_button" data-array-index="5" style="margin-left: -10px; font-size: 1.0em; font-weight: bold; width: 50px; "></div></td>
+	  </tr>
+	  <tr> 
+	    <td><div class="countdown_timer" data-array-index="6" style="width: 190px; font-size: 1.0em; margin: 0px"></div></td>
+	    <td><div class="stop_button" data-array-index="6" style="margin-left: -10px; font-size: 1.0em; font-weight: bold; width: 50px; "></div></td>
+	  </tr>
+	</table>
+    <h3><a href="#" style="font-size: 2em; font-weight: bold; margin-top:0px;">System Setup</a></h3>
+  </div>
+	<div id="setup_fields" class="wbs-form-wrap GLOBAL_SETUP">
+	  <form class="wbs-st-form" style="width: 100%;" method="post" action="">
+	    <table id="setup_table" style="margin: 5px; width: 110%;" border="0">
+	      <colgroup>
+		<col style="width: 11em;" />
+		<col style="width: auto;"/>  
+	      </colgroup>
+	      <tr><td class="leftcol">Airport code:</td><td><input type="text" id="airport_code" style="width: 50%; font-size: 1.5em;" class="input_field text"></td></tr>
+	      <tr><td class="leftcol">Run 1 start:</td>
+		<td><select id="run1_hr" style="font-size: 1.5em;" class="drop-field">
+		    <option value="1">1</option>
+		    <option value="2">2</option>
+		    <option value="3">3</option>
+		    <option value="4">4</option>
+		    <option value="5">5</option>
+		    <option value="6">6</option>
+		    <option value="7">7</option>
+		    <option value="8">8</option>
+		    <option value="9">9</option>
+		    <option value="10">10</option>
+		    <option value="11">11</option>
+		    <option value="12">12</option>
+		  </select>
+		  <select id="run1_min" style="font-size: 1.5em;" class="drop-field">
+		    <option value="0">00</option>
+		    <option value="15">2</option>
+		    <option value="30">3</option>
+		    <option value="45">4</option>
+		  </select>
+		  <select id="run1_am_pm" style="font-size: 1.5em;" class="drop-field">
+		    <option value="AM">AM</option>
+		    <option value="PM">PM</option>
+	      </select></td></tr>
+	      <tr><td class="leftcol">Run 2 start:</td>
+		<td><select id="run2_hr" style="font-size: 1.5em;" class="drop-field">
+		    <option value="1">1</option>
+		    <option value="2">2</option>
+		    <option value="3">3</option>
+		    <option value="4">4</option>
+		    <option value="5">5</option>
+		    <option value="6">6</option>
+		    <option value="7">7</option>
+		    <option value="8">8</option>
+		    <option value="9">9</option>
+		    <option value="10">10</option>
+		    <option value="11">11</option>
+		    <option value="12">12</option>
+		  </select>
+		  <select id="run2_min" style="font-size: 1.5em;" class="drop-field">
+		    <option value="0">00</option>
+		    <option value="15">15</option>
+		    <option value="30">30</option>
+		    <option value="45">44</option>
+		  </select>
+		  <select id="run2_am_pm" style="font-size: 1.5em;" class="drop-field">
+		    <option value="AM">AM</option>
+		    <option value="PM">PM</option>
+	      </select></td></tr>
+	      <tr><td class="leftcol">Units:</td>
+		  <td>
+		    <div id="radio_units" style="display:inline" class="radioGroup">
+		    <input type="radio" id="radio_usa" name="radio_metric_grp" style="display:inline" checked="checked" /><label for="radio_usa" style="display:inline">ft/in/F</label>
+		    <input type="radio" id="radio_metric" name="radio_metric_grp" style="display:inline" /><label for="radio_metric" style="display:inline">m/cm/C</label>
+		    </div>
+	      </td></tr>
+	    </table>
+	  </form>
+	</div>      
+    <h3><a href="#" style="font-size: 2em; font-weight: bold;">Soil Types</a></h3>
+    <div>
+      <p>
+	<div id="soil_type_fields" class="wbs-form-wrap SOIL">
+	  <form class="wbs-st-form" method="post" action="">
+	    <table id="soil_type_table" style="font-size: 1.5em;" width="100%" border="0">
+	      <colgroup>
+		<col style="width: 40%"/>
+		<col style="width: 40%"/>
+		<col style="width: 20%"/>  
+	      </colgroup>
+	      <tr style="font-weight: bold">
+		<td>Name</td><td>Type</td><td>Sat %</td>
+	      </tr>
+	      <tr>
+		<td><input type="text" id="soil_1_name" style="font-size: 1.0em; width: 8em;" class="input_field text" data-object_name="name" data-array-index="1"></td>
+		<td><select id="soil_1_type" style="font-size: 1.0em;" class="drop-field" data-array-index="1">
+		    <option value="Loam">Loam</option>
+		    <option value="Sand">Sand</option>
+		    <option value="Clay">Clay</option>
+		</select></td>
+		<td><input type="text" id="soil_1_saturation_pct" style="font-size: 1.0em;width: 1.2em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="1"></td>
+	      </tr>
+	      <tr>
+		<td><input type="text" id="soil_2_name" style="font-size: 1.0em; width: 8em;" class="input_field text" data-object_name="name" data-array-index="2"></td>
+		<td><select id="soil_2_type" style="font-size: 1.0em;" class="drop-field" data-array-index="2">
+		    <option value="Loam">Loam</option>
+		    <option value="Sand">Sand</option>
+		    <option value="Clay">Clay</option>
+		</select></td>
+		<td><input type="text" id="soil_2_saturation_pct" style="font-size: 1.0em;width: 1.2em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="2"></td>
+	      </tr>
+	      <tr>
+		<td><input type="text" id="soil_3_name" style="font-size: 1.0em; width: 8em;" class="input_field text" data-object_name="name" data-array-index="3"></td>
+		<td><select id="soil_3_type" style="font-size: 1.0em;" class="drop-field" data-array-index="3">
+		    <option value="Loam">Loam</option>
+		    <option value="Sand">Sand</option>
+		    <option value="Clay">Clay</option>
+		</select></td>
+		<td><input type="text" id="soil_3_saturation_pct" style="font-size: 1.0em;width: 1.2em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="3"></td>
+	      </tr>
+	      <tr>
+		<td><input type="text" id="soil_4_name" style="font-size: 1.0em; width: 8em;" class="input_field text" data-object_name="name" data-array-index="4"></td>
+		<td><select id="soil_4_type" style="font-size: 1.0em;" class="drop-field" data-array-index="4">
+		    <option value="Loam">Loam</option>
+		    <option value="Sand">Sand</option>
+		    <option value="Clay">Clay</option>
+		</select></td>
+		<td><input type="text" id="soil_4_saturation_pct" style="font-size: 1.0em;width: 1.2em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="4"></td>
+	      </tr>
+	    </table>
+	  </form>
+	</div>
+      </p>
+    </div>
+    <h3><a href="#" style="font-size: 2em; font-weight: bold; margin-top:0px;">Algorithm</a></h3>
+    <div>
+      <p>
+	<div id="algorithm_fields" class="wbs-form-wrap">
+	  <form class="wbs-st-form" style="font-size: 1.5em; width: 100%;" method="post" action="">
+	    <p style="left:20px; margin-left: 20px; margin-top: 10px">Specify temperature ranges</p>
+	    <table id="algorithm_table" style="font-size: 1.0em; margin: 5px; width: 110%;" border="0">
+	      <colgroup>
+		<col style="width: 5%"/>
+		<col style="width: 5%"/>
+		<col style="width: 20%"/>  
+	      </colgroup>
+	      <tr style="font-weight: bold"><td>From</td><td>To</td><td>Daily drying %</td></tr>
+	      <tr>
+		<td><input type="text" id="temp_1_from" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_1_to" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_1_drying_pct" style="font-size: 1.0em; width: 2em; margin-left: 2em" class="input_field text"></td>
+	      </tr>
+	      <tr>
+		<td><input type="text" id="temp_2_from" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_2_to" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_2_drying_pct" style="font-size: 1.0em; width: 2em; margin-left: 2em" class="input_field text"></td>
+	      </tr>
+	      <tr>
+		<td><input type="text" id="temp_3_from" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_3_to" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_3_drying_pct" style="font-size: 1.0em; width: 2em; margin-left: 2em" class="input_field text"></td>
+	      </tr>
+	      <tr>
+		<td><input type="text" id="temp_4_from" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_4_to" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_4_drying_pct" style="font-size: 1.0em; width: 2em; margin-left: 2em" class="input_field text"></td>
+	      </tr>
+	      <tr>
+		<td><input type="text" id="temp_5_from" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_5_to" style="font-size: 1.0em; width: 1.8em;" class="input_field text"></td>
+		<td><input type="text" id="temp_5_drying_pct" style="font-size: 1.0em; width: 2em; margin-left: 2em" class="input_field text"></td>
+	      </tr>
+	    </table>
+	  </form>
+	</div>      
+      </p>
+    </div>
+    <h3><a href="#" style="font-size: 2em; font-weight: bold; margin-top:0px;">Zone Settings</a></h3>
+    <div>
+      <p>
+	<div id="zone_fields1" class="wbs-form-wrap ZONE">
+	  <form class="wbs-st-form" style="font-size: 1.5em; width: 100%;" method="post" action="">
+	    <table id="zone_table1" style="font-size: 1.0em; margin: 3px; width: 100%;" border="0">
+	      <colgroup>
+		<col style="width: 7%"/>
+		<col style="width: 7%"/>
+		<col style="width: 23%"/>
+		<col style="width: 5%"/>
+		<col style="width: 5%"/>
+		<col style="width: 15%"/>  
+	      </colgroup>
+	      <tr style="font-size: 0.9em; font-weight: bold"><td>#</td><td>Run</td><td style="text-align:center">Name</td><td>Pots</td><td>Rain</td><td>Min %</td></tr>
+	      <tr>
+		<td>1</td>
+		<td><input type="checkbox" id="zone_1_run_check" data-object_name="run" data-array-index="1"></td>
+		<td><input type="text" id="zone_1_name" style="font-size: 1.0em; width: 6em;" class="input_field text" data-object_name="name" data-array-index="1"></td>
+		<td><input type="checkbox" id="zone_1_pot_check" data-object_name="pots" data-array-index="1"></td>
+		<td><input type="checkbox" id="zone_1_rain_check" data-object_name="rain" data-array-index="1"></td>
+		<td><input type="text" id="zone_1_min_moist_pct" style="font-size: 1.0em; width: 1.2em;" class="input_field text" 
+			   data-object_name="min_moist_pct" data-array-index="1"></td>
+	      </tr>
+	      <tr>
+		<td>2</td>
+		<td><input type="checkbox" id="zone_2_run_check" data-object_name="run" data-array-index="2"></td>
+		<td><input type="text" id="zone_2_name" style="font-size: 1.0em; width: 6em;" class="input_field text" data-object_name="name" data-array-index="2"></td>
+		<td><input type="checkbox" id="zone_2_pot_check" data-object_name="pots" data-array-index="2"></td>
+		<td><input type="checkbox" id="zone_2_rain_check" data-object_name="rain" data-array-index="2"></td>
+		<td><input type="text" id="zone_2_min_moist_pct" style="font-size: 1.0em; width: 1.2em;" class="input_field text" 
+			   data-object_name="min_moist_pct" data-array-index="2"></td>
+	      </tr>
+	      <tr>
+		<td>3</td>
+		<td><input type="checkbox" id="zone_3_run_check" data-object_name="run" data-array-index="3"></td>
+		<td><input type="text" id="zone_3_name" style="font-size: 1.0em; width: 6em;" class="input_field text" data-object_name="name" data-array-index="3"></td>
+		<td><input type="checkbox" id="zone_3_pot_check" data-object_name="pots" data-array-index="3"></td>
+		<td><input type="checkbox" id="zone_3_rain_check" data-object_name="rain" data-array-index="3"></td>
+		<td><input type="text" id="zone_3_min_moist_pct" style="font-size: 1.0em; width: 1.2em;" class="input_field text" 
+			   data-object_name="min_moist_pct" data-array-index="3"></td>
+	      </tr>
+	      <tr>
+		<td>4</td>
+		<td><input type="checkbox" id="zone_4_run_check" data-object_name="run" data-array-index="4"></td>
+		<td><input type="text" id="zone_4_name" style="font-size: 1.0em; width: 6em;" class="input_field text" data-object_name="name" data-array-index="4"></td>
+		<td><input type="checkbox" id="zone_4_pot_check" data-object_name="pots" data-array-index="4"></td>
+		<td><input type="checkbox" id="zone_4_rain_check" data-object_name="rain" data-array-index="4"></td>
+		<td><input type="text" id="zone_4_min_moist_pct" style="font-size: 1.0em; width: 1.2em;" class="input_field text" 
+			   data-object_name="min_moist_pct" data-array-index="4"></td>
+	      </tr>
+	      <tr>
+		<td>5</td>
+		<td><input type="checkbox" id="zone_5_run_check" data-object_name="run" data-array-index="5"></td>
+		<td><input type="text" id="zone_5_name" style="font-size: 1.0em; width: 6em;" class="input_field text" data-object_name="name" data-array-index="5"></td>
+		<td><input type="checkbox" id="zone_5_pot_check" data-object_name="pots" data-array-index="5"></td>
+		<td><input type="checkbox" id="zone_5_rain_check" data-object_name="rain" data-array-index="5"></td>
+		<td><input type="text" id="zone_5_min_moist_pct" style="font-size: 1.0em; width: 1.2em;" class="input_field text" 
+			   data-object_name="min_moist_pct" data-array-index="5"></td>
+	      </tr>
+	      <tr>
+		<td>6</td>
+		<td><input type="checkbox" id="zone_6_run_check" data-object_name="run" data-array-index="6"></td>
+		<td><input type="text" id="zone_6_name" style="font-size: 1.0em; width: 6em;" class="input_field text" data-object_name="name" data-array-index="6"></td>
+		<td><input type="checkbox" id="zone_6_pot_check" data-object_name="pots" data-array-index="6"></td>
+		<td><input type="checkbox" id="zone_6_rain_check" data-object_name="rain" data-array-index="6"></td>
+		<td><input type="text" id="zone_6_min_moist_pct" style="font-size: 1.0em; width: 1.2em;" class="input_field text" 
+			   data-object_name="min_moist_pct" data-array-index="6"></td>
+	      </tr>
+	      <tr>
+		<td>7</td>
+		<td><input type="checkbox" id="zone_7_run_check" data-object_name="run" data-array-index="7"></td>
+		<td><input type="text" id="zone_7_name" style="font-size: 1.0em; width: 6em;" class="input_field text" data-object_name="name" data-array-index="7"></td>
+		<td><input type="checkbox" id="zone_7_pot_check" data-object_name="pots" data-array-index="7"></td>
+		<td><input type="checkbox" id="zone_7_rain_check" data-object_name="rain" data-array-index="7"></td>
+		<td><input type="text" id="zone_7_min_moist_pct" style="font-size: 1.0em; width: 1.2em;" class="input_field text" 
+			   data-object_name="min_moist_pct" data-array-index="7"></td>
+	      </tr>
+	      <tr>
+		<td>8</td>
+		<td><input type="checkbox" id="zone_8_run_check" data-object_name="run" data-array-index="8"></td>
+		<td><input type="text" id="zone_8_name" style="font-size: 1.0em; width: 6em;" class="input_field text" data-object_name="name" data-array-index="8"></td>
+		<td><input type="checkbox" id="zone_8_pot_check" data-object_name="pots" data-array-index="8"></td>
+		<td><input type="checkbox" id="zone_8_rain_check" data-object_name="rain" data-array-index="8"></td>
+		<td><input type="text" id="zone_8_min_moist_pct" style="font-size: 1.0em; width: 1.2em;" class="input_field text" 
+			   data-object_name="min_moist_pct" data-array-index="8"></td>
+	      </tr>
+	    </table>
+	  </form>
+	</div>      
+      </p>
+    </div>
+    <h3><a href="#" style="font-size: 2em; font-weight: bold; margin-top:0px;">Zone Types</a></h3>
+    <div>
+      <p>
+	<div id="zone_fields2" class="wbs-form-wrap ZONE">
+	  <form class="wbs-st-form" style="font-size: 1.2em; width: 100%;" method="post" action="">
+	    <table id="zone_table2" style="font-size: 1.0em; margin: 5px; width: 100%;" border="0">
+	      <colgroup>
+		<col style="width: 55%"/>
+		<col style="width: 10%"/>
+		<col style="width: 10%"/>  
+		<col style="width: 10%"/>  
+		<col style="width: 10%"/>  
+	      </colgroup>
+	      <tr style="font-weight: bold"><td>#</td><td>Soil name</td><td>Max %</td><td>Root depth</td><td>ET rate</td></tr>
+	      <tr>
+		<td style="font-size: 1.0em; width: 1em;">1</td>
+		<td><input type="text" id="zone_1_soil_name" style="font-size: 1.0em; width: 7em;" class="input_field text" data-object_name="soil_name" data-array-index="1"></td>
+		<td><input type="text" id="zone_1_max_moist_pct" style="font-size: 1.0em; width: 1.7em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="1"></td>
+		<td><input type="text" id="zone_1_root_depth" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="root_depth" data-array-index="1"></td>
+		<td><input type="text" id="zone_1_et_rate" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="et_rate" data-array-index="1"></td>
+	      </tr>
+	      <tr>
+		<td style="font-size: 1.0em; width: 1em;">2</td>
+		<td><input type="text" id="zone_2_soil_name" style="font-size: 1.0em; width: 7em;" class="input_field text" data-object_name="soil_name" data-array-index="2"></td>
+		<td><input type="text" id="zone_2_max_moist_pct" style="font-size: 1.0em; width: 1.7em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="2"></td>
+		<td><input type="text" id="zone_2_root_depth" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="root_depth" data-array-index="2"></td>
+		<td><input type="text" id="zone_2_et_rate" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="et_rate" data-array-index="2"></td>
+	      </tr>
+	      <tr>
+		<td style="font-size: 1.0em; width: 1em;">3</td>
+		<td><input type="text" id="zone_3_soil_name" style="font-size: 1.0em; width: 7em;" class="input_field text" data-object_name="soil_name" data-array-index="3"></td>
+		<td><input type="text" id="zone_3_max_moist_pct" style="font-size: 1.0em; width: 1.7em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="3"></td>
+		<td><input type="text" id="zone_3_root_depth" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="root_depth" data-array-index="3"></td>
+		<td><input type="text" id="zone_3_et_rate" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="et_rate" data-array-index="3"></td>
+	      </tr>
+	      <tr>
+		<td style="font-size: 1.0em; width: 1em;">4</td>
+		<td><input type="text" id="zone_4_soil_name" style="font-size: 1.0em; width: 7em;" class="input_field text" data-object_name="soil_name" data-array-index="4"></td>
+		<td><input type="text" id="zone_4_max_moist_pct" style="font-size: 1.0em; width: 1.7em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="4"></td>
+		<td><input type="text" id="zone_4_root_depth" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="root_depth" data-array-index="4"></td>
+		<td><input type="text" id="zone_4_et_rate" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="et_rate" data-array-index="4"></td>
+	      </tr>
+	      <tr>
+		<td style="font-size: 1.0em; width: 1em;">5</td>
+		<td><input type="text" id="zone_5_soil_name" style="font-size: 1.0em; width: 7em;" class="input_field text" data-object_name="soil_name" data-array-index="5"></td>
+		<td><input type="text" id="zone_5_max_moist_pct" style="font-size: 1.0em; width: 1.7em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="5"></td>
+		<td><input type="text" id="zone_5_root_depth" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="root_depth" data-array-index="5"></td>
+		<td><input type="text" id="zone_5_et_rate" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="et_rate" data-array-index="5"></td>
+	      </tr>
+	      <tr>
+		<td style="font-size: 1.0em; width: 1em;">6</td>
+		<td><input type="text" id="zone_6_soil_name" style="font-size: 1.0em; width: 7em;" class="input_field text" data-object_name="soil_name" data-array-index="6"></td>
+		<td><input type="text" id="zone_6_max_moist_pct" style="font-size: 1.0em; width: 1.7em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="6"></td>
+		<td><input type="text" id="zone_6_root_depth" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="root_depth" data-array-index="6"></td>
+		<td><input type="text" id="zone_6_et_rate" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="et_rate" data-array-index="6"></td>
+	      </tr>
+	      <tr>
+		<td style="font-size: 1.0em; width: 1em;">7</td>
+		<td><input type="text" id="zone_7_soil_name" style="font-size: 1.0em; width: 7em;" class="input_field text" data-object_name="soil_name" data-array-index="7"></td>
+		<td><input type="text" id="zone_7_max_moist_pct" style="font-size: 1.0em; width: 1.7em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="7"></td>
+		<td><input type="text" id="zone_7_root_depth" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="root_depth" data-array-index="7"></td>
+		<td><input type="text" id="zone_7_et_rate" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="et_rate" data-array-index="7"></td>
+	      </tr>
+	      <tr>
+		<td style="font-size: 1.0em; width: 1em;">8</td>
+		<td><input type="text" id="zone_8_soil_name" style="font-size: 1.0em; width: 7em;" class="input_field text" data-object_name="soil_name" data-array-index="8"></td>
+		<td><input type="text" id="zone_8_max_moist_pct" style="font-size: 1.0em; width: 1.7em;" class="input_field text" data-object_name="max_moist_pct" data-array-index="8"></td>
+		<td><input type="text" id="zone_8_root_depth" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="root_depth" data-array-index="8"></td>
+		<td><input type="text" id="zone_8_et_rate" style="font-size: 1.0em; width: 1.5em;" class="input_field text" data-object_name="et_rate" data-array-index="8"></td>
+	      </tr>
+	    </table>
+	  </form>
+	</div>      
+      </p>
+    </div>
+  </div>
+  <!--button id="save_button" style="left: 80px; top: 10px; border:3px outset; width: 10em; font-size: 0.9em; font-weight: bold; font-effect: emboss; background: #CEF6D8; color: #0A2A22;">Save changes</button-->
+  <div style="margin: 0">
+    <button id="cancel_button" type="button" style="margin: 10px 15px 0 50px; height:35px; width: 90px" title="Confirm to discard your changes.">
+      <img src="images/cross.png" style="vertical-align:middle; margin: 0 5px 0 0; position: relative; top:5px left:10px" >
+      Cancel 
+    </button>
+    <button id="save_button" type="button" style="margin: 10px 0 0 0; height:35px; width: 90px" onclick="saveFunction()">
+      <img src="images/tick.png" style="vertical-align:middle; margin: 0 5px 0 0; position: relative; top:5px left:10px" >
+      Save 
+    </button>
+  </div>
+</body>
+</html>
+
