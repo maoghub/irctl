@@ -1,119 +1,199 @@
 /*==================================== SERVER VARS, COMMANDS ==================================================*/
 
+
+/*-------------------------------------------------------------------------------------------------------------*/
+/**
+ * @fn     getServerVar
+ *
+ * @brief  Get the varName var value from server
+ */
+/*-------------------------------------------------------------------------------------------------------------*/
+
+function getServerVar(varName)
+{
+    var postParams = { var_name: varName};
+    var posturl = "http://"+server_ip+"/cgi-bin/get_var.cgi";
+    var str;
+
+    $.ajaxSetup({ 
+	cache: false,
+	timeout: 1000, 
+    });
+    
+    str = jQuery.param(postParams);
+    //writeStatus("Posting to "+posturl+"?"+str);
+    
+    $.post(posturl, postParams, function(data){ 
+	alert(data);
+    });
+}
+/*-------------------------------------------------------------------------------------------------------------*/
+/**
+ * @fn     serverVarResponse
+ *
+ * @brief  Handler for getServerVar response
+ */
+/*-------------------------------------------------------------------------------------------------------------*/
+
+function serverVarResponse(data)
+{
+    var ra = data.split("\n");
+    var toks;
+
+    if(data.match(/OK/))
+    {
+	toks = ra[0].split("=");
+	if(serverVars[toks[0]] != toks[1])
+	{
+	    serverVars[toks[0]]=toks[1];
+	    writeStatus("Server var "+toks[0]+" = "+toks[1]+"\n");
+	}
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+/**
+ * @fn     sendServerCmd
+ *
+ * @brief  Send a command to the server
+ */
+/*-------------------------------------------------------------------------------------------------------------*/
+
+function sendServerCmd(cmdName)
+{
+    var postParams = { cmd_name: cmdName};
+    var posturl = "http://"+server_ip+"/cgi-bin/send_cmd.cgi";
+    var str;
+
+    $.ajaxSetup({ 
+	cache: false,
+	timeout: 1000, 
+    });
+    
+    str = jQuery.param(postParams);
+    writeStatus("Posting to "+posturl+"?"+str);
+    
+    $.post(posturl, postParams, function(data){ serverCmdResponse(data);});
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+/**
+ * @fn     serverCmdResponse
+ *
+ * @brief  Handler for sendServerCmd completion
+ */
+/*-------------------------------------------------------------------------------------------------------------*/
+
+function serverCmdResponse(data)
+{
+    if(data.match(/OK/))
+    {
+	writeStatus("Server cmd OK\n");
+    }
+}
+
 /*==================================== SERVER CONF FILE =======================================================*/
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     getConf
+ * @fn     getConfFile
  *
  * @brief  Get config file from server
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function getConf()
+function getConfFile()
 {
-    var reqParams = { 
-	userName: userName
-    };
+    var url = "http://"+server_ip+"/"+conf_filename;
 
-    var paramStr = jQuery.param(reqParams);
+    writeStatus("Sending request for " + url);
 
-    var url = "http://"+server_ip + servletPath+"/UserConfigServlet?" + paramStr;
+    $.ajaxSetup({ 
+	cache: true,
+	timeout: 1000, 
+    });
 
-    url = "http://127.0.0.1/irr/UserConfigServlet?userName=" + userName;
-    
-    makeRequest(url, processConfResponse);
+    $.ajax({url: url,
+	    dataType: "text",
+	    success:  function(data){
+		processConfFileResponse(data);
+	    }});
+
+
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     processConfResponse
+ * @fn     processConfFileResponse
  *
  * @brief  Handler for getConfFile
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function processConfResponse(data) 
-{
-    g_conf = JSON.parse(data);
-    
-    numZones = g_conf.numZones;
-    historyDays = g_conf.historyDays;
-    
-    onConfGetComplete();
-}
+function processConfFileResponse(data) {
 
-/*==================================== SERVER LOG DATA =======================================================*/
+    current_soil_num = 1;
 
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn     getLogs
- *
- * @brief  Sent request for a range of data for given month/year 
- */
-/*-------------------------------------------------------------------------------------------------------------*/
+    ra = data.split("\n");
 
-var g_getMonth;
-var g_getYear;
+    writeStatus("Received response length "+ra.length);
 
-function getLog(_month, _year) 
-{
-    g_getMonth = _month;
-    g_getYear  = _year;
-    getWeatherLog(_month, _year);
-}
-
-function onWeatherLogRequestComplete()
-{
-    getScheduleLog(g_getMonth, g_getYear);
-}
-
-function onScheduleLogRequestComplete()
-{
-    onLogRequestComplete();
-}
-
-
-/*==================================== WEATHER LOG DATA =======================================================*/
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn     getWeatherLog
- *
- * @brief  Sent request for a range of weather data for given month/year 
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function getWeatherLog(_month, _year) 
-{
-    var reqParams = { 
-	wuIdStr:g_conf.weatherStation,
-	monthyear: _month + '-' + _year
-    };
-
-    var paramStr = jQuery.param(reqParams);
-
-    var url = "http://"+server_ip + servletPath+"/GetWeatherServlet?" + paramStr;
-    url = "http://127.0.0.1/irr/GetWeatherServlet?wuIdStr=CA/San_Francisco&monthyear=6-2013";
-    makeRequest(url, processWeatherLog);
+    parseResponseFile();
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     processWeatherLog
+ * @fn     parseResponseFile
  *
- * @brief  Process weather log data response from server.  
+ * @brief  Parse the reponse file which is text formatted -> in memory objects.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function processWeatherLog(data) 
+function parseResponseFile()
+{
+    onConfFileGetComplete();
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+/**
+ * @fn     getServerLogData
+ *
+ * @brief  Sent request for a range of data (fromDate -> toDate) from the server 
+ */
+/*-------------------------------------------------------------------------------------------------------------*/
+
+function getServerLogData(_fromDate, _toDate) 
+{
+    //url = "http://"+server_ip+"/cgi-bin/get_log_range.cgi?"+"airport_code="+airportCode+
+//	"&from_date="+getDateString(_fromDate)+"&to_date="+getDateString(_toDate);
+
+    url = "http://"+server_ip+"/get_log.txt";
+
+    newHistoryStart = firstDate(historyStart, _fromDate);
+    newHistoryEnd   = lastDate(historyEnd, _toDate);
+
+    makeRequest(url, processLogData);
+
+    setTimeout("getServerLogData()", MS_1_HR);
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+/**
+ * @fn     processLogData
+ *
+ * @brief  Process log data response from server.  
+ */
+/*-------------------------------------------------------------------------------------------------------------*/
+
+function processLogData(data) 
 {
 
     var ra=[];
     var ta=[];
     var la=[];
     var dateArr=[];
-    var i;
+    var mode;
+    var st, i,s,z, val;
 
     ra = data.split("\n");
 
@@ -121,114 +201,108 @@ function processWeatherLog(data)
 
     for( i=0; i < ra.length; i++ )
     {
-	ta = ra[i].split("=");
+	//writeStatus(ra[i]+"\n");
 
-	if(!ta[1])
+	ta = ra[i].split("=");
+	
+	if(ta == "")
 	{
 	    continue;
-	}	
-
-	dateArr   = ta[0].split("-");
-	var day   = dateArr[2];
-	var month = dateArr[1];
-	var year  = dateArr[0];
-
-	var hashDate = hashStr(year.toString(), month.toString(), day.toString());
-
-	la = ta[1].split(",");
-
-	/*
-	  0 minTemp +',' + 1 avgTemp + ',' + 2 maxTemp + ',' + 3 minDewPoint + ',' + 4 avgDewPoint + ',' + 5 maxDewPoint + ',' + 
-	  6 minHumidity + ',' + 7 avgHumidity + ',' + 8 maxHumidity + ',' + 9 minWindSpeed +',' + 10 avgWindSpeed + ',' + 11 axWindSpeed + ',' + 
-	  12 minPressure + ',' + 13 avgPressure + ',' + 14 maxPressure + ',' + 15 precipitation + ',' + 16 avgWindDir + ',' +
-	  17 conditions + ',' + 18 icon + ',' + fog + ',' + rain + ',' + snow + ',' + hail + ',' + thunder + ',' + tornado);
-	*/
-	tempHistory[hashDate]      = useMetric ? F2C(la[2]) : la[2];
-	humidityHistory[hashDate]  = la[7];
-	windSpeedHistory[hashDate] = useMetric ? M2Km(la[10]) : la[10];
-	rainHistory[hashDate]      = useMetric ? In2Cm(la[15]) : la[15];
-	iconHistory[hashDate]      = la[17];
-    }
-
-    onWeatherLogRequestComplete();
-}
-
-/*==================================== SCHEDULE LOG DATA ======================================================*/
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn     getScheduleLog
- *
- * @brief  Sent request for a range of Schedule data for given month/year 
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function getScheduleLog(_month, _year) 
-{
-    var reqParams = { 
-	userName : g_conf.userName,
-	monthyear: _month + '-' + _year
-    };
-
-    var paramStr = jQuery.param(reqParams);
-
-    var url = "http://"+server_ip + servletPath+"/GetScheduleServlet?" + paramStr;
-
-    makeRequest(url, processScheduleLog);
-}
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn     processScheduleLog
- *
- * @brief  Process Schedule log data response from server.  
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function processScheduleLog(data) 
-{
-
-    var ra=[];
-    var ta=[];
-    var la=[];
-    var dateArr=[];
-    var i, z;
-
-    ra = data.split("\n");
-
-    for( i=0; i < ra.length; i++ )
-    {
-	ta = ra[i].split("=");
-
-	if(!ta[1])
+	}
+	
+	if(ta[0].match(/WEATHER/) ||
+	   ta[0].match(/ZONE_RUN_TIMES/) ||
+	   ta[0].match(/ZONE_MOISTURE/) ||
+	   ta[0].match(/ZONE_DRYING_RATE/) ||
+	   ta[0].match(/SENSOR_MOISTURE/) ||
+	   ta[0].match(/SENSOR_DRYING_RATE/) )
 	{
-	    continue;
-	}	
-
-	dateArr   = ta[0].split("-");
-	var day   = dateArr[2];
-	var month = dateArr[1];
-	var year  = dateArr[0];
-
-	var hashDate = hashStr(year.toString(), month.toString(), day.toString());
-
-	la = ta[1].split(",");
-
-	for (z=0; z<numZones; z++)
+	    mode = ta[0];
+	    st=i+1;
+	}
+	else 
 	{
-	    var hStr = z.toString() + '-' + hashDate;
-
-	    val = parseFloat(la[z]);
-	    if( isNaN(val) )
+	    if(!ta[1])
 	    {
-		val = 0;
+		continue;
 	    }
 
-	    zoneRuntimeHistory[hStr]  = val;
+	    dateArr   = ta[0].split("-");
+	    var day   = dateArr[2];
+	    var month = dateArr[1];
+	    var year  = dateArr[0];
+	
+	    var hashDate = hashStr(year.toString(), month.toString(), day.toString());
+
+	    la = ta[1].split(",");
+	    
+	    if(mode == "WEATHER")
+	    {					
+		// (0-"min_temp_f", 1-"avg_temp_f", 2-"max_temp_f", 3-"dew_point_f", 4-"humidity_pct", 5-"pressure_in", 6-"wind_speed_mph", 
+		//   7-"max_wind_speed_mph",  8-"max_gust_speeed", 9-"wind_dir_deg",  10-"precipitation_in", 11-"cloud_cover_pct" );
+		// 12 - weather icon string
+
+		tempHistory[hashDate]      = useMetric ? F2C(la[2]) : la[2];
+		humidityHistory[hashDate]  = la[4];
+		windSpeedHistory[hashDate] = useMetric ? M2Km(la[4]) : la[4];
+		rainHistory[hashDate]      = useMetric ? In2Cm(la[4]) : la[4];
+		iconHistory[hashDate]      = la[12];
+	    }
+	    else if ( mode == "ZONE_RUN_TIMES" || mode == "ZONE_MOISTURE" || mode == "ZONE_DRYING_RATE" )
+	    {
+		for (z=0; z<numZones; z++)
+		{
+		    var hStr = z.toString() + '-' + hashDate;
+
+		    val = parseFloat(la[z]);
+		    if( isNaN(val) )
+		    {
+			val = 0;
+		    }
+		    
+		    if(mode == "ZONE_RUN_TIMES")
+		    {
+			zoneRuntimeHistory[hStr]  = val;
+		    }
+		    
+		    else if(mode == "ZONE_MOISTURE")
+		    {
+			zoneMoistureHistory[hStr]  = val;
+		    }						
+		    else if(mode == "ZONE_DRYING_RATE")
+		    {
+			zoneDryingRateHistory[hStr]  = val;
+		    }			
+		}
+	    }
+	    else if (mode == "SENSOR_MOISTURE" || mode == "SENSOR_DRYING_RATE" )
+	    {
+		for (s=0; s<numSensors; s++)
+		{
+		    var hStr = s.toString() + '-' + hashDate;
+
+		    val = parseFloat(la[s]);
+		    if( isNaN(val) )
+		    {
+			val = 0;
+		    }
+		    
+		    if(mode == "SENSOR_MOISTURE")
+		    {
+			sensorMoistureHistory[hStr]  = val;
+		    }						
+		    else if(mode == "SENSOR_DRYING_RATE")
+		    {
+			sensorDryingRateHistory[hStr]  = val;
+		    }			
+		}
+
+	    }
 	}
+	
     }
 
-    onScheduleLogRequestComplete();
+    onServerLogRequestComplete();
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
@@ -241,8 +315,8 @@ function processScheduleLog(data)
 
 function postSave()
 {
-    var postUrl = "http://"+server_ip+"/irr/UserConfig";
-    var body, params;
+    var posturl = "http://"+server_ip+"/conf/user.conf";
+    var str;
 
     writeStatus("Posting to "+ postUrl);
 
@@ -252,22 +326,13 @@ function postSave()
 	error:   saveToServerError
     });
 
-    params = jQuery.param({"userName":userName});
-    var conf = { "userName":userName, "config": { "global":globalConf, "zones": zoneConf } };
-    body = JSON.stringify(conf, null, "    ");
+    str = jQuery.param(globalConf);
+    writeStatus(str);
+	
+    $.post(posturl, str, function(data){ postDone(data);});
 
-    alert(body);
-    $.ajax({
-	type: "POST",
-	url: postUrl + "?" + params,
-	processData: false,
-	contentType: 'application/json',
-	data: body,
-	success: function(data) {
-	    postDone(data);
-	}
-    });
-
+    str = jQuery.param(zoneConf);
+    writeStatus(str);
 }
 
 function getConfObject(_confString)
@@ -287,6 +352,58 @@ function getConfObject(_confString)
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
+ * @fn     mustSave
+ *
+ * @brief  Called to indicate that some values have changed from the saved ones.
+ */
+/*-------------------------------------------------------------------------------------------------------------*/
+
+function mustSave()
+{
+    $('#cancel_button').button({disabled:false});
+    $('#save_button').button({disabled:false});
+    $('#cancel_button').addClass('enabled-button');
+    $('#save_button').addClass('enabled-button');
+    mustSave = true;
+}
+
+function copyUItoMemoryValues()
+{
+    if (displayedMenu == 'system_settings_table')
+    {
+	globalConf.climateZone = $('#climate_zone_text').val();
+	globalConf.weatherStation = $('#weather_station_text').val();
+	globalConf.runTime1 = $("#watering_time_spinner").timespinner('value');
+    }
+    else if (displayedMenu == 'email_settings_table')
+    {
+	globalConf.email = $('#email_address_text').val();
+	globalConf.sendSummary = $('#send_summary_text').val();
+    }
+    else if (displayedMenu == 'display_settings_table')
+    {
+	globalConf.historyDays = $("#history_days_spinner").spinner('value');
+	globalConf.waterDisplay = $('#water_display_select').val();
+	globalConf.units        = $('#units_select').val();
+    }
+    else if (displayedMenu == 'plants_table')
+    {
+	zoneConf[selectedZone].plantProperties.dormant = $("#dormant_months").slider('values', 0) + '-' + $("#dormant_months").slider('values', 1);
+	zoneConf[selectedZone].plantProperties.type    = $('#plant_type1').val()+'-'+ $("#plant_pct1").val() +'+'
+	    +$('#plant_type2').val +'-'+ $("#plant_pct2").val();
+    }
+    else if (displayedMenu == 'environment_table')
+    {
+	zoneConf[selectedZone].environment.wetness = $("#wetness_slider_div").slider('value');
+	zoneConf[selectedZone].environment.inPots  = $("#planted_in_select").val() == 'pots' ? 1 : 0;
+	zoneConf[selectedZone].environment.getRain = $("#receives_rain_select").val() == 'Receives rain' ? 1 : 0;
+	zoneConf[selectedZone].environment.soil    = $("#soil_type_select").val();
+	zoneConf[selectedZone].environment.light   = $("#exposure_select").val();
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+/**
  * @fn     makeRequest
  *
  * @brief  Make an AJAX request  
@@ -295,24 +412,18 @@ function getConfObject(_confString)
 
 function makeRequest(url, callback) {
 
+    writeStatus("Sending request for " + url);
+
     $.ajaxSetup({ 
 	cache: true,
 	timeout: 5000, 
 	success: callback,
-	error: function (xhr, ajaxOptions, thrownError) {
-	    alert(xhr.status);
-	    alert(thrownError);
-	}	});
+    });
     $.get(url, function(data){
 	callback(data);
     }, "text");
 }
 
-function serverError(data)
-{
-    alert(data);
-
-}
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
  * @fn     postDone

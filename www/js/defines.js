@@ -10,55 +10,6 @@ var dateStr		= ["Sun", "Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 var lightAmountImage    = ['light_0.png', 'light_1.png', 'light_2.png', 'light_3.png', 'light_4.png'];
 var monthAbbrevName     = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 var winternMonthMapping = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec','Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-var unitsDisplayStr = {
-    "US":"US (inches, gal)",
-    "metric": "Metric (cm, L)"
-}
-
-var demoZoneConf = [
-    {
-	'lightAmount': 4,
-	'waterAdjust': 0,
-	'plantedIn': 'Pots',
-	'getsRain': 'Yes',
-	'soilType' : 'Potting mix'
-    },
-    {
-	'lightAmount': 4,
-	'waterAdjust': 30,
-	'plantedIn': 'Ground',
-	'getsRain': 'Yes',
-	'soilType' : 'Clay loam'
-    },
-    {
-	'lightAmount': 3,
-	'waterAdjust': 40,
-	'plantedIn': 'Ground',
-	'getsRain': 'Yes',
-	'soilType' : 'Clay loam'
-    },
-    {
-	'lightAmount': 2,
-	'waterAdjust': 0,
-	'plantedIn': 'Pots',
-	'getsRain': 'Yes',
-	'soilType' : 'Potting mix'
-    },
-    {
-	'lightAmount': 4,
-	'waterAdjust': -20,
-	'plantedIn': 'Pots',
-	'getsRain': 'Yes',
-	'soilType' : 'Potting mix'
-    },
-    {
-	'lightAmount': 3,
-	'waterAdjust': 00,
-	'plantedIn': 'Ground',
-	'getsRain': 'Yes',
-	'soilType' : 'Clay loam'
-    }
-];
 
 var helpText = {
     "water_now_button":
