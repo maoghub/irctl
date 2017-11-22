@@ -12,6 +12,7 @@ var MS_1_DAY		= 24*MS_1_HR;
 
 var statusArea;
 var server_ip		= location.host;
+var confFilename = "conf/irctl_conf.json"
 
 var globalConf          = new Object();
 

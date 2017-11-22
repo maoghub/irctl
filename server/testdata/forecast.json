@@ -1,0 +1,721 @@
+{
+    "current_observation": {
+        "UV": "2",
+        "dewpoint_c": 12,
+        "dewpoint_f": 54,
+        "dewpoint_string": "54 F (12 C)",
+        "display_location": {
+            "city": "San Jose International",
+            "country": "US",
+            "country_iso3166": "US",
+            "elevation": "17.0",
+            "full": "San Jose International, CA",
+            "latitude": "37.36166763",
+            "longitude": "-121.92888641",
+            "magic": "4",
+            "state": "CA",
+            "state_name": "California",
+            "wmo": "99999",
+            "zip": "95053"
+        },
+        "estimated": {},
+        "feelslike_c": "22",
+        "feelslike_f": "72",
+        "feelslike_string": "72 F (22 C)",
+        "forecast_url": "http://www.wunderground.com/US/CA/San_Jose_International.html",
+        "heat_index_c": "NA",
+        "heat_index_f": "NA",
+        "heat_index_string": "NA",
+        "history_url": "http://www.wunderground.com/history/airport/KSJC/2017/10/24/DailyHistory.html",
+        "icon": "clear",
+        "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+        "image": {
+            "link": "http://www.wunderground.com",
+            "title": "Weather Underground",
+            "url": "http://icons.wxug.com/graphics/wu2/logo_130x80.png"
+        },
+        "local_epoch": "1508867397",
+        "local_time_rfc822": "Tue, 24 Oct 2017 10:49:57 -0700",
+        "local_tz_long": "America/Los_Angeles",
+        "local_tz_offset": "-0700",
+        "local_tz_short": "PDT",
+        "nowcast": "",
+        "ob_url": "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=37.36000061,-121.93000031",
+        "observation_epoch": "1508863980",
+        "observation_location": {
+            "city": "San Jose",
+            "country": "US",
+            "country_iso3166": "US",
+            "elevation": "56 ft",
+            "full": "San Jose, California",
+            "latitude": "37.36000061",
+            "longitude": "-121.93000031",
+            "state": "California"
+        },
+        "observation_time": "Last Updated on October 24, 9:53 AM PDT",
+        "observation_time_rfc822": "Tue, 24 Oct 2017 09:53:00 -0700",
+        "precip_1hr_in": "-9999.00",
+        "precip_1hr_metric": "--",
+        "precip_1hr_string": "-9999.00 in (-9999.00 mm)",
+        "precip_today_in": "0.00",
+        "precip_today_metric": "0.0",
+        "precip_today_string": "0.00 in (0.0 mm)",
+        "pressure_in": "30.16",
+        "pressure_mb": "1021",
+        "pressure_trend": "0",
+        "relative_humidity": "53%",
+        "solarradiation": "--",
+        "station_id": "KSJC",
+        "temp_c": 22,
+        "temp_f": 72,
+        "temperature_string": "72 F (22 C)",
+        "visibility_km": "16.1",
+        "visibility_mi": "10.0",
+        "weather": "Clear",
+        "wind_degrees": 0,
+        "wind_dir": "Variable",
+        "wind_gust_kph": 0,
+        "wind_gust_mph": 0,
+        "wind_kph": 6,
+        "wind_mph": 4,
+        "wind_string": "From the Variable at 4 MPH",
+        "windchill_c": "NA",
+        "windchill_f": "NA",
+        "windchill_string": "NA"
+    },
+    "forecast": {
+        "simpleforecast": {
+            "forecastday": [
+                {
+                    "avehumidity": 37,
+                    "avewind": {
+                        "degrees": 272,
+                        "dir": "W",
+                        "kph": 11,
+                        "mph": 7
+                    },
+                    "conditions": "Clear",
+                    "date": {
+                        "ampm": "PM",
+                        "day": 24,
+                        "epoch": "1508896800",
+                        "hour": 19,
+                        "isdst": "1",
+                        "min": "00",
+                        "month": 10,
+                        "monthname": "October",
+                        "monthname_short": "Oct",
+                        "pretty": "7:00 PM PDT on October 24, 2017",
+                        "sec": 0,
+                        "tz_long": "America/Los_Angeles",
+                        "tz_short": "PDT",
+                        "weekday": "Tuesday",
+                        "weekday_short": "Tue",
+                        "yday": 296,
+                        "year": 2017
+                    },
+                    "high": {
+                        "celsius": "33",
+                        "fahrenheit": "91"
+                    },
+                    "icon": "clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+                    "low": {
+                        "celsius": "16",
+                        "fahrenheit": "61"
+                    },
+                    "maxhumidity": 0,
+                    "maxwind": {
+                        "degrees": 272,
+                        "dir": "W",
+                        "kph": 16,
+                        "mph": 10
+                    },
+                    "minhumidity": 0,
+                    "period": 1,
+                    "pop": 0,
+                    "qpf_allday": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "qpf_day": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "qpf_night": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "skyicon": "",
+                    "snow_allday": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    },
+                    "snow_day": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    },
+                    "snow_night": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    }
+                },
+                {
+                    "avehumidity": 42,
+                    "avewind": {
+                        "degrees": 258,
+                        "dir": "WSW",
+                        "kph": 13,
+                        "mph": 8
+                    },
+                    "conditions": "Clear",
+                    "date": {
+                        "ampm": "PM",
+                        "day": 25,
+                        "epoch": "1508983200",
+                        "hour": 19,
+                        "isdst": "1",
+                        "min": "00",
+                        "month": 10,
+                        "monthname": "October",
+                        "monthname_short": "Oct",
+                        "pretty": "7:00 PM PDT on October 25, 2017",
+                        "sec": 0,
+                        "tz_long": "America/Los_Angeles",
+                        "tz_short": "PDT",
+                        "weekday": "Wednesday",
+                        "weekday_short": "Wed",
+                        "yday": 297,
+                        "year": 2017
+                    },
+                    "high": {
+                        "celsius": "31",
+                        "fahrenheit": "88"
+                    },
+                    "icon": "clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+                    "low": {
+                        "celsius": "14",
+                        "fahrenheit": "58"
+                    },
+                    "maxhumidity": 0,
+                    "maxwind": {
+                        "degrees": 258,
+                        "dir": "WSW",
+                        "kph": 16,
+                        "mph": 10
+                    },
+                    "minhumidity": 0,
+                    "period": 2,
+                    "pop": 0,
+                    "qpf_allday": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "qpf_day": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "qpf_night": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "skyicon": "",
+                    "snow_allday": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    },
+                    "snow_day": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    },
+                    "snow_night": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    }
+                },
+                {
+                    "avehumidity": 40,
+                    "avewind": {
+                        "degrees": 263,
+                        "dir": "W",
+                        "kph": 13,
+                        "mph": 8
+                    },
+                    "conditions": "Clear",
+                    "date": {
+                        "ampm": "PM",
+                        "day": 26,
+                        "epoch": "1509069600",
+                        "hour": 19,
+                        "isdst": "1",
+                        "min": "00",
+                        "month": 10,
+                        "monthname": "October",
+                        "monthname_short": "Oct",
+                        "pretty": "7:00 PM PDT on October 26, 2017",
+                        "sec": 0,
+                        "tz_long": "America/Los_Angeles",
+                        "tz_short": "PDT",
+                        "weekday": "Thursday",
+                        "weekday_short": "Thu",
+                        "yday": 298,
+                        "year": 2017
+                    },
+                    "high": {
+                        "celsius": "31",
+                        "fahrenheit": "88"
+                    },
+                    "icon": "clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+                    "low": {
+                        "celsius": "15",
+                        "fahrenheit": "59"
+                    },
+                    "maxhumidity": 0,
+                    "maxwind": {
+                        "degrees": 263,
+                        "dir": "W",
+                        "kph": 16,
+                        "mph": 10
+                    },
+                    "minhumidity": 0,
+                    "period": 3,
+                    "pop": 0,
+                    "qpf_allday": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "qpf_day": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "qpf_night": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "skyicon": "",
+                    "snow_allday": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    },
+                    "snow_day": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    },
+                    "snow_night": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    }
+                },
+                {
+                    "avehumidity": 38,
+                    "avewind": {
+                        "degrees": 279,
+                        "dir": "W",
+                        "kph": 14,
+                        "mph": 9
+                    },
+                    "conditions": "Clear",
+                    "date": {
+                        "ampm": "PM",
+                        "day": 27,
+                        "epoch": "1509156000",
+                        "hour": 19,
+                        "isdst": "1",
+                        "min": "00",
+                        "month": 10,
+                        "monthname": "October",
+                        "monthname_short": "Oct",
+                        "pretty": "7:00 PM PDT on October 27, 2017",
+                        "sec": 0,
+                        "tz_long": "America/Los_Angeles",
+                        "tz_short": "PDT",
+                        "weekday": "Friday",
+                        "weekday_short": "Fri",
+                        "yday": 299,
+                        "year": 2017
+                    },
+                    "high": {
+                        "celsius": "30",
+                        "fahrenheit": "86"
+                    },
+                    "icon": "clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+                    "low": {
+                        "celsius": "13",
+                        "fahrenheit": "55"
+                    },
+                    "maxhumidity": 0,
+                    "maxwind": {
+                        "degrees": 279,
+                        "dir": "W",
+                        "kph": 16,
+                        "mph": 10
+                    },
+                    "minhumidity": 0,
+                    "period": 4,
+                    "pop": 0,
+                    "qpf_allday": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "qpf_day": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "qpf_night": {
+                        "in": 0.0,
+                        "mm": 0
+                    },
+                    "skyicon": "",
+                    "snow_allday": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    },
+                    "snow_day": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    },
+                    "snow_night": {
+                        "cm": 0.0,
+                        "in": 0.0
+                    }
+                }
+            ]
+        },
+        "txt_forecast": {
+            "date": "9:14 AM PDT",
+            "forecastday": [
+                {
+                    "fcttext": "Abundant sunshine. High 91F. Winds W at 5 to 10 mph.",
+                    "fcttext_metric": "Sunny. High 33C. Winds W at 10 to 15 km/h.",
+                    "icon": "clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+                    "period": 0,
+                    "pop": "0",
+                    "title": "Tuesday"
+                },
+                {
+                    "fcttext": "Mainly clear skies. Low 61F. Winds light and variable.",
+                    "fcttext_metric": "Clear to partly cloudy. Low 16C. Winds light and variable.",
+                    "icon": "nt_clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/nt_clear.gif",
+                    "period": 1,
+                    "pop": "0",
+                    "title": "Tuesday Night"
+                },
+                {
+                    "fcttext": "Sunny. High 88F. Winds WSW at 5 to 10 mph.",
+                    "fcttext_metric": "Sunny skies. High 31C. Winds WSW at 10 to 15 km/h.",
+                    "icon": "clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+                    "period": 2,
+                    "pop": "0",
+                    "title": "Wednesday"
+                },
+                {
+                    "fcttext": "Clear skies. Low 58F. Winds SSW at 5 to 10 mph.",
+                    "fcttext_metric": "Clear skies. Low near 15C. Winds light and variable.",
+                    "icon": "nt_clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/nt_clear.gif",
+                    "period": 3,
+                    "pop": "0",
+                    "title": "Wednesday Night"
+                },
+                {
+                    "fcttext": "Sunny. High 88F. Winds W at 5 to 10 mph.",
+                    "fcttext_metric": "A mainly sunny sky. High 31C. Winds W at 10 to 15 km/h.",
+                    "icon": "clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+                    "period": 4,
+                    "pop": "0",
+                    "title": "Thursday"
+                },
+                {
+                    "fcttext": "Clear skies. Low 59F. Winds SSE at 5 to 10 mph.",
+                    "fcttext_metric": "Clear skies. Low around 15C. Winds SSE at 10 to 15 km/h.",
+                    "icon": "nt_clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/nt_clear.gif",
+                    "period": 5,
+                    "pop": "0",
+                    "title": "Thursday Night"
+                },
+                {
+                    "fcttext": "A mainly sunny sky. High 86F. Winds W at 5 to 10 mph.",
+                    "fcttext_metric": "A mainly sunny sky. High around 30C. Winds W at 10 to 15 km/h.",
+                    "icon": "clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/clear.gif",
+                    "period": 6,
+                    "pop": "0",
+                    "title": "Friday"
+                },
+                {
+                    "fcttext": "Clear skies. Low near 55F. Winds SW at 5 to 10 mph.",
+                    "fcttext_metric": "Clear. Low 13C. Winds SW at 10 to 15 km/h.",
+                    "icon": "nt_clear",
+                    "icon_url": "http://icons.wxug.com/i/c/k/nt_clear.gif",
+                    "period": 7,
+                    "pop": "0",
+                    "title": "Friday Night"
+                }
+            ]
+        }
+    },
+    "location": {
+        "city": "San Jose International",
+        "country": "US",
+        "country_iso3166": "US",
+        "country_name": "USA",
+        "l": "/q/zmw:95053.4.99999",
+        "lat": "37.36166763",
+        "lon": "-121.92888641",
+        "magic": "4",
+        "nearby_weather_stations": {
+            "airport": {
+                "station": [
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "icao": "KSJC",
+                        "lat": "37.36000061",
+                        "lon": "-121.93000031",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose Reid",
+                        "country": "US",
+                        "icao": "KRHV",
+                        "lat": "37.33000183",
+                        "lon": "-121.81999969",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Moffett NAS",
+                        "country": "US",
+                        "icao": "KNUQ",
+                        "lat": "37.40999985",
+                        "lon": "-122.05000305",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Palo Alto",
+                        "country": "US",
+                        "icao": "KPAO",
+                        "lat": "37.45999908",
+                        "lon": "-122.11000061",
+                        "state": "CA"
+                    }
+                ]
+            },
+            "pws": {
+                "station": [
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 1,
+                        "distance_mi": 0,
+                        "id": "KCASANJO188",
+                        "lat": 37.357361,
+                        "lon": -121.911781,
+                        "neighborhood": "Rosemary Gardens",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Santa Clara",
+                        "country": "US",
+                        "distance_km": 1,
+                        "distance_mi": 1,
+                        "id": "KCASANTA2029",
+                        "lat": 37.359032,
+                        "lon": -121.950249,
+                        "neighborhood": "Industrial Dog Park",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 2,
+                        "distance_mi": 1,
+                        "id": "KCASANJO656",
+                        "lat": 37.338253,
+                        "lon": -121.91851,
+                        "neighborhood": "College Park",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Santa Clara",
+                        "country": "US",
+                        "distance_km": 2,
+                        "distance_mi": 1,
+                        "id": "KCASANTA1958",
+                        "lat": 37.357979,
+                        "lon": -121.96122,
+                        "neighborhood": "Cabrillo Scott",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Santa Clara",
+                        "country": "US",
+                        "distance_km": 3,
+                        "distance_mi": 1,
+                        "id": "KCASANTA288",
+                        "lat": 37.347557,
+                        "lon": -121.958649,
+                        "neighborhood": "Fairfield Neighborhood",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Santa Clara",
+                        "country": "US",
+                        "distance_km": 3,
+                        "distance_mi": 1,
+                        "id": "KCASANTA308",
+                        "lat": 37.362011,
+                        "lon": -121.963791,
+                        "neighborhood": "Monroe/San Tomas",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Santa Clara",
+                        "country": "US",
+                        "distance_km": 3,
+                        "distance_mi": 1,
+                        "id": "KCASANTA701",
+                        "lat": 37.340286,
+                        "lon": -121.952698,
+                        "neighborhood": "Maria St",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 3,
+                        "distance_mi": 1,
+                        "id": "KCASANJO275",
+                        "lat": 37.341515,
+                        "lon": -121.902985,
+                        "neighborhood": "Guadalupe River Park",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Santa Clara",
+                        "country": "US",
+                        "distance_km": 3,
+                        "distance_mi": 2,
+                        "id": "KCASANTA696",
+                        "lat": 37.338837,
+                        "lon": -121.958946,
+                        "neighborhood": "Homestead and Scott",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 3,
+                        "distance_mi": 2,
+                        "id": "KCASANJO617",
+                        "lat": 37.359657,
+                        "lon": -121.884933,
+                        "neighborhood": "Northside / Luna Park",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 3,
+                        "distance_mi": 2,
+                        "id": "KCASANJO577",
+                        "lat": 37.326542,
+                        "lon": -121.919739,
+                        "neighborhood": "Hanchett-Dana",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 4,
+                        "distance_mi": 2,
+                        "id": "KCASANJO172",
+                        "lat": 37.325802,
+                        "lon": -121.922104,
+                        "neighborhood": "Shasta",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 4,
+                        "distance_mi": 2,
+                        "id": "KCASANJO490",
+                        "lat": 37.327351,
+                        "lon": -121.913742,
+                        "neighborhood": "Shasta Hanchett",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 4,
+                        "distance_mi": 2,
+                        "id": "KCASANJO711",
+                        "lat": 37.33054,
+                        "lon": -121.90416,
+                        "neighborhood": "Diridon Station Area",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "San Jose",
+                        "country": "US",
+                        "distance_km": 4,
+                        "distance_mi": 2,
+                        "id": "KCASANJO751",
+                        "lat": 37.398186,
+                        "lon": -121.920807,
+                        "neighborhood": "San Jose",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Santa Clara",
+                        "country": "US",
+                        "distance_km": 4,
+                        "distance_mi": 2,
+                        "id": "KCASANTA2153",
+                        "lat": 37.362461,
+                        "lon": -121.977196,
+                        "neighborhood": "Santa Clara - Bowers and Monroe",
+                        "state": "CA"
+                    },
+                    {
+                        "city": "Santa Clara",
+                        "country": "US",
+                        "distance_km": 4,
+                        "distance_mi": 2,
+                        "id": "KCASANTA1461",
+                        "lat": 37.361542,
+                        "lon": -121.979149,
+                        "neighborhood": "Santa Clara - Addison & Brown",
+                        "state": "CA"
+                    }
+                ]
+            }
+        },
+        "requesturl": "US/CA/San_Jose_International.html",
+        "state": "CA",
+        "type": "CITY",
+        "tz_long": "America/Los_Angeles",
+        "tz_short": "PDT",
+        "wmo": "99999",
+        "wuiurl": "https://www.wunderground.com/US/CA/San_Jose_International.html",
+        "zip": "95053"
+    },
+    "response": {
+        "features": {
+            "conditions": 1,
+            "forecast": 1,
+            "geolookup": 1
+        },
+        "termsofService": "http://www.wunderground.com/weather/api/d/terms.html",
+        "version": "0.1"
+    }
+}
