@@ -38,17 +38,19 @@ func (tl *TestLogger) Contents() string {
 }
 
 type TestConditionsGetter struct {
+	YesterdayIcon string
 	YesterdayTempF    float64
 	YesterdayPrecipIn float64
+	ForecastIcon string
 	ForecastTempF     float64
 	ForecastPrecipIn  float64
 }
 
-func (w *TestConditionsGetter) GetForecast(airportCode string) (tempF float64, precipIn float64, err error) {
-	return w.YesterdayTempF, w.YesterdayPrecipIn, nil
+func (w *TestConditionsGetter) GetForecast(airportCode string) (icon string, tempF float64, precipIn float64, err error) {
+	return w.YesterdayIcon, w.YesterdayTempF, w.YesterdayPrecipIn, nil
 }
-func (w *TestConditionsGetter) GetYesterday(airportCode string) (tempF float64, precipIn float64, err error) {
-	return w.ForecastTempF, w.ForecastPrecipIn, nil
+func (w *TestConditionsGetter) GetYesterday(airportCode string) (icon string, tempF float64, precipIn float64, err error) {
+	return w.ForecastIcon, w.ForecastTempF, w.ForecastPrecipIn, nil
 }
 
 type ValveOperation struct {
@@ -160,7 +162,7 @@ ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
 		{
 			desc:          "too early",
 			timeStr:       "7:00am",
-			condGetter:    &TestConditionsGetter{80, 0, 80, 0},
+			condGetter:    &TestConditionsGetter{"test", 80, 0, "test", 80, 0},
 			startVWC:      []float64{10, 15},
 			startState:    []ZoneState{Idle, Idle},
 			wantDidRun:    false,
@@ -171,7 +173,7 @@ ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
 		{
 			desc:          "run zone 0, update zone 1",
 			timeStr:       "10:00am",
-			condGetter:    &TestConditionsGetter{80, 0, 80, 0},
+			condGetter:    &TestConditionsGetter{"test", 80, 0, "test", 80, 0},
 			startVWC:      []float64{10, 15},
 			startState:    []ZoneState{Idle, Idle},
 			wantDidRun:    true,
@@ -182,7 +184,7 @@ ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
 		{
 			desc:          "run zone 0, zone 1 complete",
 			timeStr:       "10:00am",
-			condGetter:    &TestConditionsGetter{80, 0, 80, 0},
+			condGetter:    &TestConditionsGetter{"test", 80, 0, "test", 80, 0},
 			startVWC:      []float64{10, 15},
 			startState:    []ZoneState{Idle, Complete},
 			wantDidRun:    true,
@@ -193,7 +195,7 @@ ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
 		{
 			desc:                  "run zone0, update zone1 (already running)",
 			timeStr:               "10:00am",
-			condGetter:            &TestConditionsGetter{80, 0, 80, 0},
+			condGetter:            &TestConditionsGetter{"test", 80, 0, "test", 80, 0},
 			startVWC:              []float64{10, 15},
 			startState:            []ZoneState{Idle, Running},
 			wantDidRun:            true,
@@ -208,7 +210,7 @@ ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
 		kv := NewTestKVStore()
 		er := &TestErrorReporter{}
 		log := &TestLogger{}
-		tcg := &TestConditionsGetter{80, 0, 80, 0}
+		tcg := &TestConditionsGetter{"test", 80, 0, "test", 80, 0}
 		tvc := &TestValveController{log: log}
 		zc := *NewZoneController(tvc, kv, log)
 		now, _ := time.Parse("3:04pm", tt.timeStr)

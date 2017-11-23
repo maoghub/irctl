@@ -1,56 +1,5 @@
 /*==================================== SERVER VARS, COMMANDS ==================================================*/
 
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn getServerVar
- * 
- * @brief Get the varName var value from server
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function getServerVar(varName)
-{
-	var postParams = { var_name: varName};
-	var posturl = "http://"+server_ip+"/cgi-bin/get_var.cgi";
-	var str;
-
-	$.ajaxSetup({ 
-		cache: false,
-		timeout: 1000, 
-	});
-
-	str = jQuery.param(postParams);
-	// writeStatus("Posting to "+posturl+"?"+str);
-
-	$.post(posturl, postParams, function(data){ 
-		alert(data);
-	});
-}
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn serverVarResponse
- * 
- * @brief Handler for getServerVar response
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function serverVarResponse(data)
-{
-	var ra = data.split("\n");
-	var toks;
-
-	if(data.match(/OK/))
-	{
-		toks = ra[0].split("=");
-		if(serverVars[toks[0]] != toks[1])
-		{
-			serverVars[toks[0]]=toks[1];
-			writeStatus("Server var "+toks[0]+" = "+toks[1]+"\n");
-		}
-	}
-}
-
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
  * @fn sendServerCmd
@@ -91,11 +40,6 @@ function serverCmdResponse(data)
 		writeStatus("Server cmd OK\n");
 	}
 }
-
-/*
- * ==================================== SERVER CONF FILE
- * =======================================================
- */
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
@@ -308,18 +252,12 @@ function parseResponseFile()
 
 function getServerLogData(_fromDate, _toDate) 
 {
-	// url =
-	// "http://"+server_ip+"/cgi-bin/get_log_range.cgi?"+"airport_code="+airportCode+
-//	"&from_date="+getDateString(_fromDate)+"&to_date="+getDateString(_toDate);
+  dateRange = "from_date="+DateString(_fromDate)+"&to_date="+DateString(_toDate);
+  url = "http://"+server_ip+"/cmd/GetConditionsLog?" + dateRange;
+	makeRequest(url, processConditions);
 
-	url = "http://"+server_ip+"/get_log.txt";
-
-	newHistoryStart = firstDate(historyStart, _fromDate);
-	newHistoryEnd   = lastDate(historyEnd, _toDate);
-
-	makeRequest(url, processLogData);
-
-	setTimeout("getServerLogData()", MS_1_HR);
+	url = "http://"+server_ip+"/cmd/GetRuntimeLog?" + dateRange;
+  makeRequest(url, processRuntimes);
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
@@ -330,126 +268,25 @@ function getServerLogData(_fromDate, _toDate)
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function processLogData(data) 
+function processConditions(data)
 {
+  j = JSON.parse(data)
+  for (i=0; i<j.length; i++) {
+    date = new Date(j[i]["Date"])
+    dateStr = date.toDateString()
+    iconHistory[dateStr] = j[i]["Icon"]
+    tempHistory[dateStr] = j[i]["Temp"]
+    precipHistory[dateStr] = j[i]["Precip"]
+  }
+}
 
-	var ra=[];
-	var ta=[];
-	var la=[];
-	var dateArr=[];
-	var mode;
-	var st, i,s,z, val;
-
-	ra = data.split("\n");
-
-	writeStatus("Received response length "+ra.length);
-
-	for( i=0; i < ra.length; i++ )
-	{
-		// writeStatus(ra[i]+"\n");
-
-		ta = ra[i].split("=");
-
-		if(ta == "")
-		{
-			continue;
-		}
-
-		if(ta[0].match(/WEATHER/) ||
-				ta[0].match(/ZONE_RUN_TIMES/) ||
-				ta[0].match(/ZONE_MOISTURE/) ||
-				ta[0].match(/ZONE_DRYING_RATE/) ||
-				ta[0].match(/SENSOR_MOISTURE/) ||
-				ta[0].match(/SENSOR_DRYING_RATE/) )
-		{
-			mode = ta[0];
-			st=i+1;
-		}
-		else 
-		{
-			if(!ta[1])
-			{
-				continue;
-			}
-
-			dateArr   = ta[0].split("-");
-			var day   = dateArr[2];
-			var month = dateArr[1];
-			var year  = dateArr[0];
-
-			var hashDate = hashStr(year.toString(), month.toString(), day.toString());
-
-			la = ta[1].split(",");
-
-			if(mode == "WEATHER")
-			{					
-				// (0-"min_temp_f", 1-"avg_temp_f", 2-"max_temp_f", 3-"dew_point_f",
-				// 4-"humidity_pct", 5-"pressure_in", 6-"wind_speed_mph",
-				// 7-"max_wind_speed_mph", 8-"max_gust_speeed", 9-"wind_dir_deg",
-				// 10-"precipitation_in", 11-"cloud_cover_pct" );
-				// 12 - weather icon string
-
-				tempHistory[hashDate]      = useMetric ? F2C(la[2]) : la[2];
-				humidityHistory[hashDate]  = la[4];
-				windSpeedHistory[hashDate] = useMetric ? M2Km(la[4]) : la[4];
-				rainHistory[hashDate]      = useMetric ? In2Cm(la[4]) : la[4];
-				iconHistory[hashDate]      = la[12];
-			}
-			else if ( mode == "ZONE_RUN_TIMES" || mode == "ZONE_MOISTURE" || mode == "ZONE_DRYING_RATE" )
-			{
-				for (z=0; z<numZones; z++)
-				{
-					var hStr = z.toString() + '-' + hashDate;
-
-					val = parseFloat(la[z]);
-					if( isNaN(val) )
-					{
-						val = 0;
-					}
-
-					if(mode == "ZONE_RUN_TIMES")
-					{
-						zoneRuntimeHistory[hStr]  = val;
-					}
-
-					else if(mode == "ZONE_MOISTURE")
-					{
-						zoneMoistureHistory[hStr]  = val;
-					}						
-					else if(mode == "ZONE_DRYING_RATE")
-					{
-						zoneDryingRateHistory[hStr]  = val;
-					}			
-				}
-			}
-			else if (mode == "SENSOR_MOISTURE" || mode == "SENSOR_DRYING_RATE" )
-			{
-				for (s=0; s<numSensors; s++)
-				{
-					var hStr = s.toString() + '-' + hashDate;
-
-					val = parseFloat(la[s]);
-					if( isNaN(val) )
-					{
-						val = 0;
-					}
-
-					if(mode == "SENSOR_MOISTURE")
-					{
-						sensorMoistureHistory[hStr]  = val;
-					}						
-					else if(mode == "SENSOR_DRYING_RATE")
-					{
-						sensorDryingRateHistory[hStr]  = val;
-					}			
-				}
-
-			}
-		}
-
-	}
-
-	onServerLogRequestComplete();
+function processRuntimes(data)
+{
+  j = JSON.parse(data)
+  for (i=0; i<j.length; i++) {
+    date = new Date(j[i]["Date"])
+    runtimeHistory[date.toDateString()] = j[i]["Runtimes"]
+  }
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
@@ -482,20 +319,6 @@ function postSave()
 	writeStatus(str);
 }
 
-function getConfObject(_confString)
-{
-	var attrs = _confString.split(";");
-	var retObj = new Object();
-	var pArr = [];
-
-	for (var i=0; i<attrs.length-1; i++)
-	{
-		pArr = attrs[i].split(/:(.+)?/);
-		retObj[pArr[0].trim()] = pArr[1].trim();
-	} 
-
-	return retObj;
-}
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**

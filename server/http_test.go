@@ -17,12 +17,12 @@ func TestWundergroundParseForecast(t *testing.T) {
 	}
 
 	wcg := &WundergroundConditionsGetter{}
-	tF, pIn, err := wcg.ParseForecast(j)
+	icon, tF, pIn, err := wcg.ParseForecast(j)
 	if err != nil {
 		t.Errorf("ParseForecast: %v", err)
 	}
 
-	if tF != 91 || pIn != 0.0 {
+	if icon != "clear" || tF != 91 || pIn != 0.0 {
 		t.Errorf("ParseForecast: got %3.2f / %3.2f, want 60 / 0.0", tF, pIn)
 	}
 }
@@ -34,12 +34,12 @@ func TestWundergroundParseYesterday(t *testing.T) {
 	}
 
 	wcg := &WundergroundConditionsGetter{}
-	tF, pIn, err := wcg.ParseYesterday(j)
+	icon, tF, pIn, err := wcg.ParseYesterday(j)
 	if err != nil {
 		t.Errorf("ParseYesterday: %v", err)
 	}
 
-	if tF != 89 || pIn != 0.0 {
-		t.Errorf("ParseYesterday: got %3.2f / %3.2f, want 60 / 0.0", tF, pIn)
+	if icon != "partlycloudy" || tF != 89 || pIn != 0.0 {
+		t.Errorf("ParseYesterday: got %s / %3.2f / %3.2f, want clear / 89 / 0.0", icon, tF, pIn)
 	}
 }
