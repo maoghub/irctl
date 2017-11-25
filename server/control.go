@@ -25,6 +25,8 @@ type RunParams struct {
 	config string
 	// configPath is the file path of the config file.
 	configPath string
+	// dataLogPath is the root path of the data logs.
+	dataLogPath string
 	// dontSleep avoids sleep when set to true. Used for testing only.
 	dontSleep bool
 	// logDebug controls whether debug messages are logged.
@@ -124,20 +126,29 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 		return false, nil
 	}
 
+	dl := NewDataLogger(log, rparam.dataLogPath, sc.NumZones())
 	// Check conditions.
-	tempYesterday, precipYesterday, err := cg.GetYesterday(sc.GlobalConfig.AirportCode)
+	iconYesterday, tempYesterday, precipYesterday, err := cg.GetYesterday(sc.GlobalConfig.AirportCode)
 	if err != nil {
 		return false, err
 	}
-	tempForecast, precipForecast, err := cg.GetForecast(sc.GlobalConfig.AirportCode)
+	if err := dl.WriteConditions(now, iconYesterday, tempYesterday, precipYesterday); err != nil {
+		er.Report(err)
+	}
+	iconForecast, tempForecast, precipForecast, err := cg.GetForecast(sc.GlobalConfig.AirportCode)
 	if err != nil {
 		return false, err
 	}
-	log.Infof("Yesterday: %3.1f degF / %1.1f In, Forecast:  %3.1f degF / %1.1f In", tempYesterday, precipYesterday, tempForecast, precipForecast)
+	if err := dl.WriteConditions(yesterday(now), iconForecast, tempForecast, precipForecast); err != nil {
+		er.Report(err)
+	}
+	log.Infof("Yesterday: %s / %3.1f degF / %1.1f In, Forecast: %s /  %3.1f degF / %1.1f In",
+		iconYesterday, tempYesterday, precipYesterday, iconForecast, tempForecast, precipForecast)
 
 	// Zones are in map and not all zones may be defined. Iterate in ascending
 	// order for deterministic behavior. If any zone has errors, skip over
 	// remaining actions for that zone and continue to the next zone.
+	runtimes := make([]float64, sc.NumZones())
 	for znum := 0; znum < sc.NumZones(); znum++ {
 		z, ok := sc.ZoneConfigs[znum]
 		if !ok {
@@ -195,6 +206,7 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 					er.Report(err)
 					continue
 				}
+				runtimes[znum] = runDuration.Minutes()			
 			}
 			if err := updateStateAndVWC(zc, kv, znum, float64(z.MaxVWC)); err != nil {
 				er.Report(err)
@@ -202,6 +214,10 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 			}
 			log.Infof("Set VWC to max %3.2f after run.", z.MaxVWC)
 		}
+	}
+	
+	if err := dl.WriteRuntimes(now, runtimes); err != nil {
+		return true, er.Report(err)
 	}
 
 	if err := kv.Set(LastRunDateKey, now.Format(dateFormat)); err != nil {
@@ -349,4 +365,8 @@ func tooEarly(now, runtime time.Time) bool {
 	rT := rH*3600 + rM*60 + rS
 
 	return nT < rT
+}
+
+func yesterday(t time.Time) time.Time {
+	return t.AddDate(0, 0, -1)
 }

@@ -13,10 +13,10 @@ import (
 type ConditionsGetter interface {
 	// GetForecast reports the forecast for the coming day for the given
 	// airportCode.
-	GetForecast(airportCode string) (tempF float64, precipIn float64, err error)
+	GetForecast(airportCode string) (icon string, tempF float64, precipIn float64, err error)
 	// GetForecast reports the conditions for the previous day for the given
 	// airportCode.
-	GetYesterday(airportCode string) (tempF float64, precipIn float64, err error)
+	GetYesterday(airportCode string) (icon string, tempF float64, precipIn float64, err error)
 }
 
 // WundergroundConditionsGetter is a ConditionsGetter for Wunderground.
@@ -40,47 +40,54 @@ func NewWundergroundConditionsGetter() *WundergroundConditionsGetter {
 }
 
 // GetForecast implements ConditionsGetter#GetForecast.
-func (w *WundergroundConditionsGetter) GetForecast(airportCode string) (tempF float64, precipIn float64, err error) {
+func (w *WundergroundConditionsGetter) GetForecast(airportCode string) (icon string, tempF float64, precipIn float64, err error) {
 	resp, err := w.getURL(w.urlBase + "forecast/q/" + airportCode + ".json")
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("GetForecast: %s", err)
+		return "", 0.0, 0.0, fmt.Errorf("GetForecast: %s", err)
 	}
 	return w.ParseForecast(resp)
 }
 
 // GetYesterday implements ConditionsGetter#GetYesterday.
-func (w *WundergroundConditionsGetter) GetYesterday(airportCode string) (tempF float64, precipIn float64, err error) {
+func (w *WundergroundConditionsGetter) GetYesterday(airportCode string) (icon string, tempF float64, precipIn float64, err error) {
 	resp, err := w.getURL(w.urlBase + "yesterday/q/" + airportCode + ".json")
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("GetYesterday: %s", err)
+		return "", 0.0, 0.0, fmt.Errorf("GetYesterday: %s", err)
 	}
 	return w.ParseYesterday(resp)
 }
 
 // ParseForecast parses a forecast response from Wunderground.
-func (w *WundergroundConditionsGetter) ParseForecast(resp []byte) (tempF float64, precipIn float64, err error) {
+func (w *WundergroundConditionsGetter) ParseForecast(resp []byte) (icon string, tempF float64, precipIn float64, err error) {
 	var jt map[string]interface{}
 	if err := json.Unmarshal(resp, &jt); err != nil {
-		return 0.0, 0.0, err
+		return "", 0.0, 0.0, err
+	}
+
+	ici, err := w.getPath(jt, "forecast/simpleforecast/forecastday/0/icon")
+	if err != nil {
+		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
 	}
 
 	ti, err := w.getPath(jt, "forecast/simpleforecast/forecastday/0/high/fahrenheit")
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
+		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
 	}
 
 	pi, err := w.getPath(jt, "forecast/simpleforecast/forecastday/0/qpf_allday/in")
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
+		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
 	}
+
+	icon = ici.(string)
 
 	tempF, err = strIfToFloat32(ti)
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("tempF: %s", err)
+		return "", 0.0, 0.0, fmt.Errorf("tempF: %s", err)
 	}
 
 	if _, ok := pi.(float64); !ok {
-		return 0.0, 0.0, fmt.Errorf("precipIn value has type %T, expect float64", pi)
+		return "", 0.0, 0.0, fmt.Errorf("precipIn value has type %T, expect float64", pi)
 	}
 	precipIn = float64(pi.(float64))
 
@@ -88,30 +95,44 @@ func (w *WundergroundConditionsGetter) ParseForecast(resp []byte) (tempF float64
 }
 
 // ParseForecast parses a yesterday response from Wunderground.
-func (w *WundergroundConditionsGetter) ParseYesterday(resp []byte) (tempF float64, precipIn float64, err error) {
+func (w *WundergroundConditionsGetter) ParseYesterday(resp []byte) (icon string, tempF float64, precipIn float64, err error) {
 	var jt map[string]interface{}
 	if err := json.Unmarshal(resp, &jt); err != nil {
-		return 0.0, 0.0, err
+		return "", 0.0, 0.0, err
 	}
+
+	obsi, err := w.getPath(jt, "history/observations")
+	if err != nil {
+		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
+	}
+	obs, ok := obsi.([]interface{})
+	if !ok {
+		return "", 0.0, 0.0, fmt.Errorf("bad observations array: \n%s\n", string(resp))
+	}
+	icon, err = w.getSummaryIcon(obs)
+	if err != nil {
+		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
+	}
+
 
 	ti, err := w.getPath(jt, "history/dailysummary/0/maxtempi")
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
+		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
 	}
 
 	pi, err := w.getPath(jt, "history/dailysummary/0/precipi")
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
+		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
 	}
 
 	tempF, err = strIfToFloat32(ti)
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("tempF: %s", err)
+		return "", 0.0, 0.0, fmt.Errorf("tempF: %s", err)
 	}
 
 	precipIn, err = strIfToFloat32(pi)
 	if err != nil {
-		return 0.0, 0.0, fmt.Errorf("precipIn: %s", err)
+		return "", 0.0, 0.0, fmt.Errorf("precipIn: %s", err)
 	}
 
 	return
@@ -176,3 +197,35 @@ func strIfToFloat32(si interface{}) (float64, error) {
 
 	return float64(f64), nil
 }
+
+// getSummaryIcon returns the most common icon in the set of observations arr.
+// Each err member must map a map[string]interface{} with key "icon" present.
+func (w *WundergroundConditionsGetter) getSummaryIcon(arr []interface{}) (string, error) {
+	m := make(map[string]int)
+	for _, oi := range arr {
+		o := oi.(map[string]interface{})
+		ici, err := w.getPath(o, "icon")
+		if err != nil {
+			return "", fmt.Errorf("bad observation: \n%v\n", o)
+		}
+		m[ici.(string)] = m[ici.(string)] + 1
+	}
+	return stringMapMode(m), nil	
+}
+
+// stringMapMode returns the most often occurring key in m, where the map value
+// is the number of occurrences of the key.
+func stringMapMode(m map[string]int) string {
+	maxK := ""
+	maxCnt := -1
+	
+	for k, cnt := range m {
+		if cnt > maxCnt {
+			maxK = k
+			maxCnt = cnt
+		}
+	}
+	
+	return maxK
+}
+

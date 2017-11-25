@@ -1,8 +1,7 @@
 package control
 
 import (
-	"encoding/json"
-	"fmt"
+	//"encoding/json"
 	"reflect"
 	"testing"
 	"time"
@@ -184,10 +183,10 @@ ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
 		t.Fatalf("ReadSystemConfig: got:\n%s\n\n, want:\n%s\n", pretty.Sprint(got), pretty.Sprint(want))
 	}
 
+/*	
 	j, err := json.Marshal(want)//json.MarshalIndent(want, "", "  ")
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(string(j))
-
+	*/
 }
