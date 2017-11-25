@@ -11,27 +11,10 @@ import (
 const (
 	maxZoneNum = 8
 	maxRunMins = 90
+	
+	wwwRoot = "I:/github/irctl/www"
 )
 
-func runRain8Command(num int, on bool) error {
-	onStr := "off"
-	if on {
-		onStr = "on"
-	}
-	cmdStr := fmt.Sprintf("/usr/local/bin/Rain8Net -v -d \"/dev/ttyUSB0\" -c %d -u 1 -z %s 2>&1", num, onStr)
-	outB, err := exec.Command(cmdStr).Output()
-	if err != nil {
-		return err
-	}
-	out := string(outB)
-	switch {
-	case strings.Contains(out, "OK"):
-		return nil
-	case strings.Contains(out, "FAIL"):
-		return fmt.Errorf("%s retured FAIL", cmdStr)
-	}
-	return fmt.Errorf("%s retured error: %s", cmdStr, err)
-}
 
 func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 	numStr := r.FormValue("num")
@@ -72,7 +55,7 @@ func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fs := http.FileServer(http.Dir("/Users/sarahkim/Documents/code/irr-old-port/www/"))
+	fs := http.FileServer(http.Dir(wwwRoot))
 
 	http.Handle("/", fs)
 	http.HandleFunc("/runzone", runzoneHandler)
