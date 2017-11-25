@@ -2,6 +2,7 @@ package control
 
 import (
 	"fmt"
+	"os/exec"
 	"time"
 )
 
@@ -13,8 +14,19 @@ type ValveController interface {
 	CloseValve(n int) error
 }
 
+func NewRain8ValveController() *Rain8ValveController {
+	return &Rain8ValveController{}
+}
+
 type Rain8ValveController struct {
-	
+}
+
+func (*Rain8ValveController) OpenValve(n int) error {
+	return runRain8Command(n, true)
+}
+
+func (*Rain8ValveController) CloseValve(n int) error {
+	return runRain8Command(n, false)
 }
 
 func runRain8Command(num int, on bool) error {
