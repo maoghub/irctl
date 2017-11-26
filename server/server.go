@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	
-	"../valve"
+
+	"irctl/server/control"
 )
 
 const (
@@ -17,59 +17,66 @@ const (
 )
 
 var (
-	rain8Ctl *Rain8ValveController
+	valveController control.ValveController
+	log      control.Logger
 )
+
+func httpError(w http.ResponseWriter, r *http.Request, msg string, status int) {
+	log.Errorf("%s: %s", r.URL.String(), msg)
+	http.Error(w, msg, http.StatusBadRequest)
+}
 
 func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 	numStr := r.FormValue("num")
 	if numStr == "" {
-		http.Error(w, "num parameter not specified", http.StatusBadRequest)
+		httpError(w, r, "num parameter not specified", http.StatusBadRequest)
 		return
 	}
 	minsStr := r.FormValue("mins")
 	if minsStr == "" {
-		http.Error(w, "mins parameter not specified", http.StatusBadRequest)
+		httpError(w, r, "mins parameter not specified", http.StatusBadRequest)
 		return
 	}
 
 	num, err := strconv.ParseInt(numStr, 10, 32)
 	if err != nil {
-		http.Error(w, "num: "+err.Error(), http.StatusInternalServerError)
+		httpError(w, r, "num: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if num < 0 || num > maxZoneNum {
-		http.Error(w, fmt.Sprintf("num value %d out of range [0,%d]", num, maxZoneNum), http.StatusBadRequest)
+		httpError(w, r, fmt.Sprintf("num value %d out of range [0,%d]", num, maxZoneNum), http.StatusBadRequest)
 		return
 	}
 	mins, err := strconv.ParseInt(minsStr, 10, 32)
 	if err != nil {
-		http.Error(w, "mins: "+err.Error(), http.StatusInternalServerError)
+		httpError(w, r, "mins: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if mins < 0 || mins > maxRunMins {
-		http.Error(w, fmt.Sprintf("mins value %d out of range [0,%d]", num, maxRunMins), http.StatusBadRequest)
+		httpError(w, r, fmt.Sprintf("mins value %d out of range [0,%d]", num, maxRunMins), http.StatusBadRequest)
 		return
 	}
 
-	err = rain8Ctl.OpenValve(num)
+	err = valveController.OpenValve(int(num))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	
-	time.Sleep(mins * time.Minute)
-	
-	err = rain8Ctl.CloseValve(num)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpError(w, r, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprintf(w, "<div>zone %d for %d mins: SUCCESS</div>", num, mins)
+	time.Sleep(time.Duration(mins) * time.Minute)
+
+	err = valveController.CloseValve(int(num))
+	if err != nil {
+		httpError(w, r, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(w, "<div>Successfully ran zone %d for %d mins.</div>", num, mins)
 }
 
 func main() {
-	rain8Ctl = NewRain8ValveController()
+	log = &control.ConsoleLogger{}
+	valveController = control.NewConsoleValveController(log)
 
 	fs := http.FileServer(http.Dir(wwwRoot))
 
