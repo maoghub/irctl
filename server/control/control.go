@@ -28,8 +28,8 @@ type RunParams struct {
 	dataLogPath string
 	// dontSleep avoids sleep when set to true. Used for testing only.
 	dontSleep bool
-	// logDebug controls whether debug messages are logged.
-	logDebug bool
+	// logLevel is the log LogVerbosity level.
+	logLevel LogVerbosity
 }
 
 const (
@@ -70,10 +70,10 @@ func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, 
 //   er to report errors
 //   log to log messages
 func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, now time.Time) (bool, error) {
-	log.Debugf(rparam.logDebug, "RunOnce at time %s", now.Format("Mon 2 Jan 2006 15:04"))
+	log.Debugf("RunOnce at time %s", now.Format("Mon 2 Jan 2006 15:04"))
 
 	if alreadyRan, err := checkIfRanToday(kv, log, now); alreadyRan || err != nil {
-		log.Debugf(rparam.logDebug, "Already ran today, exiting.")
+		log.Debugf("Already ran today, exiting.")
 		return alreadyRan, err
 	}
 
@@ -89,7 +89,7 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 
 	// If current time is before scheduled run time, exit.
 	if tooEarly(now, sc.GlobalConfig.RunTimeAM) {
-		log.Debugf(rparam.logDebug, "Current time %s is before scheduled time of %s, exiting.", now.Format(timeOfDayFormat), sc.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
+		log.Debugf("Current time %s is before scheduled time of %s, exiting.", now.Format(timeOfDayFormat), sc.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
 		return false, nil
 	}
 

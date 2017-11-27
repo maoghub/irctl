@@ -21,7 +21,7 @@ type TestLogger struct {
 	log []string
 }
 
-func (tl *TestLogger) Debugf(doLog bool, s string, p ...interface{}) {
+func (tl *TestLogger) Debugf(s string, p ...interface{}) {
 	tl.log = append(tl.log, "DEBUG: "+fmt.Sprintf(s, p...))
 }
 
@@ -218,7 +218,7 @@ ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
 		kv.Set(LastZoneResetDateKey, now.Format(dateFormat))
 		setState(zc, tt.startVWC, tt.startState)
 
-		didRun, err := RunOnce(&RunParams{config: testConfig, logDebug: true, dontSleep: true}, kv, tcg, zc, er, log, now)
+		didRun, err := RunOnce(&RunParams{config: testConfig, logLevel:Debug, dontSleep: true}, kv, tcg, zc, er, log, now)
 		t.Log(tt.desc + "\n" + log.Contents())
 
 		if got, want := didRun, tt.wantDidRun; got != want {

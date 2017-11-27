@@ -6,55 +6,66 @@ import (
 	"github.com/golang/glog"
 )
 
+type LogVerbosity int
+
+const (
+	Error LogVerbosity = iota
+	Info
+	Debug
+)
+
 // Logger is a logger.
 type Logger interface {
-	// Debugf logs the message with DEBUG level of severity if doLog is set to
-	// to true, or logs nothing otherwise.
-	Debugf(doLog bool, s string, p ...interface{})
-	// Infof logs the message with INFO level of severity.
+	// Debugf logs the message with DEBUG level of LogVerbosity.
+	Debugf(s string, p ...interface{})
+	// Infof logs the message with INFO level of LogVerbosity.
 	Infof(s string, p ...interface{})
-	// Errorf logs the message with ERROR level of severity.
+	// Errorf logs the message with ERROR level of LogVerbosity.
 	Errorf(s string, p ...interface{})
 }
 
 // SystemLogger is a Logger that uses glog system log.
-type SystemLogger struct{}
+type SystemLogger struct {
+	LogVerbosity LogVerbosity
+}
 
 // Debugf implements Logger#Debugf.
-func (*SystemLogger) Debugf(doLog bool, s string, p ...interface{}) {
-	if !doLog {
+func (l *SystemLogger) Debugf(s string, p ...interface{}) {
+	if l.LogVerbosity < Debug {
 		return
 	}
-	glog.Infof(s, p...)
+	glog.Infof("DEBUG: " + s, p...)
 }
 
 // Infof implements Logger#Infof.
 func (*SystemLogger) Infof(s string, p ...interface{}) {
-	glog.Infof(s, p...)
+	glog.Infof("INFO: " + s, p...)
 }
 
 // Errorf mplements Logger#Errorf.
 func (*SystemLogger) Errorf(s string, p ...interface{}) {
-	glog.Errorf(s, p...)
+	glog.Errorf("ERROR: " + s, p...)
 }
 
 // ConsoleLogger is a Logger that uses the console.
-type ConsoleLogger struct{}
+type ConsoleLogger struct {
+	LogVerbosity LogVerbosity
+}
 
 // Debugf implements Logger#Debugf.
-func (*ConsoleLogger) Debugf(doLog bool, s string, p ...interface{}) {
-	if !doLog {
+func (l *ConsoleLogger) Debugf(s string, p ...interface{}) {
+	if l.LogVerbosity < Debug {
 		return
 	}
-	fmt.Printf(s + "\n", p...)
+	fmt.Printf("DEBUG: " + s+"\n", p...)
 }
 
 // Infof implements Logger#Infof.
 func (*ConsoleLogger) Infof(s string, p ...interface{}) {
-	fmt.Printf(s + "\n", p...)
+	fmt.Printf("INFO: " + s+"\n", p...)
 }
 
 // Errorf mplements Logger#Errorf.
 func (*ConsoleLogger) Errorf(s string, p ...interface{}) {
-	fmt.Printf(s + "\n", p...)
+	fmt.Printf("ERROR: " + s+"\n", p...)
 }

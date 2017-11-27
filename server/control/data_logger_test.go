@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	testPath = "/usr/local/google/home/mostrowski/temp/logger"
+	testPath = "../temp"
 )
 
 func TestConditions(t *testing.T) {
@@ -37,7 +37,10 @@ func TestConditions(t *testing.T) {
 		}
 	}
 
-	got := l.ReadConditions(want[0].Date, want[len(want)-1].Date)
+	got, errs := l.ReadConditions(want[0].Date, want[len(want)-1].Date)
+	if errs != nil {
+		t.Fatal(errs)
+	}
 
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got: %v, want: %v", got, want)
@@ -66,9 +69,9 @@ func TestRuntimes(t *testing.T) {
 		}
 	}
 
-	got, err := l.ReadRuntimes(want[0].Date, want[len(want)-1].Date)
-	if err != nil {
-		t.Fatal(err)
+	got, errs := l.ReadRuntimes(want[0].Date, want[len(want)-1].Date)
+	if errs != nil {
+		t.Fatal(errs)
 	}
 
 	if !reflect.DeepEqual(got, want) {

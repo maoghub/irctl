@@ -59,31 +59,36 @@ func (l *DataLogger) WriteConditions(t time.Time, iconYesterday string, tempYest
 	return nil
 }
 
-func (l *DataLogger) ReadConditions(from, to time.Time) []*ConditionsEntry {
+func (l *DataLogger) ReadConditions(from, to time.Time) ([]*ConditionsEntry, Errors) {
+	l.log.Debugf("ReadConditions: %s to %s", dateStr(from), dateStr(to))
 	now := dateOnly(from)
 	after := dateOnly(to.AddDate(0, 0, 1))
 	var out []*ConditionsEntry
+	var errs Errors
 	for now.Before(after) {
-		c := l.readConditionsOneDay(now)
-		out = append(out, c)
+		c, err := l.readConditionsOneDay(now)
+		if err != nil {
+			errs = AppendErr(errs, err)
+		} else {
+			out = append(out, c)
+		}
 		now = now.AddDate(0, 0, 1)
 	}
-	return out
+	return out, errs
 }
 
-func (l *DataLogger) readConditionsOneDay(t time.Time) *ConditionsEntry {
+func (l *DataLogger) readConditionsOneDay(t time.Time) (*ConditionsEntry, error) {
+	l.log.Debugf("readConditionsOneDay: %s", dateStr(t))
 	j, err := ioutil.ReadFile(l.conditionsFilePath(t))
 	if err != nil {
-		l.log.Errorf(err.Error())
-		return &ConditionsEntry{}
+		return nil, fmt.Errorf("ReadFile: %s", err)
 	}
 
 	ce := &ConditionsEntry{}
 	if err := json.Unmarshal(j, ce); err != nil {
-		l.log.Errorf(err.Error())
-		return &ConditionsEntry{}
+		return nil, fmt.Errorf("Unmarshal: %s : %s", j, err)
 	}
-	return ce
+	return ce, nil
 }
 
 func (l *DataLogger) conditionsFilePath(t time.Time) string {
@@ -111,30 +116,32 @@ func (l *DataLogger) WriteRuntimes(t time.Time, runtimes []float64) error {
 	return nil
 }
 
-func (l *DataLogger) ReadRuntimes(from, to time.Time) ([]*RuntimesEntry, error) {
+func (l *DataLogger) ReadRuntimes(from, to time.Time) ([]*RuntimesEntry, Errors) {
 	now := dateOnly(from)
 	after := dateOnly(to.AddDate(0, 0, 1))
 	var out []*RuntimesEntry
+	var errs Errors
 	for now.Before(after) {
 		r, err := l.readRuntimesOneDay(now)
 		if err != nil {
-			return nil, err
+			errs = AppendErr(errs, err)
+		} else {
+			out = append(out, r)
 		}
-		out = append(out, r)
 		now = now.AddDate(0, 0, 1)
 	}
-	return out, nil
+	return out, errs
 }
 
 func (l *DataLogger) readRuntimesOneDay(t time.Time) (*RuntimesEntry, error) {
 	j, err := ioutil.ReadFile(l.runtimesFilePath(t))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ReadFile: %s", err)
 	}
 
 	var rts *RuntimesEntry
 	if err := json.Unmarshal(j, &rts); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Unmarshal: %s : %s", j, err)
 	}
 	return rts, nil
 }
@@ -144,8 +151,6 @@ func (l *DataLogger) runtimesFilePath(t time.Time) string {
 }
 
 func createDirIfMissing(filePath string) error {
-	// DEBUG REMOVE
-	return nil
 	dirPath, _ := filepath.Split(filePath)
 	fmt.Printf("making dir %s\n", dirPath)
 	return os.MkdirAll(dirPath, 0777)
@@ -153,4 +158,8 @@ func createDirIfMissing(filePath string) error {
 
 func dateOnly(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func dateStr(t time.Time) string {
+	return fmt.Sprintf("%d-%d-%d", t.Year(), t.Month(), t.Day())
 }
