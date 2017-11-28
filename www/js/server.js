@@ -65,19 +65,17 @@ function getConfFile()
 		success:  function(data){
 			processConfFileResponse(data);
 		}});
-
-
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn processConfFileResponse
+ * @fn processConfFile
  * 
  * @brief Handler for getConfFile
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function processConfFileResponse(data) {
+function processConfFile(data) {
 
 	confStr = data;
 	conf = JSON.parse(confStr);
@@ -129,22 +127,21 @@ function parseZoneConfigs(tree) {
 	for ( var num in zconfs) {
 		ret = getPathValue(zconfs, num)
 		zconf = ret.val
-
-		// "MaxVWC":20,"MinVWC":10,"RunTimeMultiplier":1,"ZoneETRate":1,"DepthIn":8}
-		setDiv('.ZONE[data-object_name="name"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "Name"));
-		// $('.ZONE[data-object_name="run"][data-array-index="' + num +
-		// '"]').attr('checked', getPathOrLogErr(zconf, "Enabled" ?
-		// "checked" : ""));
-		// $('.ZONE[data-object_name="rain"][data-array-index="' + num +
-		// '"]').attr('checked', getPathOrLogErr(zconf, "GetsRain" ?
-		// "checked" : ""));
-		setDiv('.ZONE[data-object_name="soil_name"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "SoilConfig.Name"));
-		setDiv('.ZONE[data-object_name="min_moist_pct"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "MinVWC"));
-		setDiv('.ZONE[data-object_name="max_moist_pct"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "MaxVWC"));
-		setDiv('.ZONE[data-object_name="run_time_mult"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "RunTimeMultiplier"));
-		setDiv('.ZONE[data-object_name="root_depth"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "DepthIn"));
-		setDiv('.ZONE[data-object_name="et_rate"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "ZoneETRate"));
-
+		
+		// Set some defaults so that users of zone confs can use object attributes
+		// without checking for null.
+    SetDefaultIfMissing(zconf, "Name", "##MISSING##")
+    SetDefaultIfMissing(zconf, "Number", parseInt(num))
+    SetDefaultIfMissing(zconf, "Enabled", false)
+    SetDefaultIfMissing(zconf, "GetsRain", false)
+    SetDefaultIfMissing(zconf, "DepthIn", 0)
+    SetDefaultIfMissing(zconf, "ZoneETRate", 10)
+    SetDefaultIfMissing(zconf, "RunTimeMultiplier", 1)
+    SetDefaultIfMissing(zconf, "SoilConfig.Name", "##MISSING##")
+    SetDefaultIfMissing(zconf, "MinVWC", 0)
+    SetDefaultIfMissing(zconf, "MaxVWC", 100)
+	
+		zoneConf[parseInt(num)] = zconf
 	}
 }
 
@@ -196,6 +193,11 @@ function setDiv(name, val) {
 	log("Setting " + name + ":" + val);
 }
 
+function setEnabled(name, on) {
+// $(name).attr('checked', on ? "checked" : "");
+  log("Setting enabled " + name + ":" + on);
+}
+
 function getPathOrLogErr(tree, path) {
 	ret = getPathValue(tree, path);
 	if (ret.err) {
@@ -203,6 +205,20 @@ function getPathOrLogErr(tree, path) {
 		return ""
 	}
 	return ret.val
+}
+
+function SetDefaultIfMissing(zconf, path, defaultVal) {
+  if (getPathOrLogErr(zconf, path) == "") {
+    pv = path.split(".");
+    cur = zconf
+    for (i = 0; i < pv.length; i++) {
+      cur = cur[pv[i]]
+      if (!cur) {
+        log("could not find path " + path + " in tree at element " + pv[i])
+      }
+    }
+    cur = defaultVal
+  }
 }
 
 function getPathValue(tree, path) {
@@ -213,7 +229,7 @@ function getPathValue(tree, path) {
 		if (!cur) {
 			return {
 				val: "",
-				err: "could not find path " + path + "in tree at element " + pv[i]
+				err: "could not find path " + path + " in tree at element " + pv[i]
 			};
 		}
 	}
@@ -252,11 +268,11 @@ function parseResponseFile()
 
 function getServerLogData(_fromDate, _toDate) 
 {
-  dateRange = "from_date="+DateString(_fromDate)+"&to_date="+DateString(_toDate);
-  url = "http://"+server_ip+"/cmd/GetConditionsLog?" + dateRange;
+  dateRange = "from="+DateString(_fromDate)+"&to="+DateString(_toDate);
+  url = "http://"+server_ip+"/conditions?" + dateRange;
 	makeRequest(url, processConditions);
 
-	url = "http://"+server_ip+"/cmd/GetRuntimeLog?" + dateRange;
+	url = "http://"+server_ip+"/runtimes?" + dateRange;
   makeRequest(url, processRuntimes);
 }
 
@@ -278,6 +294,7 @@ function processConditions(data)
     tempHistory[dateStr] = j[i]["Temp"]
     precipHistory[dateStr] = j[i]["Precip"]
   }
+  displayScheduleTable()
 }
 
 function processRuntimes(data)
@@ -287,6 +304,7 @@ function processRuntimes(data)
     date = new Date(j[i]["Date"])
     runtimeHistory[date.toDateString()] = j[i]["Runtimes"]
   }
+  displayScheduleTable()
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
