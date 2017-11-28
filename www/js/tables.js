@@ -78,14 +78,14 @@ function displayScheduleTable() {
       oddStr = 'class="odd"';
     }
     tableHTML += '	    <tr ' + oddStr + '> \r\n';
-    tableHTML += '	      <td><div class="zone-name selectable" value="' + z.toString() + '">' + zoneConf[z].name + '</div></td> \r\n';
+    tableHTML += '	      <td><div class="zone-name selectable" value="' + z.toString() + '">' + zoneConf[z].Name + '</div></td> \r\n';
 
     for (i = 0; i < numDays; i++) {
       d.setTime(toDate.getTime());
       d.setDate(toDate.getDate() - (globalConf.historyDays - 1) + i);
       var dstr = DateString(d);
 
-      var runTime = Math.round(runtimeHistory[dstr]));
+      var runTime = Math.round(runtimeHistory[dstr][z]));
 
       tableHTML += '	      <td data-table-col="' + i + '" class="schedule-entry">' + runTime + '</td> \r\n';
     }
@@ -129,52 +129,9 @@ function displaySystemSettingsTable() {
 }
 
 function updateSystemSettingsTable() {
-  $('#climate_zone_text').val(globalConf.climateZone);
   $('#weather_station_text').val(globalConf.weatherStation);
-
   $("#watering_time_spinner").timespinner();
   $("#watering_time_spinner").timespinner('value', globalConf.runTime1);
-
-  $('#email_settings_table_select').click(function(event) {
-    updateEmailSettingsTable();
-    showMenu("email_settings_table");
-  });
-
-  $('#display_settings_table_select').click(function(event) {
-    updateDisplaySettingsTable();
-    showMenu("display_settings_table");
-  });
-}
-
-// /////////////////////// Email settings table
-// //////////////////////////////////////////////////////////////////
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn updateEmailSettingsTable
- * @brief Populate updated values into email settings table
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function updateEmailSettingsTable() {
-  $('#email_address_text').val(globalConf.email);
-  $('#send_summary_text').html("Send summary: " + globalConf.sendSummary);
-
-  initSecondLevelMenus();
-}
-
-// /////////////////////// Display settings table
-// ////////////////////////////////////////////////////////////////
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn updateDisplaySettingsTable
- * @brief Populate updated values into display settings table
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function updateDisplaySettingsTable() {
-  initSecondLevelMenus();
 }
 
 // /////////////////////// Zone config table
@@ -186,73 +143,32 @@ function updateDisplaySettingsTable() {
  * @brief Generate the HTML for the zone config table, using the selected zone
  */
 /*-------------------------------------------------------------------------------------------------------------*/
+/*
+setDiv('.ZONE[data-object_name="soil_name"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "SoilConfig.Name"));
+setDiv('.ZONE[data-object_name="et_rate"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "ZoneETRate"));
+
+setEnabled('.ZONE[data-object_name="run"][data-array-index="' + num + '"]'), getPathOrLogErr(zconf, "Enabled")
+setEnabled('.ZONE[data-object_name="rain"][data-array-index="' + num + '"]'), getPathOrLogErr(zconf, "GetsRain")
+*/
 
 function updateZoneConfigTable() {
-  var z = selectedZone;
+  var zconf = zoneConf[selectedZone];
 
-  $("#zone_config_name").html(zoneConf[z].name);
-  $("#zone_config_valve_num").html('Valve &nbsp ' + zoneConf[z].valveNum);
-  $("#zone_config_table").css('display', 'inline-block');
-  $("#wetness_value").html(zoneConf[z].wetnessPct + '%');
+  $("#zone_name").html(zconf.Name);
+  $("#zone_num").html('Valve &nbsp ' + zconf.Number);
+  setEnabled("#zone_enabled"), zconf.Enabled)
+  setEnabled("#zone_gets_rain"), zconf.GetsRain)
 
-  updatePlantTypesTable();
-  updateEnvironmentTable();
-
-  $('#plant_table_select').click(function(event) {
-    showMenu("plants_table");
-  });
-
-  $('#environment_table_select').click(function(event) {
-    showMenu("environment_table");
-  });
+  $("#zone_depth").html(zconf.DepthIn);
+  $("#zone_et_rate").html(zconf.ZoneETRate);
+  $("#zone_runtime_multiplier").html(zconf.RunTimeMultiplier);
+  
+  $("#zone_soil_name").html(zconf.SoilConfig.Name);
+  $("#zone_min_vwc").html(zconf.MinVWC);
+  $("#zone_max_vwc").html(zconf.MaxVWC);
+  
 }
 
-// /////////////////////// Environmant table
-// /////////////////////////////////////////////////////////////////////
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn updateEnvironmentTable
- * @brief Update the menu for the environment table
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function updateEnvironmentTable() {
-  var wetnessPct = parseInt(zoneConf[selectedZone].environment.wetness, 10);
-  var plantedIn = (zoneConf[selectedZone].environment.inPots == '1') ? 'pots' : 'the ground';
-  var receivesRain = (zoneConf[selectedZone].environment.getRain == '1') ? 'Receives rain' : 'Covered from rain';
-
-  $("#wetness_value1").html(dryVal(wetnessPct));
-  $("#wetness_value2").html(wetVal(wetnessPct));
-
-  $("#exposure_select").html($("#exposure_select").attr('data-preText') + zoneConf[selectedZone].environment.light);
-  $("#planted_in_select").html($("#planted_in_select").attr('data-preText') + plantedIn);
-  $("#soil_type_select").html($("#soil_type_select").attr('data-preText') + zoneConf[selectedZone].environment.soil);
-  $("#receives_rain_select").html(receivesRain);
-
-  $("#wetness_slider_div").slider({
-      min: -100,
-      max: 100,
-      step: 10,
-      value: wetnessPct,
-      slide: function(event, ui) {
-        var chVal = parseInt(ui.value, 10);
-        $("#wetness_value1").html(dryVal(chVal));
-        $("#wetness_value2").html(wetVal(chVal));
-        mustSave();
-      }
-  });
-
-  initSecondLevelMenus();
-}
-
-function wetVal(_pct) {
-  return (_pct > 0) ? ('+' + _pct + '%') : '';
-}
-
-function dryVal(_pct) {
-  return (_pct < 0) ? (_pct + '%') : '';
-}
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // /////////////////////// Table generation functions

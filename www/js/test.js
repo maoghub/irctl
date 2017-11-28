@@ -1,13 +1,7 @@
 window.onload = initAll()
 var logStr = ""
 
-function initAll() {
-  confStr = '{"GlobalConfig":{"RunTimeAM":"0000-01-01T09:00:00Z","RunTimePM":"0000-01-01T16:00:00Z","AirportCode":"KSJC"},"ZoneConfigs":{"0":{"Name":"zone 0","Number":0,"Enabled":true,"GetsRain":true,"SoilConfig":{"Name":"Loam","MaxVWC":40},"MaxVWC":20,"MinVWC":10,"RunTimeMultiplier":1,"ZoneETRate":1,"DepthIn":8},"1":{"Name":"zone 1","Number":1,"Enabled":true,"GetsRain":false,"SoilConfig":{"Name":"Clay","MaxVWC":50},"MaxVWC":21,"MinVWC":11,"RunTimeMultiplier":2,"ZoneETRate":2,"DepthIn":9},"2":{"Name":"zone 2","Number":2,"Enabled":false,"GetsRain":true,"SoilConfig":{"Name":"Sandy Loam","MaxVWC":30},"MaxVWC":22,"MinVWC":12,"RunTimeMultiplier":3,"ZoneETRate":3,"DepthIn":11}},"ETAlgorithmSimpleConfig":{"EtPctMap":{"R":[{"X1":-1e+99,"X2":50,"Y":25},{"X1":50,"X2":65,"Y":50},{"X1":65,"X2":75,"Y":75},{"X1":75,"X2":1e+99,"Y":100}]}},"SoilConfigMap":{"Clay":{"Name":"Clay","MaxVWC":50},"Loam":{"Name":"Loam","MaxVWC":40},"Sandy Loam":{"Name":"Sandy Loam","MaxVWC":30}}}';
-  err = parseConf(confStr);
-  if (err) {
-    emsg = err.message;
-  }
-}
+
 
 function parseConf(confStr) {
   conf = JSON.parse(confStr);
