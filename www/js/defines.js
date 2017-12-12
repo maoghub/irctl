@@ -6,7 +6,7 @@ var CRLF		= '\r\n';
 
 ///////////////////////// Display strings ///////////////////////////////////////////////////////////////////////
 
-var dateStr		= ["Sun", "Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+var dayNameStr		= ["Sun", "Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 var lightAmountImage    = ['light_0.png', 'light_1.png', 'light_2.png', 'light_3.png', 'light_4.png'];
 var monthAbbrevName     = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 var winternMonthMapping = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec','Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];

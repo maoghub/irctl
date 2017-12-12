@@ -7,8 +7,12 @@
 /*-------------------------------------------------------------------------------------------------------------*/
 
 function runTests() {
-	TestProcessRuntimes();
+	TestParseConf();
 	TestProcessConditions();
+	TestProcessRuntimes();
+	toDate.setFullYear(2017,10,26);
+	displayScheduleTable();
+	displayZoneConfigTable();
 }
 
 function TestParseConf() {
@@ -16,14 +20,13 @@ function TestParseConf() {
 	processConfFile(confStr);
 }
 
+function TestProcessConditions() {
+	testStr = '{"Conditions":[{"Date":"2017-11-20T00:00:00Z","Icon":"clear","Temp":20,"Precip":2},{"Date":"2017-11-21T00:00:00Z","Icon":"clear","Temp":21,"Precip":2.1},{"Date":"2017-11-22T00:00:00Z","Icon":"clear","Temp":22,"Precip":2.2},{"Date":"2017-11-23T00:00:00Z","Icon":"clear","Temp":23,"Precip":2.3},{"Date":"2017-11-24T00:00:00Z","Icon":"clear","Temp":24,"Precip":2.4},{"Date":"2017-11-25T00:00:00Z","Icon":"clear","Temp":25,"Precip":2.5},{"Date":"2017-11-26T00:00:00Z","Icon":"clear","Temp":26,"Precip":2.6},{"Date":"2017-11-27T00:00:00Z","Icon":"clear","Temp":27,"Precip":2.7}],"Errors":null}'
+	processConditions(testStr)
+}
+
 function TestProcessRuntimes() {
 	testStr = '{"Runtimes":[{"Date":"2017-11-20T00:00:00Z","Runtimes":[20,2,3,4]},{"Date":"2017-11-21T00:00:00Z","Runtimes":[21,2,3,4]},{"Date":"2017-11-22T00:00:00Z","Runtimes":[22,2,3,4]},{"Date":"2017-11-23T00:00:00Z","Runtimes":[23,2,3,4]},{"Date":"2017-11-24T00:00:00Z","Runtimes":[24,2,3,4]},{"Date":"2017-11-25T00:00:00Z","Runtimes":[25,2,3,4]},{"Date":"2017-11-26T00:00:00Z","Runtimes":[26,2,3,4]},{"Date":"2017-11-27T00:00:00Z","Runtimes":[27,2,3,4]}],"Errors":null}'
-	//testStr = '[{"Date":"0001-02-03T00:00:00Z","Runtimes":[1,2,3,4]},{"Date":"0001-02-04T00:00:00Z","Runtimes":[1.1,2.1,3.1,4.1]}]'
 	processRuntimes(testStr)
 }
 
-function TestProcessConditions() {
-	//testStr = '[{"Date":"0001-02-03T00:00:00Z","Icon":"test","Temp":42.42,"Precip":4.2},{"Date":"0001-02-04T00:00:00Z","Icon":"test2","Temp":43.43,"Precip":4.3}]'
-	testStr = '{"Conditions":[{"Date":"0001-02-20T00:00:00Z","Icon":"clear","Temp":20,"Precip":2},{"Date":"0001-02-21T00:00:00Z","Icon":"clear","Temp":21,"Precip":2.1},{"Date":"0001-02-22T00:00:00Z","Icon":"clear","Temp":22,"Precip":2.2},{"Date":"0001-02-23T00:00:00Z","Icon":"clear","Temp":23,"Precip":2.3},{"Date":"0001-02-24T00:00:00Z","Icon":"clear","Temp":24,"Precip":2.4},{"Date":"0001-02-25T00:00:00Z","Icon":"clear","Temp":25,"Precip":2.5},{"Date":"0001-02-26T00:00:00Z","Icon":"clear","Temp":26,"Precip":2.6},{"Date":"0001-02-27T00:00:00Z","Icon":"clear","Temp":27,"Precip":2.7}],"Errors":null}'
-	processConditions(testStr)
-}
