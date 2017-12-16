@@ -13,7 +13,6 @@ function runTests() {
 	toDate.setFullYear(2017,10,26);
 	displayScheduleTable();
 	//displayZoneConfigTable();
-	selectedZone = 1;
 	displayRunTable();
 	initAll();
 }

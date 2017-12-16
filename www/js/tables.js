@@ -244,7 +244,7 @@ function displayRunTable() {
 		tableHTML += '        <td>' + runTable[i].RunMins + ' </td> \r\n';
 		tableHTML += '        <td><button value="'
 				+ i.toString()
-				+ '" class="run-cancel-button button text-button" style="width: 80px;">Cancel</button></td> \r\n';
+				+ '" class="run-cancel-button text-button" style="width: 80px;">Cancel</button></td> \r\n';
 		tableHTML += '      </tr> \r\n';
 	}
 
@@ -329,15 +329,27 @@ function onRunCountdownComplete() {
 	$('#running_zone_countdown').countdown('destroy');
 
 	if (scheduledRuntimeSlots == 0) {
+		$('#running_zone_name').html("");
 		$('#run_table_div thead tr > td').css('background-color', '#fff');
+		$('#run_cancel_button_running').css('display', 'none');
+		running = false;
 		return;
 	}
 	startNextIfScheduled();
 }
 
 function onRunButtonClick() {
+	if (selectedZone == -1) {
+		alert("No zone selected.");
+		return;
+	}
 	zoneName = zoneConf[selectedZone].Name;
 	runMins = $('#runtime_mins_input').val();
+	rm = parseInt(runMins);
+	if (rm == 0 || isNaN(rm)) {
+		alert("Enter number of minutes to run.");
+		return;
+	}
 	if (!running) {
 		runZone(zoneName, runMins);
 		return;
@@ -347,10 +359,7 @@ function onRunButtonClick() {
 }
 
 function onRunCancelButtonRunningClick() {
-	$('#running_zone_name').html("");
-	$('#run_cancel_button_running').css('display', 'none');
-	$('#running_zone_countdown').countdown('destroy');
-	running = false;
+	onRunCountdownComplete();
 }
 
 function onRunCancelButtonClick() {

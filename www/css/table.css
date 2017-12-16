@@ -90,7 +90,7 @@ input.medium-font {
   text-align: left;
   color: #808080;
 }
-
+/*
 button.enabled-button {
   border: 1px solid #606060;
   background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
@@ -102,11 +102,17 @@ button.enabled-button:hover {
   background: #f7f4dd;
   box-shadow: 1px 1px 1px #888;
 }
-
+*/
 button.text-button {
   height: 40px;
-  font-size: 1.2em;
+  font-size: 14pt !important;
   text-align: center;
+  border-radius: 3px;
+}
+
+button.text-button:hover {
+  border: 1px solid #606060;
+  background: #f7f4dd;
 }
 
 /********************************************************************************** 
