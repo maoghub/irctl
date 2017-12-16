@@ -65,83 +65,90 @@ function getConfFile()
 		success:  function(data){
 			processConfFileResponse(data);
 		}});
+
+
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn processConfFile
+ * @fn processConfFileResponse
  * 
  * @brief Handler for getConfFile
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function processConfFile(data) {
+function processConfFileResponse(data) {
 
 	confStr = data;
 	conf = JSON.parse(confStr);
 
-	ret = getPathValue(conf, "GlobalConfig.AirportCode")
+	ret = getPathValue(conf, "GlobalConfig.AirportCode");
 	if (ret.err) {
-		return ret.err
+		return ret.err;
 	}
-	setDiv("airport_code", ret.val)
+	airportCode = ret.val;
 
-	runtimePath = "GlobalConfig.RunTimeAM"
-		ret = getPathValue(conf, runtimePath)
-		if (ret.err) {
-			return ret.err
-		}
+	runtimePath = "GlobalConfig.RunTimeAM";
+	ret = getPathValue(conf, runtimePath);
+	if (ret.err) {
+		return ret.err;
+	}
 
 	// expect format "0000-01-01T16:00:00Z"
-	tv = ret.val.split(":")
+	tv = ret.val.split(":");
 	if (tv.length != 3) {
-		return "bad time string for " + runtimePath + ":" + ret.val
+		return "bad time string for " + runtimePath + ":" + ret.val;
 	}
-	hrv = tv[0].split("T")
+	hrv = tv[0].split("T");
 	if (tv.length != 3) {
-		return "bad time string for " + runtimePath + ":" + ret.val
+		return "bad time string for " + runtimePath + ":" + ret.val;
 	}
 
-	setDiv("run_time_hr", hrv[1])
-	setDiv("run_time_min", tv[1])
+	runTime = hrv[1] + ":" + tv[1];
 
-	err = parseZoneConfigs(conf)
+	err = parseZoneConfigs(conf);
 	if (err) {
-		return err
+		return err;
 	}
 	err = parseAlgorithm(conf)
 	if (err) {
-		return err
+		return err;
 	}
 
+	globalConf = conf;
 }
 
 function parseZoneConfigs(tree) {
-	ret = getPathValue(tree, "ZoneConfigs")
+	ret = getPathValue(tree, "ZoneConfigs");
 	if (ret.err) {
-		return ret.err
+		return ret.err;
 	}
 
-	zconfs = ret.val
+	zconfs = ret.val;
 
 	for ( var num in zconfs) {
-		ret = getPathValue(zconfs, num)
-		zconf = ret.val
-		
-		// Set some defaults so that users of zone confs can use object attributes
+		ret = getPathValue(zconfs, num);
+		zconf = ret.val;
+
+		// Set some defaults so that users of zone confs can use object
+		// attributes
 		// without checking for null.
-    SetDefaultIfMissing(zconf, "Name", "##MISSING##")
-    SetDefaultIfMissing(zconf, "Number", parseInt(num))
-    SetDefaultIfMissing(zconf, "Enabled", false)
-    SetDefaultIfMissing(zconf, "GetsRain", false)
-    SetDefaultIfMissing(zconf, "DepthIn", 0)
-    SetDefaultIfMissing(zconf, "ZoneETRate", 10)
-    SetDefaultIfMissing(zconf, "RunTimeMultiplier", 1)
-    SetDefaultIfMissing(zconf, "SoilConfig.Name", "##MISSING##")
-    SetDefaultIfMissing(zconf, "MinVWC", 0)
-    SetDefaultIfMissing(zconf, "MaxVWC", 100)
-	
-		zoneConf[parseInt(num)] = zconf
+		SetDefaultIfMissing(zconf, "Name", "##MISSING##");
+		SetDefaultIfMissing(zconf, "Number", parseInt(num));
+		SetDefaultIfMissing(zconf, "Enabled", false);
+		SetDefaultIfMissing(zconf, "GetsRain", false);
+		SetDefaultIfMissing(zconf, "DepthIn", 0);
+		SetDefaultIfMissing(zconf, "ZoneETRate", 10);
+		SetDefaultIfMissing(zconf, "RunTimeMultiplier", 1);
+		SetDefaultIfMissing(zconf, "SoilConfig.Name", "##MISSING##");
+		SetDefaultIfMissing(zconf, "MinVWC", 0);
+		SetDefaultIfMissing(zconf, "MaxVWC", 100);
+
+		nz = parseInt(num);
+		zoneConf[nz] = zconf;
+		if (nz + 1 > numZones) {
+			numZones = nz + 1;
+		}
 	}
 }
 
@@ -151,38 +158,38 @@ function parseZoneConfigs(tree) {
 function parseAlgorithm(tree) {
 	ret = getPathValue(tree, "ETAlgorithmSimpleConfig.EtPctMap.R");
 	if (ret.err) {
-		return ret.err
+		return ret.err;
 	}
 
-	rs = ret.val
-	i = 0
-	for (var r in rs) {
-		x1r = getPathValue(rs[r], "X1")
+	rs = ret.val;
+	i = 0;
+	for ( var r in rs) {
+		x1r = getPathValue(rs[r], "X1");
 		if (x1r.err) {
-			return err
+			return err;
 		}
-		x2r = getPathValue(rs[r], "X2")
+		x2r = getPathValue(rs[r], "X2");
 		if (x2r.err) {
-			return err
+			return err;
 		}
-		yr = getPathValue(rs[r], "Y")
+		yr = getPathValue(rs[r], "Y");
 		if (yr.err) {
-			return err
+			return err;
 		}
-		x1 = x1r.val
-		x2 = x2r.val
-		y = yr.val
+		x1 = x1r.val;
+		x2 = x2r.val;
+		y = yr.val;
 
 		if (x1 <= -999) {
-			x1 = -999
+			x1 = -999;
 		}
 		if (x2 >= 999) {
-			x2 = 999
+			x2 = 999;
 		}
 
-		setDiv("temp_"+i+"_from", x1);
-		setDiv("temp_"+i+"_to", x2);
-		setDiv("temp_"+i+"_drying_pct", y);
+		setDiv("temp_" + i + "_from", x1);
+		setDiv("temp_" + i + "_to", x2);
+		setDiv("temp_" + i + "_drying_pct", y);
 
 		i++;
 	}
@@ -194,31 +201,32 @@ function setDiv(name, val) {
 }
 
 function setEnabled(name, on) {
-// $(name).attr('checked', on ? "checked" : "");
-  log("Setting enabled " + name + ":" + on);
+	// $(name).attr('checked', on ? "checked" : "");
+	log("Setting enabled " + name + ":" + on);
 }
 
 function getPathOrLogErr(tree, path) {
 	ret = getPathValue(tree, path);
 	if (ret.err) {
-		log(err)
-		return ""
+		log(ret.err);
+		return "";
 	}
-	return ret.val
+	return ret.val;
 }
 
 function SetDefaultIfMissing(zconf, path, defaultVal) {
-  if (getPathOrLogErr(zconf, path) == "") {
-    pv = path.split(".");
-    cur = zconf
-    for (i = 0; i < pv.length; i++) {
-      cur = cur[pv[i]]
-      if (!cur) {
-        log("could not find path " + path + " in tree at element " + pv[i])
-      }
-    }
-    cur = defaultVal
-  }
+	if (getPathOrLogErr(zconf, path) == "") {
+		pv = path.split(".");
+		cur = zconf;
+		for (i = 0; i < pv.length; i++) {
+			cur = cur[pv[i]];
+			if (!cur) {
+				log("could not find path " + path + " in tree at element "
+						+ pv[i]);
+			}
+		}
+		cur = defaultVal;
+	}
 }
 
 function getPathValue(tree, path) {
@@ -229,7 +237,7 @@ function getPathValue(tree, path) {
 		if (!cur) {
 			return {
 				val: "",
-				err: "could not find path " + path + " in tree at element " + pv[i]
+				err: "could not find path " + path + "in tree at element " + pv[i]
 			};
 		}
 	}
@@ -266,45 +274,43 @@ function parseResponseFile()
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function getServerLogData(_fromDate, _toDate) 
-{
-  dateRange = "from="+DateString(_fromDate)+"&to="+DateString(_toDate);
-  url = "http://"+server_ip+"/conditions?" + dateRange;
+function getServerLogData(_fromDate, _toDate) {
+	dateRange = "from=" + DateString(_fromDate) + "&to=" + DateString(_toDate);
+	url = "http://" + server_ip + "/conditions?" + dateRange;
 	makeRequest(url, processConditions);
 
-	url = "http://"+server_ip+"/runtimes?" + dateRange;
-  makeRequest(url, processRuntimes);
+	url = "http://" + server_ip + "/runtimes?" + dateRange;
+	makeRequest(url, processRuntimes);
 }
 
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn processLogData
- * 
- * @brief Process log data response from server.
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function processConditions(data)
-{
-  j = JSON.parse(data)
-  for (i=0; i<j.length; i++) {
-    date = new Date(j[i]["Date"])
-    dateStr = date.toDateString()
-    iconHistory[dateStr] = j[i]["Icon"]
-    tempHistory[dateStr] = j[i]["Temp"]
-    precipHistory[dateStr] = j[i]["Precip"]
-  }
-  displayScheduleTable()
+function processConditionsResponse(data) {
+	jt = JSON.parse(data);
+	if (jt.Errors != null) {
+		alert(jt.Errors);
+		return;
+	}
+	ja = jt.Conditions;
+	for (i = 0; i < ja.length; i++) {
+		date = new Date(ja[i]["Date"]);
+		dateStr = DateString(date);
+		iconHistory[dateStr] = ja[i]["Icon"];
+		tempHistory[dateStr] = ja[i]["Temp"];
+		precipHistory[dateStr] = ja[i]["Precip"];
+	}
 }
 
-function processRuntimes(data)
-{
-  j = JSON.parse(data)
-  for (i=0; i<j.length; i++) {
-    date = new Date(j[i]["Date"])
-    runtimeHistory[date.toDateString()] = j[i]["Runtimes"]
-  }
-  displayScheduleTable()
+function processRuntimesResponse(data) {
+	jt = JSON.parse(data);
+	if (jt.Errors != null) {
+		alert(jt.Errors);
+		return;
+	}
+	ja = jt.Runtimes;
+	for (i = 0; i < ja.length; i++) {
+		date = new Date(ja[i]["Date"]);
+		dateStr = DateString(date);
+		runtimeHistory[dateStr] = ja[i]["Runtimes"];
+	}
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/

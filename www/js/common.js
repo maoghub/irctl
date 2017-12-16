@@ -1,4 +1,5 @@
-///////////////////////// Defines ///////////////////////////////////////////////////////////////////////////////
+// /////////////////////// Defines
+// ///////////////////////////////////////////////////////////////////////////////
 
 var NUM_ZONES = 8;
 var NUM_SENSORS = 8;
@@ -8,15 +9,18 @@ var DEFAULT_HISTORY_DAYS = 7;
 var MS_1_HR = 60 * 60 * 1000;
 var MS_1_DAY = 24 * MS_1_HR;
 
-///////////////////////// Global variables //////////////////////////////////////////////////////////////////////
+// /////////////////////// Global variables
+// //////////////////////////////////////////////////////////////////////
 
 var statusArea;
 var server_ip = location.host;
 var confFilename = "conf/irctl_conf.json"
 
 var globalConf = new Object();
-
 var zoneConf = [];
+var airportCode = "";
+var runTime = "";
+
 var zoneQueueSlotsUsed = 0;
 var zoneQueueSlot = [];
 var zoneRunning = 0;
@@ -35,24 +39,21 @@ var precipHistory = {};
 var iconHistory = {};
 var runtimeHistory = {};
 
-var mustSave = false;
+var selectedZone = -1;
 
-var clearingAlarms = 0;
-var stoppingRunCommand = 0;
-
-///////////////////////// Member functions //////////////////////////////////////////////////////////////////////
+// /////////////////////// Member functions
+// //////////////////////////////////////////////////////////////////////
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     ready
- *
- * @brief  Page onload entry point. 
+ * @fn ready
+ * @brief Page onload entry point.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
 $(document).ready(function() {
   runTests();
-  //initAll();
+  // initAll();
 });
 
 $.widget("ui.timespinner", $.ui.spinner, {
@@ -79,9 +80,8 @@ $.widget("ui.timespinner", $.ui.spinner, {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     initAll
- *
- * @brief  Handle common initialization. 
+ * @fn initAll
+ * @brief Handle common initialization.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -108,7 +108,8 @@ function initAll() {
       $('#help_box').html(helpText[id]);
       if (isButton) {
         $(this).attr('src', imgSrc.replace('.', '_o.'));
-        //$(this).css('box-shadow','0px 0px 5px 5px #EDCAA1', 'border-radius','3px');
+        // $(this).css('box-shadow','0px 0px 5px 5px #EDCAA1',
+        // 'border-radius','3px');
       }
     } else if (event.type == 'mouseleave') {
       $('#help_box').css('display', 'none');
@@ -130,38 +131,52 @@ function initAll() {
     displayScheduleTable();
   });
 
-  $('#cancel_button').button({
-    disabled: true
-  });
+  $('#done_button').button();
   $('#save_button').button({
     disabled: true
   });
 
-  $('#cancel_button').click(function(event) {
-
+  $('#done_button').click(function(event) {
+    onDoneButtonClick();
   });
 
   $('#save_button').click(function(event) {
-    copyUItoMemoryValues();
-    postSave();
+    onSaveButtonClick();
   });
 
-  getConfFile();
+  $('#run_button').click(function(event) {
+    onRunButtonClick();
+  });
 
-  /*pollServerAlarms();*/
+  $('#run_exit_button').click(function(event) {
+    onRunExitButtonClick();
+  });
+
+  $('#run_cancel_button_running').click(function(event) {
+    onRunCancelButtonRunningClick();
+  });
+
+ $('#runtime_input').timepicker({
+      showPeriod: true,
+      showLeadingZero: false
+  });
+  /*
+   * getConfFile(); pollServerAlarms();
+   */
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     onConfFileGetComplete
- *
- * @brief  We've received 
+ * @fn onConfFileGetComplete
+ * @brief We've received
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
 function onConfFileGetComplete() {
   if (!initializedHistory) {
-    getServerLogData(dateSubDays(toDate, 31), toDate); // grab history from server and refresh schedule
+    getServerLogData(dateSubDays(toDate, 31), toDate); // grab history from
+                                                        // server and refresh
+                                                        // schedule
     initializedHistory = true;
   } else {
     // since we aren't updating the logs, trigger schedule table refresh here
@@ -171,9 +186,8 @@ function onConfFileGetComplete() {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     onServerLogRequestComplete
- *
- * @brief  We received and pared
+ * @fn onServerLogRequestComplete
+ * @brief We received and pared
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -186,9 +200,8 @@ function onServerLogRequestComplete() {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     writeStatus
- *
- * @brief  Display in the status area.
+ * @fn writeStatus
+ * @brief Display in the status area.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -199,9 +212,8 @@ function writeStatus(str) {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     fromDate, dateAddDays, firstDate, lastDate, displayDateStr, to24hrStr
- *
- * @brief  Date utility functions
+ * @fn fromDate, dateAddDays, firstDate, lastDate, displayDateStr, to24hrStr
+ * @brief Date utility functions
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -253,9 +265,8 @@ function to24hrStr(hr, min, am_pm) {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     validInt
- *
- * @brief  Given an int, turn it to 0 if it is undefined.
+ * @fn validInt
+ * @brief Given an int, turn it to 0 if it is undefined.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -265,9 +276,8 @@ function validInt(_myInt) {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     dateHashStr etc
- *
- * @brief  Build a hash string out of dates for storing in a sparse array.
+ * @fn dateHashStr etc
+ * @brief Build a hash string out of dates for storing in a sparse array.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -292,9 +302,8 @@ function hashStr() {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn     trim etc.
- *
- * @brief  For trimming whitespace
+ * @fn trim etc.
+ * @brief For trimming whitespace
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 

@@ -1,5 +1,10 @@
-// /////////////////////// Member functions
-// //////////////////////////////////////////////////////////////////////
+var MAX_RUNTIME_SLOTS = 5;
+
+var scheduledRuntimeSlots = 0;
+var runTable = [];
+var running = false;
+
+/*======================================== SCHEDULE TABLE =====================================================*/
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
@@ -22,7 +27,7 @@ function displayScheduleTable() {
 
   tableHTML += '<table id="schedule_table" > \r\n';
   tableHTML += '	<colgroup> \r\n';
-  tableHTML += '	  <col style="width: 255px"/> \r\n';
+  tableHTML += '	  <col style="width: 355px"/> \r\n';
 
   for (i = 0; i < numDays; i++) {
     tableHTML += '	  <col style="width: 40px"/> \r\n';
@@ -39,7 +44,7 @@ function displayScheduleTable() {
     d.setTime(toDate.getTime());
     d.setDate(toDate.getDate() - (numDays - 1) + i);
 
-    dayStr = dateStr[d.getDay()];
+    dayStr = dayNameStr[d.getDay()];
 
     if (datesAreEqual(d, today)) {
       tableHTML += '	      <td data-table-col="' + i + '" class="day-label" style="background:#' + BG_COLOR_STR + ';">Today</td> \r\n';
@@ -59,10 +64,9 @@ function displayScheduleTable() {
     d.setTime(toDate.getTime());
     d.setDate(toDate.getDate() - (numDays - 1) + i);
     var dstr = DateString(d);
-
     var temp = Math.round(tempHistory[dstr]);
-    
-    tableHTML += '	      <td background="images/weather/' + iconHistory[dstr] + '.png" width="60px"><div data-table-col="' + i + '" class="weather-icon" align="right">' + temp + '</td> \r\n';
+
+    tableHTML += ' <td background="img/weather/' + iconHistory[dstr] + '.png"' + 'width="60px"><div data-table-col="' + i + '" class="weather-icon" align="right"><b>' + temp + '</b></td> \r\n';
   }
 
   tableHTML += '	    </tr> \r\n';
@@ -82,10 +86,10 @@ function displayScheduleTable() {
 
     for (i = 0; i < numDays; i++) {
       d.setTime(toDate.getTime());
-      d.setDate(toDate.getDate() - (globalConf.historyDays - 1) + i);
+      d.setDate(toDate.getDate() - (numDays - 1) + i);
       var dstr = DateString(d);
 
-      var runTime = Math.round(runtimeHistory[dstr][z]));
+      var runTime = Math.round(runtimeHistory[dstr][z]);
 
       tableHTML += '	      <td data-table-col="' + i + '" class="schedule-entry">' + runTime + '</td> \r\n';
     }
@@ -100,151 +104,188 @@ function displayScheduleTable() {
 
   $("#schedule_table").remove();
   $("#schedule_table_div").append(tableHTML);
-
-  $(".zone-name").click(function(event) {
-    var eventVal = event.target.attributes.value;
-    selectedZone = parseInt(eventVal.value);
-    updateZoneConfigTable();
-    showMenu("zone_config_table");
-    $('.zone-name').removeClass('selected');
-    $('.zone-name[value="' + selectedZone + '"]').addClass('selected');
-  });
-
 }
 
-// /////////////////////// System settings table
-// /////////////////////////////////////////////////////////////////
+/*======================================== CONFIG TABLE =======================================================*/
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn displaySystemSettingsTable
- * @brief Generate and display the system settings table
+ * @fn displayZoneConfigTable
+ * @brief Generate the HTML for the zone config table and display it.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
+function displayZoneConfigTable() {
+  var tableHTML = '';
 
-function displaySystemSettingsTable() {
-  $('.selectable').removeClass('selected');
-  updateSystemSettingsTable();
-  showMenu("system_settings_table");
-}
-
-function updateSystemSettingsTable() {
-  $('#weather_station_text').val(globalConf.weatherStation);
-  $("#watering_time_spinner").timespinner();
-  $("#watering_time_spinner").timespinner('value', globalConf.runTime1);
-}
-
-// /////////////////////// Zone config table
-// /////////////////////////////////////////////////////////////////////
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn updateZoneConfigTable
- * @brief Generate the HTML for the zone config table, using the selected zone
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-/*
-setDiv('.ZONE[data-object_name="soil_name"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "SoilConfig.Name"));
-setDiv('.ZONE[data-object_name="et_rate"][data-array-index="' + num + '"]', getPathOrLogErr(zconf, "ZoneETRate"));
-
-setEnabled('.ZONE[data-object_name="run"][data-array-index="' + num + '"]'), getPathOrLogErr(zconf, "Enabled")
-setEnabled('.ZONE[data-object_name="rain"][data-array-index="' + num + '"]'), getPathOrLogErr(zconf, "GetsRain")
-*/
-
-function updateZoneConfigTable() {
-  var zconf = zoneConf[selectedZone];
-
-  $("#zone_name").html(zconf.Name);
-  $("#zone_num").html('Valve &nbsp ' + zconf.Number);
-  setEnabled("#zone_enabled"), zconf.Enabled)
-  setEnabled("#zone_gets_rain"), zconf.GetsRain)
-
-  $("#zone_depth").html(zconf.DepthIn);
-  $("#zone_et_rate").html(zconf.ZoneETRate);
-  $("#zone_runtime_multiplier").html(zconf.RunTimeMultiplier);
-  
-  $("#zone_soil_name").html(zconf.SoilConfig.Name);
-  $("#zone_min_vwc").html(zconf.MinVWC);
-  $("#zone_max_vwc").html(zconf.MaxVWC);
-  
-}
-
-
-// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// /////////////////////// Table generation functions
-// ////////////////////////////////////////////////////////////
-// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn showMenu
- * @brief Given a menu id, hide all the other menus and show this menu. Handle
- *        highlighting.
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function showMenu(_id) {
-  displayedMenu = _id;
-
-  if ($('#' + _id).hasClass('left-table')) {
-    // we are asked to display a left menu, so
-    // we must clear and unselect all left and right tables.
-    $('.menu-table').css('display', 'none');
-    $('#' + _id).css('display', 'inline-block');
-
-    $('.left-menu-submenu').removeClass('selected');
-    $('.second-level-menu-item').removeClass('selected');
-    $('.third-level-menu-item').css('display', 'none');
-    $('#cancel_button').css('display', 'inline-block');
-    $('#save_button').css('display', 'inline-block');
-  } else {
-    // highlight the selected item in left menu
-    $('.left-menu-submenu').removeClass('selected');
-    $('#' + _id + '_select').addClass('selected');
-
-    // show the menu
-    $(".menu-table").filter(".right-table").css('display', 'none');
-    $('#' + _id).css('display', 'inline-block');
+  for (z = 0; z < numZones; z++) {
+    var oddStr = '';
+    if (z % 2) {
+      oddStr = 'class="odd"';
+    }
+    tableHTML += '      <tr ' + oddStr + '> \r\n';
+    tableHTML += '        <td><input type="checkbox" class="cv run-checkbox"' + boolToChecked(zoneConf[z].Enabled) + '></td> \r\n';
+    tableHTML += '        <td><input type="checkbox" class="rain-checkbox" ' + boolToChecked(zoneConf[z].GetsRain) + '></td> \r\n';
+    tableHTML += '        <td><input type="text" class="etrate-input" value="' + zoneConf[z].ZoneETRate + '"></td> \r\n';
+    tableHTML += '        <td><input type="text" class="runmult-input" value="' + zoneConf[z].RunTimeMultiplier + '"></td> \r\n';
+    tableHTML += '        <td><input type="text" class="depthin-input" value="' + zoneConf[z].DepthIn + '"></td> \r\n';
+    tableHTML += '        <td><input type="text" class="minvwc-input" value="' + zoneConf[z].MinVWC + '"></td> \r\n';
+    tableHTML += '        <td><input type="text" class="maxvwc-input" value="' + zoneConf[z].MaxVWC + '"></td> \r\n';
+    tableHTML += '      </tr> \r\n';
   }
+
+  tableHTML += '      <tr style="height: 40px; font-size: 1.2em;"> \r\n';
+  tableHTML += '      <td></td> \r\n';
+  tableHTML += '      <td colspan="3">Airport code<input type="text" id="airport_code" style="width: 80px;" value="' + airportCode + '"></td> \r\n';
+  tableHTML += '      <td colspan="3">Run time<input type="text" id="runtime_input" style="width: 80px;" value="' + runTime + '"></td> \r\n';
+  tableHTML += '      </tr> \r\n';
+
+  $("#zone_config_table > tbody").html(tableHTML);
+  $('#zone_config_table_div').css('display', 'inline-block');
+  $('#zone_config_table_buttons_div').css('display', 'inline-block');
+  $('.cv').change(onValueChange);
+  $('#zone_config_table > tr > td > input').change(onValueChange);
 }
+
+function boolToChecked(boolVal) {
+  return boolVal ? "checked" : "";
+}
+
+function copyUIToConfig() {
+  for (z = 0; z < numZones; z++) {
+    zn = (z + 1).toString()
+    zoneConf[z].Enabled = $('#zone_config_table tr:eq(' + zn + ') td input.run-checkbox').is(':checked');
+    zoneConf[z].GetsRain = $('#zone_config_table tr:eq(' + zn + ') td input.rain-checkbox').is(':checked');
+    zoneConf[z].ZoneETRate = parseFloat($('#zone_config_table tr:eq(' + zn + ') td input.etrate-input').val());
+    zoneConf[z].RunTimeMultiplier = parseFloat($('#zone_config_table tr:eq(' + zn + ') td input.runmult-input').val());
+    zoneConf[z].DepthIn = parseFloat($('#zone_config_table tr:eq(' + zn + ') td input.depthin-input').val());
+    zoneConf[z].MinVWC = parseFloat($('#zone_config_table tr:eq(' + zn + ') td input.minvwc-input').val());
+    zoneConf[z].MaxVWC = parseFloat($('#zone_config_table tr:eq(' + zn + ') td input.maxvwc-input').val());
+  }
+
+  globalConf.GlobalConfig.AirportCode = $('#airport_code').val();
+  globalConf.GlobalConfig.RunTimeAM = "0000-01-01T" + $('#runtime_input').val() + "Z";
+  globalConf.ZoneConfigs = zoneConf;
+
+  console.log(JSON.stringify(globalConf, null, 2));
+}
+
+/*------------------------------------- Event handlers --------------------------------------------------------*/
+
+function onDoneButtonClick() {
+  $('#zone_config_table_div').css('display', 'none');
+  $('#zone_config_table_buttons_div').css('display', 'none');
+}
+
+function onSaveButtonClick() {
+  copyUIToConfig();
+}
+
+function onValueChange() {
+  $('#save_button').button("option", "disabled", false);
+}
+
+/*======================================== RUN TABLE ==========================================================*/
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
- * @fn initSecondLevelMenus
- * @brief Setup click functions for the second level display menus (which cause
- *        children to be displayed) and third level, which will populate the
- *        parent with the selected value.
+ * @fn displayRunTable
+ * @brief Generate the HTML for the run table.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
+function displayRunTable() {
+  $('#run_table_div').css('display', 'inline-block');
+  $('#run_table_buttons_div').css('display', 'inline-block');
 
-function initSecondLevelMenus() {
-  $('.second-level-menu-item').each(function() {
+  var tableHTML = '';
+  for (i = 0; i < scheduledRuntimeSlots; i++) {
+    tableHTML += '      <tr> \r\n';
+    tableHTML += '        <td>' + runTable[i].ZoneName + ' </td> \r\n';
+    tableHTML += '        <td>' + runTable[i].RunTime + ' </td> \r\n';
+    tableHTML += '        <td><button value="' + i.toString() + '" class="run-cancel-button button text-button" style="width: 80px;">Cancel</button></td> \r\n';
+    tableHTML += '      </tr> \r\n';
+  }
 
-    $(this).click(function(event) {
-      $('.third-level-menu-item').css('display', 'none');
-      var id = $(this).attr('id');
-      $('[data-childof="' + id + '"]').css('display', 'inline-block');
+  $("#run_table > tbody").html(tableHTML);
+
+  $('.run-cancel-button').button();
+  $('.run-cancel-button').click(onRunCancelButtonClick);
+
+  $('.zone-name').click(function(event) {
+    $('.zone-name').parent().removeClass("selected");
+    var target = $(this);
+    target.parent().addClass('selected');
+    selectedZone = $(this).attr('value');
+  });
+}
+
+// Append zone with given runtime to the run table. 
+function appendRunTableEntry(zoneNumber, zoneName, runTime) {
+  if (scheduledRuntimeSlots == MAX_RUNTIME_SLOTS) {
+    alert("All run slots are full.");
+    return;
+  }
+  ns = scheduledRuntimeSlots;
+
+  runTable[ns] = {};
+  runTable[ns].ZoneNumber = zoneNumber;
+  runTable[ns].ZoneName = zoneName;
+  runTable[ns].RunTime = runTime;
+
+  scheduledRuntimeSlots++;
+
+  displayRunTable();
+}
+
+// Remove zone with the given slotNum from run table. 
+function removeRunTableEntry(slotNum) {
+  if (slotNum >= scheduledRuntimeSlots) {
+    alert("Removing non-existent entry.");
+    return;
+  }
+
+  for (i = slotNum; i < scheduledRuntimeSlots; i++) {
+    runTable[i] = runTable[i + 1];
+  }
+
+  scheduledRuntimeSlots--;
+
+  displayRunTable();
+}
+
+/*------------------------------------- Event handlers --------------------------------------------------------*/
+
+function onRunButtonClick() {
+  zoneName = zoneConf[selectedZone].Name;
+  runMins = $('#runtime_mins_input').val();
+  if (!running) {
+    $('#running_zone_name').html(zoneName);
+    $('#running_zone_countdown').countdown({
+        until: runMins + "M",
+        compact: true,
+        format: 'MS',
+        description: ''
     });
-  });
+    $('#run_cancel_button_running').css('display', 'inline-block');
+    running = true;
+    return;
+  }
 
-  $('.third-level-menu-item').click(function(event) {
-    $('.third-level-menu-item').css('display', 'none');
-    var parent = $('#' + $(this).attr('data-childof'));
-    parent.html(parent.attr('data-preText') + ' ' + $(this).attr('value'));
-    parent.val($(this).attr('value'));
-  });
+  appendRunTableEntry(selectedZone, zoneName, runMins);
 }
 
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn selectOption
- * @brief Make the given option selected. Pass in the element ID and selected
- *        value text.
- */
-/*-------------------------------------------------------------------------------------------------------------*/
+function onRunExitButtonClick() {
+}
 
-function selectOption(_select_id, _option_val) {
-  $("select#" + _select_id + " option").filter(function() {
-    return $(this).text() == _option_val;
-  }).attr('selected', 'selected');
+function onRunCancelButtonRunningClick() {
+  $('#running_zone_name').html("");
+  $('#run_cancel_button_running').css('display', 'none');
+  $('#running_zone_countdown').countdown('destroy');
+  running = false;
+}
+
+function onRunCancelButtonClick() {
+  var target = $(this);
+  slotNum = $(this).attr('value');
+  removeRunTableEntry(parseInt(slotNum));
+  displayRunTable();
 }

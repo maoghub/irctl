@@ -1,887 +1,287 @@
 /********************************************************************************** 
                                 VISUAL STYLES
 ***********************************************************************************/
-
 .blue-gradient {
-    background-image: -moz-linear-gradient(top, #ffffff 0%, #ABDEED 100%);
+  background-image: -moz-linear-gradient(top, #ffffff 0%, #ABDEED 100%);
 }
 
 .orange-gradient {
-    background-image: -moz-linear-gradient(top, #cccccc 0%, #FFB870 100%);
+  background-image: -moz-linear-gradient(top, #cccccc 0%, #FFB870 100%);
 }
 
 .green-gradient {
-    background-image: -moz-linear-gradient(top,  #fcfff4 0%, #e9e9ce 100%);
+  background-image: -moz-linear-gradient(top, #fcfff4 0%, #e9e9ce 100%);
 }
 
 .grey-gradient {
-    background: -moz-linear-gradient(top, rgba(252,255,244,1) 0%, rgba(223,229,215,1) 40%, rgba(179,190,173,1) 100%); 
+  background: -moz-linear-gradient(top, rgba(252, 255, 244, 1) 0%,
+    rgba(223, 229, 215, 1) 40%, rgba(179, 190, 173, 1) 100%);
 }
 
 .light-green {
-    background: #c9d9aa;
+  background: #c9d9aa;
 }
 
 .medium-green {
-    background: #acc587;
+  background: #acc587;
 }
 
 .light-grey {
-    background: #cbcbcb;
+  background: #cbcbcb;
 }
 
 .light-blue {
-    background: #a1c2dd;
+  background: #a1c2dd;
 }
 
 .light-yellow {
-    background: #f7f4dd;
+  background: #f7f4dd;
+}
+
+.selected {
+  background: #f7f4dd;
 }
 
 .grey-text {
-    color: #606060;
+  color: #606060;
 }
 
 .highlightable {
-    background: #DCE7EC;
+  background: #DCE7EC;
 }
 
 .medium-font {
-    font-size: 1.3em;
+  font-size: 1.3em;
 }
 
 input.medium-font {
-    border-radius: 3px;
+  border-radius: 3px;
 }
 
 /********************************************************************************** 
                                 MISC ELEMENTS
 ***********************************************************************************/
 .styled-select select {
-    display: inline-block;
-   background: transparent;
-   width: 120px;
-   padding: 2px 5px;
-   font-size: 14px;
-   border: 1px solid #ccc;
-   height: 26px;
+  display: inline-block;
+  background: transparent;
+  width: 120px;
+  padding: 2px 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  height: 26px;
   -webkit-appearance: none;
-} 
-
-.styled-select{
-    display: inline-block;
-   width: 120px;
-   height: 26px;
-   overflow: hidden;
-   background: url(/images/dropdown2.png) no-repeat 96% #ddd;
 }
 
+.styled-select {
+  display: inline-block;
+  width: 120px;
+  height: 26px;
+  overflow: hidden;
+  background: url(/images/dropdown2.png) no-repeat 96% #ddd;
+}
 
 .help-box {
-    font: normal 14px Verdana, Geneva, Arial, Helvetica, sans-serif;
-    vertical-align: top;
-    border:1px solid #ffffff;
-    border-radius: 5px;
-    padding: 4px 8px;
-    font-size: 14px;
-    text-align: left;
-    color: #808080;
+  font: normal 14px Verdana, Geneva, Arial, Helvetica, sans-serif;
+  vertical-align: top;
+  border: 1px solid #ffffff;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 14px;
+  text-align: left;
+  color: #808080;
 }
 
 button.enabled-button {
-    border:1px solid #606060;
-    background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
-    box-shadow: 1px 1px 1px #888;
+  border: 1px solid #606060;
+  background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%);
+  box-shadow: 1px 1px 1px #888;
 }
 
 button.enabled-button:hover {
-    border:1px solid #606060;
-    background: #f7f4dd;
-    box-shadow: 1px 1px 1px #888;
+  border: 1px solid #606060;
+  background: #f7f4dd;
+  box-shadow: 1px 1px 1px #888;
 }
 
-.table_del_button .ui-button-icon-primary { margin-top: -5px; margin-left: -6px; }
-.table_del_button .ui-button-text { padding-left: 2px; }
+button.text-button {
+  height: 40px;
+  font-size: 1.2em;
+  text-align: center;
+}
 
-.large-del-button .ui-button-icon-primary { top: 2px; margin-left: -5px; }
-.large-del-button .ui-button-text { padding-left: 0px; }
+.table_del_button .ui-button-icon-primary {
+  margin-top: -5px;
+  margin-left: -6px;
+}
 
-.large-del-button2 .ui-button-icon-primary { top: 2px; margin-left: -5px; }
+.table_del_button .ui-button-text {
+  padding-left: 2px;
+}
+
+.large-del-button .ui-button-icon-primary {
+  top: 2px;
+  margin-left: -5px;
+}
+
+.large-del-button .ui-button-text {
+  padding-left: 0px;
+}
+
+.large-del-button2 .ui-button-icon-primary {
+  top: 2px;
+  margin-left: -5px;
+}
 
 /********************************************************************************** 
                                 SCHEDULE TABLE
 ***********************************************************************************/
-
 #schedule_table table {
-    font:normal 76%/150% "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+  font: normal 76%/150% "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial,
+    Helvetica, sans-serif;
 }
 
-#schedule_table thead th,
-#schedule_table thead td,
-#schedule_table tfoot th,
-#schedule_table tfoot td {
-    white-space: nowrap;
+#schedule_table thead th, #schedule_table thead td, #schedule_table tfoot th,
+  #schedule_table tfoot td {
+  white-space: nowrap;
 }
 
 #schedule_table th {
-    font-weight:bold;
-    line-height:normal;
+  font-weight: bold;
+  line-height: normal;
 }
 
 #schedule_table tbody th {
-    font-weight:normal;
-    white-space:nowrap;
+  font-weight: normal;
+  white-space: nowrap;
 }
 
-#schedule_table tbody tr.odd th,
-#schedule_table tbody tr.odd td {
-    background:#E7E4DD;
+#schedule_table tbody tr.odd th, #schedule_table tbody tr.odd td {
+  background: #E7E4DD;
 }
 
 table#schedule_table tbody tr td.selectable:hover {
-    color: #404040;
-    background: #f7f4dd;
+  color: #404040;
+  background: #f7f4dd;
 }
 
-#schedule_table tbody tr td { 
-    height: 39px;
-    vertical-align: middle;
-    color: #606060;
-    font-weight:normal;
-    font-size:1.3em;
-    text-align: left;
+#schedule_table tbody tr td {
+  height: 39px;
+  vertical-align: middle;
+  color: #606060;
+  font-weight: normal;
+  font-size: 1.3em;
+  text-align: left;
 }
 
 div.weather-icon {
-    color: brown;
-    font-size:80%;
+  color: brown;
+  font-size: 80%;
 }
 
-#schedule_table tr.day-row .day-label, 
-#schedule_table tr.date-row .date-label {
-    border-right:1px dashed #888888;
-    background:#e3eeee;
-}
-#schedule_table tr.day-row td.day-label, 
-#schedule_table tr.date-row td.date-label {
-    padding: 5px 0px;
-    text-align: center;
-    font-size:1.0em;
+#schedule_table tr.day-row .day-label, #schedule_table tr.date-row .date-label {
+  border-right: 1px dashed #888888;
+  background: #e3eeee;
 }
 
-#schedule_table tr.weather-row td, 
-#schedule_table tr.weather-row td {
-    padding: 2px 5px;
-    text-align: center;
-    background-repeat: no-repeat;
+#schedule_table tr.day-row td.day-label, #schedule_table tr.date-row td.date-label
+  {
+  padding: 5px 0px;
+  text-align: center;
+  font-size: 1.0em;
+}
+
+#schedule_table tr.weather-row td, #schedule_table tr.weather-row td {
+  padding: 2px 5px;
+  text-align: center;
+  background-repeat: no-repeat;
+}
+
+#schedule_table tbody tr td .zone-name {
+  padding-left: 10px;
 }
 
 #schedule_table .schedule-entry {
-    text-align: center;
-    align: center;
-    margin: 0;
+  text-align: center;
+  align: center;
+  margin: 0;
 }
-
-/*table tbody td.dark-border {
-    border:2px solid #a0a0a0;
-    border-radius:5px;
-}*/
 
 /********************************************************************************** 
                                 RUN NOW TABLE
 ***********************************************************************************/
-
-#run_now_table tbody tr td .run-now-spinner {
-    width: 30px; 
-    height: 20px;
+#run_table {
+  opacity: 1.0;
+  background-color: white;
+  z-index: 10;
 }
 
-#run_now_table tbody tr td .run-now-button {
-    height: 30px;
-    margin-left: 5px;
-    font-size: 0.9em;
+#run_table thead td {
+  height: 60px;
+  white-space: normal;
+  color: #eeeeee;
+  background-color: #808080;
+  font-size: 1.5em;
+  vertical-align: middle;
+  text-decoration: bold;
+  padding: 10px 10px;
+  white-space: normal;
 }
 
-#run_now_table {
-    opacity: 1.0;
-    background-color: white;
-    z-index: 10;
-}
-
-#run_now_table thead td {
-    white-space: normal;
-    color: #eeeeee;
-    background-color: #808080;
-    font-size: 1.2em;
-    text-align: center;
-    vertical-align: middle;
-    text-decoration: bold;
-    padding: 10px 10px;
-    border-right:1px dashed #d0d0d0 !important;
-}
-
-#run_now_table tbody tr td { 
-    height: 39px;
-    vertical-align: middle;
-    color: #606060;
-    font-weight:normal;
-    font-size:1.1em;
-    text-align: left;
-    opacity: 1.0;
-    background-color: white;
-}
-
-table#run_now_table tbody tr.odd td {
-	background:#E7E4DD;
-}
-
-/********************************************************************************** 
-                                GRAPH CHECK TABLE
-***********************************************************************************/
-
-#zone_run_chart_select_table tbody td input {
-    height: 20px;
-    width: 20px;
-}
-
-#zone_run_chart_select_table tbody td {
-    height: 41px;
-    text-align: center;
-    vertical-align: middle;
-    white-space: normal;
-    font-size: 1.2em;
-    padding: 0px 5px;
+#run_table tbody tr td {
+  height: 39px;
+  vertical-align: middle;
+  color: #606060;
+  font-weight: normal;
+  font-size: 1.2em;
+  opacity: 1.0;
+  background-color: white;
 }
 
 /********************************************************************************** 
                                 ZONE TABLE
 ***********************************************************************************/
-
-
 #zone_config_table {
-    opacity: 1.0;
-    background-color: white;
-    z-index: 10;
+  opacity: 1.0;
+  background-color: white;
+  z-index: 10;
 }
 
 #zone_config_table thead td {
-    white-space: normal;
-    color: #eeeeee;
-    background-color: #808080;
-    font-size: 1.2em;
-    text-align: center;
-    vertical-align: middle;
-    text-decoration: bold;
-    padding: 10px 10px;
-    border-right:1px dashed #d0d0d0 !important;
+  height: 60px;
+  white-space: normal;
+  color: #eeeeee;
+  background-color: #808080;
+  font-size: 1.2em;
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: bold;
+  padding: 10px 10px;
+  border-right: 1px dashed #d0d0d0 !important;
+  white-space: normal;
 }
 
-#zone_config_table tbody tr td { 
-    height: 39px;
-    vertical-align: middle;
-    color: #606060;
-    font-weight:normal;
-    font-size:0.9em;
-    text-align: left;
-    opacity: 1.0;
-    background-color: white;
+#zone_config_table tbody tr td {
+  height: 39px;
+  vertical-align: middle;
+  text-align: center;
+  color: #606060;
+  font-weight: normal;
+  font-size: 0.9em;
+  opacity: 1.0;
+  background-color: white;
+}
+
+#zone_config_table tbody tr td input[type="checkbox"] {
+  height: 30px;
+  width: 30px;
+}
+
+#zone_config_table tbody tr td input[type="text"] {
+  margin: 2px 5px 2px 5px;
+  width: 50px;
+  text-align: center;
 }
 
 table#zone_config_table tbody tr.odd td {
-	background:#E7E4DD;
+  background: #E7E4DD;
 }
-
-#zone_config_table tbody td button.edit-plant-list {
-    font-size: 1.0em;
-
-}
-
-
-/********************************************************************************** 
-                                PLANT PROPERTY TABLE
-***********************************************************************************/
-
-/*---------- Header bar for zone name -----------*/
-
-table.plant-table-header
-{
-    font: normal 1.0em Verdana, Geneva, Arial, Helvetica, sans-serif;
-}
-
-table.plant-table-header tr td
-{
-    height: 40px;
-}
-
-table.plant-table-header thead
-{
-    font-size: 1.4em;
-    color: #eeeeee;
-    background-color: #202020;
-}
-table.plant-table-header tbody tr td
-{
-    padding-left: 10px;
-    font-size: 1.2em;
-    color: #222;
-    background-color: #ddd;
-}
-
-/*------------Light and water sliders ------------*/
-
-.light_amount.ui-slider .ui-slider-handle{
-    background : white url('../images/weather/sunny.png') no-repeat;
-    background-size: 100% auto;
-    top: -13px;
-    width:28px; 
-    height:28px; 
-}
-.water_less_more.ui-slider .ui-slider-handle{
-    font-size: 0.9em;
-    color: #606060;
-    text-decoration: none;
-    text-align: center;
-    padding-top:3px;
-    top: -10px;
-    width:40px; 
-    height:20px; 
-}
-.light_amount.ui-slider {
-    top: 12px;
-    left: 10px;
-    width:150px; 
-    height:5px; 
-}
-
-.water_less_more.ui-slider {
-    top: 12px;
-    left: 10px;
-    width:150px; 
-    height:5px; 
-}
-
-/*------------------------------------------------*/
-
-table tr td input.medium-checkbox {
-    margin:0px 5px; 
-    height:20px; 
-    width: 20px
-}
-
-table#plant_property_table,
-table#plant_property_table2,
-
-{
-    font: normal 1.0em Verdana, Geneva, Arial, Helvetica, sans-serif;
-    color: #fff;
-}
-
-table#plant_property_table tr td,
-table#plant_property_table2 tr td {
-    height: 30px;
-    border-top: 1px solid #404040;
-    padding: 2px 10px;
-    vertical-align: middle;
-    color: #446;
-    font-size:1.0em;
-    opacity: 1.0;
-    background-color: #d0e0e0;
-}
-
-table#plant_property_table tr td {
-    text-align: left;
-    color: #000,
-    font-size:1.1em;
-    font-weight: bold;
-}
-
-table#plant_property_table tr td input.plant-properties-spinner,
-table#plant_property_table2 tr td input.plant-properties-spinner
-{
-    font-size: 16px;
-    height: 18px;
-    width: 20px;
-}
-
-/********************************************************************************** 
-                                PLANT TYPE TABLE
-***********************************************************************************/
-
-table.plant-type-table {
-    font: normal 12px Verdana, Geneva, Arial, Helvetica, sans-serif;
-    color: #fff;
-}
-
-table.plant-type-table tr td {
-    margin: 0px;
-    padding: 2px 3px;
-    height: 26px;
-    border-top: 1px solid #404040;
-    vertical-align: middle;
-    text-align: center;
-    font-size:1.0em;
-    color: #446;
-    background-color: #d0e0e0;
-    opacity: 1.0;
-}
-
-table.plant-type-table thead tr td {
-    font-size: 1.1em;
-    font-weight: bold;
-    background-color: #a1c2dd;
-}
-
-
-table.plant-type-table tbody tr:nth-child(odd) td {
-    background-color: #eee;
-}
-
-table.plant-type-table tbody tr td:first-child {
-    color: white !important;
-    background-color: #666;
-}
-
-table.plant-type-table tr td:not(:first-child):hover {
-    background:#F7F4dd;
-}
-
-/*------------------ Plant create table -------------------*/
-.plant-type-text-input {
-    width: 200px;
-    height: 25px;
-    margin: 0px !important;
-    padding: 0px 0px 0px 5px !important;
-}
-.plant-type-comment-input {
-    width: 400px;
-    height: 25px;
-    margin: 0px !important;
-    padding: 0px 0px 0px 5px !important;
-}
-
-/********************************************************************************** 
-                                PLANT SEARCH TABLE
-***********************************************************************************/
-
-table#plant_type_search_table {
-    margin: 0px;
-    padding: 0px;
-    font: normal 12px Verdana, Geneva, Arial, Helvetica, sans-serif;
-    color: #fff;
-}
-
-table#plant_type_search_table tr td {
-    margin: 0px 0px 0px 5px;
-    padding: 2px 0px 2px 5px;
-    height: 30px;
-    border-top: 1px solid #404040;
-    vertical-align: middle;
-    text-align: left;
-    color: #446;
-    background-color: #d0e0e0;
-    opacity: 1.0;
-}
-table#plant_type_search_table tr:first-child td {
-    padding: 5px;
-    font-size: 16px;
-}
-
-table#plant_type_search_table tr td:nth-child(even) {
-    padding-left: 10px;
-}
-
-table#plant_type_search_table tbody tr:nth-child(odd) td {
-    background-color: #eee;
-}
-
-table#plant_type_search_table tbody tr td:nth-child(odd) {
-    color: white !important;
-    background-color: #666;
-}
-
-/*------------------ Plant search table -------------------*/
-.plant-type-search-input {
-    width: 130px;
-    vertical-align: middle;
-    height: 20px;
-    margin: 0px 0px 0px 5px !important;
-    padding: 0px 0px 0px 5px !important;
-}
-
-table#plant_type_search_table input[type="checkbox"] {
-    float: right;
-    margin:0px 5px; 
-    height:20px; 
-    width: 20px
-}
-
-.search-result-row:hover {
-    background:#F7F4dd;
-}
-
-/********************************************************************************** 
-                                PLANT LIST TABLE
-***********************************************************************************/
-
-table#plant_list_table,
-table#plant_list_table_header {
-    font: normal 12px Verdana, Geneva, Arial, Helvetica, sans-serif;
-    background-color: white;
-    opacity: 1.0;
-    z-index: 20;
-}
-
-table#plant_list_table_header td {
-    height: 30px;
-    font-weight: bold;
-    padding-left: 10px;
-    background-color: #ddd;
-}
-
-table#plant_list_table tbody input {
-    margin:0px 5px; 
-    height:20px; 
-    width: 20px;
-}
-
-
-#plant_list_table tbody tr td { 
-    height: 20px;
-    padding: 2px 0px 2px 5px;
-    color: #000;
-    text-align: left;
-    opacity: 1.0;
-    background-color: white;
-}
-
-table#plant_list_table tbody tr:nth-child(odd) td {
-    background-color: #eee;
-}
-
-table#plant_list_table tr td:nth-child(2):hover {
-    background:#F7F4dd;
-}
-
-div.plant-table-button {
-    font-size: 0.9em;
-}
-
-/********************************************************************************** 
-                                PLANT LIFETIME TABLE
-***********************************************************************************/
-
-table.plant-lifetime-table {
-    font-size: 1.0em;
-    opacity: 1.0;
-    background-color: white;
-    z-index: 30;
-}
-
-table.plant-lifetime-table tbody td {
-    text-align: center;
-    font-size: 0.9em;
-}
-
-table.plant-lifetime-table tbody td:hover {
-    background:#F7F4dd;
-}
-
-table.plant-lifetime-table tbody td:first-child
-{
-    color: #dddddd;
-    background-color: #909090;
-    font-size: 1.2em;
-    text-align: left;
-    padding: 5px;
-    text-decoration: bold;
-}
-
-table.plant-lifetime-table tfoot td
-{
-
-    border-right:1px dashed #888888;
-    /*border-color:#F7F4dd;*/
-    background:#F7F4dd;
-    text-align: center;
-}
-
-table.plant-lifetime-table thead td
-{
-    border-right:1px dashed #888888;
-    font-size: 0.8em;
-    background: #D6FFAD;
-    text-align: center;
-}
-
-table.plant-lifetime-table tfoot td:first
-{
-    background:white !important;
-}
-
-table.plant-lifetime-table tfoot td
-{
-    text-decoration: bold !important;
-}
-
-
-
-/********************************************************************************** 
-                                LOGIN TABLE
-***********************************************************************************/
-
-table.login-table td {
-    vertical-align: middle;
-    font-size:1.2em; 
-    border-style: none;
-}
-table.login-table input {
-    border:1px solid #606060;
-    padding-left: 5px;
-    font-size:1.2em; 
-    height: 1.5em;
-    border-radius: 5px;
-    width: 150px;
-}
-
-/********************************************************************************** 
-                                SETUP WIZARD
-***********************************************************************************/
-
-.wizard-button-container {
-    vertical-align:text-bottom; 
-    float:right; 
-    margin: 40px 10px 10px 0px
-}
-
-button.wizard-button {
-    font-size: 0.9em !important;
-    color: #005600 !important;
-    margin: 5px;
-    vertical-align:text-center; 
-    height: 35px; 
-    font-size:0.9em;
-}
-
-button.wizard-button.finish-button {
-    color: #606060 !important;   
-}
-
-input.wizard-input-text-box {
-    font-size: 0.9em;
-    padding-left: 5px;
-    border: 1px solid #666; 
-    height: 25px; 
-    border-radius: 3px;
-}
-
-table.wizard-table tbody tr td:first-child {
-    padding-bottom: 7px !important;
-   /*font-size: 2.0em !important; */
-}
-table.wizard-table tr td {
-    border: 0px none #000;
-    font-size: 1.2em !important;
-    vertical-align:bottom;   
-}
-
-/*------------------ About you table -------------------*/
-
-table.about-you-table tr td {
-    margin: 0px;
-    vertical-align: text-top;
-    height: 30px;
-}
-
-/*------------------ Zone name table -------------------*/
-
-table.wizard-zone-list-table,
-table.wizard-zone-list-table-header {
-    border: 0px none #000;
-    font: normal 12px Verdana, Geneva, Arial, Helvetica, sans-serif;
-    background-color: white;    
-    opacity: 1.0;
-    z-index: 20;
-}
-
-table.wizard-zone-list-table-header td {
-    height: 30px;
-    border: 0px none #000;
-    font-weight: bold;
-    padding-left: 10px;
-    background-color: #ddd;
-}
-
-table.wizard-zone-list-table tbody input {
-    margin:0px 5px; 
-    height:20px; 
-    width: 20px;
-}
-
-
-.wizard-zone-list-table tbody tr td { 
-    height: 20px;
-    border: 0px none #000;
-    padding: 2px 0px;
-    color: #000;
-    text-align: left;
-    opacity: 1.0;
-    background-color: white;
-}
-
-table.wizard-zone-list-table tbody tr td:not(:nth-child(1))  {
-    padding-left: 5px;
-} 
-
-table.wizard-zone-list-table tbody tr:nth-child(odd) td {
-    background-color: #eee;
-}
-
-div.plant-table-button {
-    font-size: 0.9em;
-}
-
-/*------------------ Zone environment table -------------------*/
-
-table#wizard_zone_environment_table {
-    font: normal 12px Verdana, Geneva, Arial, Helvetica, sans-serif;
-}
-
-table#wizard_zone_environment_table thead tr td {
-    height: 30px;
-    font-size:14px;
-    font-weight: bold;
-    padding-left: 10px;
-    color: white;
-    background-color: #444;
-}
-
-table#wizard_zone_environment_table tbody tr td { 
-    height: 30px;
-    padding: 2px 0px 2px 10px;
-    font-size:14px;
-    color: #000;
-    text-align: left;
-    opacity: 1.0;
-    background-color: white;
-}
-
-table#wizard_zone_environment_table tbody tr:nth-child(odd) td {
-    background-color: #eee;
-}
-
-/*---------------------------------------------------------------*/
-
-/* Plant search override */
-#search_result_list_table.wizard-zone-list-table tbody tr td { 
-    padding: 2px 10px;
-}
-#search_result_list_table.wizard-zone-list-table tbody tr td:hover { 
-     background:#ffffcc;   
-}
-
-div.plant-table-button {
-    font-size: 0.9em;
-}
-/*
-wet-dry
-background: #e0dfc9; /* Old browsers */
-background: -moz-linear-gradient(left,  #e0dfc9 0%, #63b7d8 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, right top, color-stop(0%,#e0dfc9), color-stop(100%,#63b7d8)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(left,  #e0dfc9 0%,#63b7d8 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(left,  #e0dfc9 0%,#63b7d8 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(left,  #e0dfc9 0%,#63b7d8 100%); /* IE10+ */
-background: linear-gradient(to right,  #e0dfc9 0%,#63b7d8 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e0dfc9', endColorstr='#63b7d8',GradientType=1 ); /* IE6-9 */
-
-selecteable
-
-background: #fcfff4; /* Old browsers */
-background: -moz-linear-gradient(top,  #fcfff4 0%, #e9e9ce 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fcfff4), color-stop(100%,#e9e9ce)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top,  #fcfff4 0%,#e9e9ce 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top,  #fcfff4 0%,#e9e9ce 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top,  #fcfff4 0%,#e9e9ce 100%); /* IE10+ */
-background: linear-gradient(to bottom,  #fcfff4 0%,#e9e9ce 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfff4', endColorstr='#e9e9ce',GradientType=0 ); /* IE6-9 */
-
-*/
-
-/********************************************************************************** 
-                                SYSTEM MENUS
-***********************************************************************************/
-
-table#system_settings_table {
-    font: normal 14px Verdana, Geneva, Arial, Helvetica, sans-serif;
-    text-align: middle;
-    padding: 10px;
-    color: #222;
-}
-
-table#system_settings_table tr td {
-    border-top: 1px solid #444;
-    padding: 5px; 
-}
-
-/*
-.left-menu-submenu {
-    height: 40px;
-    border:0px none white;
-    color: white;
-    vertical-align: middle;
-    text-align: left;
-    align: left;
-    padding-left: 2.0em;
-    font-size:150%;
-}
-
-.non-selectable-item {
-    vertical-align: middle;
-    text-align: left;
-    border:0px none white;
-    padding: 6px 0px 6px 15px;
-    color: #808080;
-    background: #E7E9EC;
-}
-
-.selectable:hover {
-    color: #606060;
-    background: #FFFF99; */ 
-/*f7f4dd;*/
-/*
-}
-
-.selected {
-    color: #606060;
-    background: #f7f4dd;
-    border-color:#523A0B;
-}
-
-.second-level-menu-item {
-    vertical-align: middle;
-    border:0px none white;
-    padding: 6px 0px;
-    font-size: 120%;
-    text-align: center;
-    color: #ffffff;
-}
-
-.third-level-menu-item {
-    width: 280px;
-    vertical-align: middle;
-    border:1px solid #a1c2dd;
-    background: #E7E9EC;
-    margin-left: 30px;
-    padding-left: 10px;
-    font-size: 100%;
-    text-align: left;
-}
-
-.third-level-menu-item:hover {
-    background: #f7f4dd;
-}
-
-td.schedule-entry.today-entry, 
-td.schedule-entry.tomorrow-entry {
-	background:#bbbbbb;
-}
-*/
