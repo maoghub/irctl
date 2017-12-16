@@ -113,7 +113,7 @@
         style="position: relative; color: grey; left: 10px; width: 80px;">Done</button>
     </div>
     <div id="zone_config_table_div"
-      style="z-index: 199; display: none; position: absolute; opacity: 1.0; background-color: white; width: 800px; height: 600px; top: 0px; left: 200px">
+      style="z-index: 199; display: none; position: absolute; opacity: 1.0; background-color: white; width: 800px; top: 0px; left: 200px">
       <table id="zone_config_table"
         style="position: absolute; text-align: center">
         <colgroup>
@@ -140,28 +140,27 @@
       </table>
     </div>
     <div id="run_table_buttons_div"
-      style="z-index: 199; display: none; position: absolute; top: 10px;">
-      Run mins<input id="runtime_mins_input" 
-        style="position: relative; left: 10px; width: 80px;"/>
+      style="z-index: 199; display: none; position: relative; top: 10px; left:10px;">
+      <input id="runtime_mins_input" 
+        style="left: 10px; height: 40px; width: 40px; text-align: center; font-size: 1.5em; "/>
+        <div style="display: inline-block; font-size:1.5em; padding-left:10px;">mins</div>
       <button id="run_button" class="button text-button"
         style="position: relative; color: grey; left: 10px; width: 80px;">Run</button>
-      <button id="run_exit_button" class="button text-button"
-        style="position: relative; color: grey; left: 10px; width: 80px;">Exit</button>
     </div>
     <div id="run_table_div"
-      style="z-index: 199; display: none; position: absolute; opacity: 1.0; background-color: white; width: 800px; height: 600px; top: 0px; left: 200px">
+      style="z-index: 199; display: none; position: relative; opacity: 1.0; background-color: white; width: 500px; top: 0px; left: 170px">
       <table id="run_table" style="position: absolute; text-align: center">
         <colgroup>
           <col style="width: 200px" />
-          <col style="width: 200px" />
-          <col style="width: 100px" />
+          <col style="width: 170px" />
+          <col style="width: 120px" />
         </colgroup>
         <thead>
           <tr>
             <td id="running_zone_name"></td>
             <td id="running_zone_countdown"></td>
             <td><button id="run_cancel_button_running" class="button text-button"
-                style="display: none; width: 80px;">Cancel</button></td>
+                style="display: none; width: 100px;">Cancel</button></td>
           </tr>
         </thead>
         <tbody></tbody>

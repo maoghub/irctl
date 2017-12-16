@@ -39,7 +39,7 @@
 }
 
 .selected {
-  background: #f7f4dd;
+  background: #f7f4dd !important;
 }
 
 .grey-text {
@@ -107,29 +107,6 @@ button.text-button {
   height: 40px;
   font-size: 1.2em;
   text-align: center;
-}
-
-.table_del_button .ui-button-icon-primary {
-  margin-top: -5px;
-  margin-left: -6px;
-}
-
-.table_del_button .ui-button-text {
-  padding-left: 2px;
-}
-
-.large-del-button .ui-button-icon-primary {
-  top: 2px;
-  margin-left: -5px;
-}
-
-.large-del-button .ui-button-text {
-  padding-left: 0px;
-}
-
-.large-del-button2 .ui-button-icon-primary {
-  top: 2px;
-  margin-left: -5px;
 }
 
 /********************************************************************************** 
@@ -218,8 +195,8 @@ div.weather-icon {
 #run_table thead td {
   height: 60px;
   white-space: normal;
-  color: #eeeeee;
-  background-color: #808080;
+  color: #222222;
+  background-color: #ffffff;
   font-size: 1.5em;
   vertical-align: middle;
   text-decoration: bold;
