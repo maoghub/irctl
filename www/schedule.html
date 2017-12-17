@@ -5,17 +5,19 @@
 
 <link rel="stylesheet" type="text/css" href="css/table.css" />
 <link rel="stylesheet" type="text/css"
-  href="css/ui-lightness/jquery-ui-1.10.1.custom.css" />
+	href="css/ui-lightness/jquery-ui-1.10.1.custom.css" />
 <link rel="stylesheet" type="text/css" href="css/form.css" />
 <link rel="stylesheet" type="text/css" href="css/jquery.countdown.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-<link rel="stylesheet" type="text/css" href="css/bootstrap-responsive.css" />
+<link rel="stylesheet" type="text/css"
+	href="css/bootstrap-responsive.css" />
 <link rel="stylesheet" href="css/jquery.ui.timepicker.css" />
 
 <!-- BEGIN: load jquery -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script
-  src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script src="js/jquery.easy-confirm-dialog.js"></script>
 <script src="js/jquery.plugin.min.js"></script>
 <script src="js/jquery.countdown.min.js"></script>
@@ -33,29 +35,29 @@
 
 <style type="text/css" media="screen">
 .jqplot-axis {
-  font-size: 1.0em;
-  margin-right: 10px;
+	font-size: 1.0em;
+	margin-right: 10px;
 }
 
 .jqplot-yaxis {
-  position: absolute;
+	position: absolute;
 }
 
 .jqplot-yaxis-label {
-  margin-right: 20px;
-  font-size: 1.0em;
-  position: right;
+	margin-right: 20px;
+	font-size: 1.0em;
+	position: right;
 }
 
 .data-chart {
-  margin-top: 0em;
-  z-index: 100;
+	margin-top: 0em;
+	z-index: 100;
 }
 
 .data-chart .jqplot-point-label {
-  border: 1.5px solid #aaaaaa;
-  padding: 5px 5px;
-  background-color: #eeccdd;
+	border: 1.5px solid #aaaaaa;
+	padding: 5px 5px;
+	background-color: #eeccdd;
 }
 </style>
 
@@ -63,109 +65,105 @@
 
 <body style="width: 100%; height: 100%; padding: 0px; margin: 0px">
 
-  <div style="">
+	<div style="">
 
-    <!------------------------------------------------------------------------------>
-    <!-- ************************ BUTTONS *************************************** -->
-    <!------------------------------------------------------------------------------>
+		<div data-layer="schedule">
+			<div
+				style="display: block; position: absolute; top: 0px; left: 0px; width: 100%; height: 100px;">
+				<img id="settings_button" src="img/buttons/settings.png"
+					class="button has-help" onclick="displayZoneConfigTable()"
+					data-layer="schedule"
+					style="position: absolute; z-index: 30; display: inline-block; top: 5px; left: 10px;">
 
-    <!-- div
-		style="display: block; position: absolute; top: 0px; left: 0px; width: 100%; height: 100px">
-		<img id="water_now_button" src="img/buttons/water_now.png"
-			class="button has-help" onclick="displayRunNowTable()"
-			style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 10px;">
+				<img id="alarms_button" src="img/buttons/alarm.png"
+					class="button has-help"
+					style="position: absolute; display: none; top: 5px; left: 65px;">
 
-		<img id="settings_button" src="img/buttons/settings.png"
-			class="button has-help" onclick="displaySystemSettingsTable()"
-			style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 60px;">
+				<img id="left_arrow_button" src="img/buttons/left.png"
+					class="button has-help"
+					style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 170px;">
 
-		<img id="graphs_button" src="img/buttons/graphs.png"
-			class="button has-help" onclick="redrawGraphs()"
-			style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 110px;">
+				<img id="right_arrow_button" src="img/buttons/right.png"
+					class="button has-help"
+					style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 710px;">
 
-		<img id="alarms_button" src="img/buttons/alarm.png"
-			class="button has-help"
-			style="position: absolute; display: none; top: 10px; left: 160px;">
+				<div id="schedule_table_div"
+					style="z-index: 1; display: block; position: relative; height 300px; top: 0px; left: 10px;"></div>
 
-		<img id="left_arrow_button" src="img/buttons/left.png"
-			class="button has-help"
-			style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 230px;">
+				<div id="run_table_buttons_div"
+					style="z-index: 199; display: none; position: relative; top: 10px; left: 10px;">
+					<input id="runtime_mins_input"
+						style="left: 10px; height: 40px; width: 40px; text-align: center; font-size: 1.5em;" />
+					<div
+						style="display: inline-block; font-size: 1.5em; padding-left: 5px;">mins</div>
+					<button id="run_button" class="text-button"
+						style="position: relative; color: grey; left: 5px; width: 80px;">Run</button>
+				</div>
 
-		<img id="right_arrow_button" src="img/buttons/right.png"
-			class="button has-help"
-			style="position: absolute; z-index: 30; display: inline-block; top: 10px; left: 750px;">
+				<div id="run_table_div"
+					style="z-index: 199; display: none; position: relative; opacity: 1.0; background-color: white; width: 500px; top: 0px; left: 20px">
+					<table id="run_table"
+						style="position: absolute; text-align: center">
+						<colgroup>
+							<col style="width: 200px" />
+							<col style="width: 170px" />
+							<col style="width: 120px" />
+						</colgroup>
+						<thead>
+							<tr>
+								<td id="running_zone_name"></td>
+								<td id="running_zone_countdown"></td>
+								<td><button id="run_cancel_button_running"
+										class="text-button" style="display: none; width: 100px;">Cancel</button></td>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
 
+			</div>
+		</div>
+		<div data-layer="config">
+
+			<div id="zone_config_table_buttons_div"
+				style="z-index: 199; display: none; position: absolute; top: 10px;">
+				<button id="save_button" class="button text-button"
+					style="position: relative; color: green; left: 10px; width: 80px;">Save</button>
+				<button id="done_button" class="button text-button"
+					style="position: relative; color: grey; left: 10px; width: 80px;">Done</button>
+			</div>
+			<div id="zone_config_table_div" data-layer="config"
+				style="z-index: 199; display: none; position: relative; opacity: 1.0; background-color: white; width: 800px; top: 0px; left: 200px">
+				<table id="zone_config_table"
+					style="position: absolute; text-align: center">
+					<colgroup>
+						<col style="width: 60px" />
+						<col style="width: 60px" />
+						<col style="width: 60px" />
+						<col style="width: 60px" />
+						<col style="width: 60px" />
+						<col style="width: 60px" />
+						<col style="width: 60px" />
+					</colgroup>
+					<thead>
+						<tr>
+							<td>Run</td>
+							<td>Rain</td>
+							<td>ETRate</td>
+							<td>RunMult</td>
+							<td>DepthIn</td>
+							<td>MinVWC</td>
+							<td>MaxVWC</td>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
 		<div id="help_box" class="help-box"
 			style="z-index: -1; position: absolute; top: 380px; left: 15px; width: 500px;"></div>
-	</div-->
-    <!------------------------------------------------------------------------------>
-    <!-- ************************ DYNAMIC TABLES ******************************** -->
-    <!------------------------------------------------------------------------------>
 
-    <div id="schedule_table_div"
-      style="z-index: 1; display: block; position: relative; height 300px; top: 0px; left: 10px;"></div>
-    <div id="zone_config_table_buttons_div"
-      style="z-index: 199; display: none; position: absolute; top: 10px;">
-      <button id="save_button" class="button text-button"
-        style="position: relative; color: green; left: 10px; width: 80px;">Save</button>
-      <button id="done_button" class="button text-button"
-        style="position: relative; color: grey; left: 10px; width: 80px;">Done</button>
-    </div>
-    <div id="zone_config_table_div"
-      style="z-index: 199; display: none; position: absolute; opacity: 1.0; background-color: white; width: 800px; top: 0px; left: 200px">
-      <table id="zone_config_table"
-        style="position: absolute; text-align: center">
-        <colgroup>
-          <col style="width: 60px" />
-          <col style="width: 60px" />
-          <col style="width: 60px" />
-          <col style="width: 60px" />
-          <col style="width: 60px" />
-          <col style="width: 60px" />
-          <col style="width: 60px" />
-        </colgroup>
-        <thead>
-          <tr>
-            <td>Run</td>
-            <td>Rain</td>
-            <td>ETRate</td>
-            <td>RunMult</td>
-            <td>DepthIn</td>
-            <td>MinVWC</td>
-            <td>MaxVWC</td>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div id="run_table_buttons_div"
-      style="z-index: 199; display: none; position: relative; top: 10px; left:10px;">
-      <input id="runtime_mins_input" 
-        style="left: 10px; height: 40px; width: 40px; text-align: center; font-size: 1.5em; "/>
-        <div style="display: inline-block; font-size:1.5em; padding-left:10px;">mins</div>
-      <button id="run_button" class="text-button"
-        style="position: relative; color: grey; left: 10px; width: 80px;">Run</button>
-    </div>
-    <div id="run_table_div"
-      style="z-index: 199; display: none; position: relative; opacity: 1.0; background-color: white; width: 500px; top: 0px; left: 170px">
-      <table id="run_table" style="position: absolute; text-align: center">
-        <colgroup>
-          <col style="width: 200px" />
-          <col style="width: 170px" />
-          <col style="width: 120px" />
-        </colgroup>
-        <thead>
-          <tr>
-            <td id="running_zone_name"></td>
-            <td id="running_zone_countdown"></td>
-            <td><button id="run_cancel_button_running" class="text-button"
-                style="display: none; width: 100px;">Cancel</button></td>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+	</div>
 </body>
 </html>
 
