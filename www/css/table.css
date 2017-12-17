@@ -2,93 +2,93 @@
                                 VISUAL STYLES
 ***********************************************************************************/
 .blue-gradient {
-  background-image: -moz-linear-gradient(top, #ffffff 0%, #ABDEED 100%);
+	background-image: -moz-linear-gradient(top, #ffffff 0%, #ABDEED 100%);
 }
 
 .orange-gradient {
-  background-image: -moz-linear-gradient(top, #cccccc 0%, #FFB870 100%);
+	background-image: -moz-linear-gradient(top, #cccccc 0%, #FFB870 100%);
 }
 
 .green-gradient {
-  background-image: -moz-linear-gradient(top, #fcfff4 0%, #e9e9ce 100%);
+	background-image: -moz-linear-gradient(top, #fcfff4 0%, #e9e9ce 100%);
 }
 
 .grey-gradient {
-  background: -moz-linear-gradient(top, rgba(252, 255, 244, 1) 0%,
-    rgba(223, 229, 215, 1) 40%, rgba(179, 190, 173, 1) 100%);
+	background: -moz-linear-gradient(top, rgba(252, 255, 244, 1) 0%,
+		rgba(223, 229, 215, 1) 40%, rgba(179, 190, 173, 1) 100%);
 }
 
 .light-green {
-  background: #c9d9aa;
+	background: #c9d9aa;
 }
 
 .medium-green {
-  background: #acc587;
+	background: #acc587;
 }
 
 .light-grey {
-  background: #cbcbcb;
+	background: #cbcbcb;
 }
 
 .light-blue {
-  background: #a1c2dd;
+	background: #a1c2dd;
 }
 
 .light-yellow {
-  background: #f7f4dd;
+	background: #f7f4dd;
 }
 
 .selected {
-  background: #f7f4dd !important;
+	background: #f7f4dd !important;
 }
 
 .grey-text {
-  color: #606060;
+	color: #606060;
 }
 
 .highlightable {
-  background: #DCE7EC;
+	background: #DCE7EC;
 }
 
 .medium-font {
-  font-size: 1.3em;
+	font-size: 1.3em;
 }
 
 input.medium-font {
-  border-radius: 3px;
+	border-radius: 3px;
 }
 
 /********************************************************************************** 
                                 MISC ELEMENTS
 ***********************************************************************************/
 .styled-select select {
-  display: inline-block;
-  background: transparent;
-  width: 120px;
-  padding: 2px 5px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  height: 26px;
-  -webkit-appearance: none;
+	display: inline-block;
+	background: transparent;
+	width: 120px;
+	padding: 2px 5px;
+	font-size: 14px;
+	border: 1px solid #ccc;
+	height: 26px;
+	-webkit-appearance: none;
 }
 
 .styled-select {
-  display: inline-block;
-  width: 120px;
-  height: 26px;
-  overflow: hidden;
-  background: url(/images/dropdown2.png) no-repeat 96% #ddd;
+	display: inline-block;
+	width: 120px;
+	height: 26px;
+	overflow: hidden;
+	background: url(/images/dropdown2.png) no-repeat 96% #ddd;
 }
 
 .help-box {
-  font: normal 14px Verdana, Geneva, Arial, Helvetica, sans-serif;
-  vertical-align: top;
-  border: 1px solid #ffffff;
-  border-radius: 5px;
-  padding: 4px 8px;
-  font-size: 14px;
-  text-align: left;
-  color: #808080;
+	font: normal 14px Verdana, Geneva, Arial, Helvetica, sans-serif;
+	vertical-align: top;
+	border: 1px solid #ffffff;
+	border-radius: 5px;
+	padding: 4px 8px;
+	font-size: 14px;
+	text-align: left;
+	color: #808080;
 }
 /*
 button.enabled-button {
@@ -104,167 +104,178 @@ button.enabled-button:hover {
 }
 */
 button.text-button {
-  height: 40px;
-  font-size: 14pt !important;
-  text-align: center;
-  border-radius: 3px;
+	height: 40px;
+	font-size: 14pt !important;
+	text-align: center;
+	border-radius: 3px;
 }
 
-button.text-button:hover {
-  border: 1px solid #606060;
-  background: #f7f4dd;
+button.text-button:hover:enabled {
+	border: 1px solid #606060;
+	background: #f7f4dd;
 }
 
 /********************************************************************************** 
                                 SCHEDULE TABLE
 ***********************************************************************************/
 #schedule_table table {
-  font: normal 76%/150% "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial,
-    Helvetica, sans-serif;
+	font: normal 76%/150% "Lucida Grande", "Lucida Sans Unicode", Verdana,
+		Arial, Helvetica, sans-serif;
 }
 
 #schedule_table thead th, #schedule_table thead td, #schedule_table tfoot th,
-  #schedule_table tfoot td {
-  white-space: nowrap;
+	#schedule_table tfoot td {
+	white-space: nowrap;
 }
 
 #schedule_table th {
-  font-weight: bold;
-  line-height: normal;
+	font-weight: bold;
+	line-height: normal;
 }
 
 #schedule_table tbody th {
-  font-weight: normal;
-  white-space: nowrap;
+	font-weight: normal;
+	white-space: nowrap;
 }
 
 #schedule_table tbody tr.odd th, #schedule_table tbody tr.odd td {
-  background: #E7E4DD;
+	background: #E7E4DD;
 }
 
-table#schedule_table tbody tr td.selectable:hover {
-  color: #404040;
-  background: #f7f4dd;
+table#schedule_table tbody tr td.zone-name.selectable:hover {
+	color: #404040;
+	background: #f7f4dd;
 }
 
 #schedule_table tbody tr td {
-  height: 39px;
-  vertical-align: middle;
-  color: #606060;
-  font-weight: normal;
-  font-size: 1.3em;
-  text-align: left;
+	height: 39px;
+	vertical-align: middle;
+	color: #606060;
+	font-weight: normal;
+	font-size: 1.3em;
+	text-align: left;
 }
 
 div.weather-icon {
-  color: brown;
-  font-size: 80%;
+	color: brown;
+	font-size: 80%;
 }
 
-#schedule_table tr.day-row .day-label, #schedule_table tr.date-row .date-label {
-  border-right: 1px dashed #888888;
-  background: #e3eeee;
+#schedule_table tr.day-row .day-label, #schedule_table tr.date-row .date-label
+	{
+	border-right: 1px dashed #888888;
+	background: #e3eeee;
 }
 
 #schedule_table tr.day-row td.day-label, #schedule_table tr.date-row td.date-label
-  {
-  padding: 5px 0px;
-  text-align: center;
-  font-size: 1.0em;
+	{
+	padding: 5px 0px;
+	text-align: center;
+	font-size: 1.0em;
 }
 
 #schedule_table tr.weather-row td, #schedule_table tr.weather-row td {
-  padding: 2px 5px;
-  text-align: center;
-  background-repeat: no-repeat;
+	padding: 2px 5px;
+	text-align: center;
+	background-repeat: no-repeat;
 }
 
 #schedule_table tbody tr td .zone-name {
-  padding-left: 10px;
+	padding-left: 4px;
+	font-size: 14pt;
 }
 
 #schedule_table .schedule-entry {
-  text-align: center;
-  align: center;
-  margin: 0;
+	text-align: center;
+	align: center;
+	margin: 0;
 }
 
 /********************************************************************************** 
                                 RUN NOW TABLE
 ***********************************************************************************/
 #run_table {
-  opacity: 1.0;
-  background-color: white;
-  z-index: 10;
+	opacity: 1.0;
+	background-color: white;
+	z-index: 10;
 }
 
 #run_table thead td {
-  height: 60px;
-  white-space: normal;
-  color: #222222;
-  background-color: #ffffff;
-  font-size: 1.5em;
-  vertical-align: middle;
-  text-decoration: bold;
-  padding: 10px 10px;
-  white-space: normal;
+	height: 60px;
+	white-space: normal;
+	color: #222222;
+	background-color: #ffffff;
+	font-size: 1.5em;
+	vertical-align: middle;
+	text-decoration: bold;
+	padding: 10px 10px;
+	white-space: normal;
 }
 
 #run_table tbody tr td {
-  height: 39px;
-  vertical-align: middle;
-  color: #606060;
-  font-weight: normal;
-  font-size: 1.2em;
-  opacity: 1.0;
-  background-color: white;
+	height: 39px;
+	vertical-align: middle;
+	color: #606060;
+	font-weight: normal;
+	font-size: 1.2em;
+	opacity: 1.0;
+	background-color: white;
 }
 
 /********************************************************************************** 
                                 ZONE TABLE
 ***********************************************************************************/
 #zone_config_table {
-  opacity: 1.0;
-  background-color: white;
-  z-index: 10;
+	opacity: 1.0;
+	background-color: white;
+	z-index: 10;
 }
 
 #zone_config_table thead td {
-  height: 60px;
-  white-space: normal;
-  color: #eeeeee;
-  background-color: #808080;
-  font-size: 1.2em;
-  text-align: center;
-  vertical-align: middle;
-  text-decoration: bold;
-  padding: 10px 10px;
-  border-right: 1px dashed #d0d0d0 !important;
-  white-space: normal;
+	height: 60px;
+	white-space: normal;
+	color: #eeeeee;
+	background-color: #808080;
+	font-size: 14pt;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: bold;
+	padding: 10px 10px;
+	border-right: 1px dashed #d0d0d0 !important;
+	white-space: normal;
+}
+
+#zone_config_table thead tr td:nth-child(1) {
+	background-color: white;
 }
 
 #zone_config_table tbody tr td {
-  height: 39px;
-  vertical-align: middle;
-  text-align: center;
-  color: #606060;
-  font-weight: normal;
-  font-size: 0.9em;
-  opacity: 1.0;
-  background-color: white;
+	height: 39px;
+	vertical-align: middle;
+	text-align: center;
+	color: #606060;
+	font-weight: normal;
+	font-size: 14pt;
+	opacity: 1.0;
+	background-color: white;
+}
+
+#zone_config_table tbody tr td:nth-child(1) {
+	text-align: left;
+	padding-left: 5px;
 }
 
 #zone_config_table tbody tr td input[type="checkbox"] {
-  height: 30px;
-  width: 30px;
+	height: 30px;
+	width: 30px;
 }
 
 #zone_config_table tbody tr td input[type="text"] {
-  margin: 2px 5px 2px 5px;
-  width: 50px;
-  text-align: center;
+	margin: 2px 5px 2px 5px;
+	width: 50px;
+	text-align: center;
 }
 
 table#zone_config_table tbody tr.odd td {
-  background: #E7E4DD;
+	background: #E7E4DD;
 }

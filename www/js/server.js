@@ -86,7 +86,7 @@ function processConfFileResponse(data) {
 	if (ret.err) {
 		return ret.err;
 	}
-	airportCode = ret.val;
+	g.airportCode = ret.val;
 
 	runtimePath = "GlobalConfig.RunTimeAM";
 	ret = getPathValue(conf, runtimePath);
@@ -104,7 +104,7 @@ function processConfFileResponse(data) {
 		return "bad time string for " + runtimePath + ":" + ret.val;
 	}
 
-	runTime = hrv[1] + ":" + tv[1];
+	g.runTime = hrv[1] + ":" + tv[1];
 
 	err = parseZoneConfigs(conf);
 	if (err) {
@@ -115,7 +115,7 @@ function processConfFileResponse(data) {
 		return err;
 	}
 
-	globalConf = conf;
+	g.globalConf = conf;
 }
 
 function parseZoneConfigs(tree) {
@@ -145,9 +145,9 @@ function parseZoneConfigs(tree) {
 		SetDefaultIfMissing(zconf, "MaxVWC", 100);
 
 		nz = parseInt(num);
-		zoneConf[nz] = zconf;
-		if (nz + 1 > numZones) {
-			numZones = nz + 1;
+		g.zoneConf[nz] = zconf;
+		if (nz + 1 > g.numZones) {
+			g.numZones = nz + 1;
 		}
 	}
 }
@@ -293,9 +293,9 @@ function processConditionsResponse(data) {
 	for (i = 0; i < ja.length; i++) {
 		date = new Date(ja[i]["Date"]);
 		dateStr = DateString(date);
-		iconHistory[dateStr] = ja[i]["Icon"];
-		tempHistory[dateStr] = ja[i]["Temp"];
-		precipHistory[dateStr] = ja[i]["Precip"];
+		g.iconHistory[dateStr] = ja[i]["Icon"];
+		g.tempHistory[dateStr] = ja[i]["Temp"];
+		g.precipHistory[dateStr] = ja[i]["Precip"];
 	}
 }
 
@@ -309,7 +309,7 @@ function processRuntimesResponse(data) {
 	for (i = 0; i < ja.length; i++) {
 		date = new Date(ja[i]["Date"]);
 		dateStr = DateString(date);
-		runtimeHistory[dateStr] = ja[i]["Runtimes"];
+		g.runtimeHistory[dateStr] = ja[i]["Runtimes"];
 	}
 }
 
@@ -334,66 +334,13 @@ function postSave()
 		error:   saveToServerError
 	});
 
-	str = jQuery.param(globalConf);
+	str = jQuery.param(g.globalConf);
 	writeStatus(str);
 
 	$.post(posturl, str, function(data){ postDone(data);});
 
-	str = jQuery.param(zoneConf);
+	str = jQuery.param(g.zoneConf);
 	writeStatus(str);
-}
-
-
-/*-------------------------------------------------------------------------------------------------------------*/
-/**
- * @fn mustSave
- * 
- * @brief Called to indicate that some values have changed from the saved ones.
- */
-/*-------------------------------------------------------------------------------------------------------------*/
-
-function mustSave()
-{
-	$('#cancel_button').button({disabled:false});
-	$('#save_button').button({disabled:false});
-	$('#cancel_button').addClass('enabled-button');
-	$('#save_button').addClass('enabled-button');
-	mustSave = true;
-}
-
-function copyUItoMemoryValues()
-{
-	if (displayedMenu == 'system_settings_table')
-	{
-		globalConf.climateZone = $('#climate_zone_text').val();
-		globalConf.weatherStation = $('#weather_station_text').val();
-		globalConf.runTime1 = $("#watering_time_spinner").timespinner('value');
-	}
-	else if (displayedMenu == 'email_settings_table')
-	{
-		globalConf.email = $('#email_address_text').val();
-		globalConf.sendSummary = $('#send_summary_text').val();
-	}
-	else if (displayedMenu == 'display_settings_table')
-	{
-		globalConf.historyDays = $("#history_days_spinner").spinner('value');
-		globalConf.waterDisplay = $('#water_display_select').val();
-		globalConf.units        = $('#units_select').val();
-	}
-	else if (displayedMenu == 'plants_table')
-	{
-		zoneConf[selectedZone].plantProperties.dormant = $("#dormant_months").slider('values', 0) + '-' + $("#dormant_months").slider('values', 1);
-		zoneConf[selectedZone].plantProperties.type    = $('#plant_type1').val()+'-'+ $("#plant_pct1").val() +'+'
-		+$('#plant_type2').val +'-'+ $("#plant_pct2").val();
-	}
-	else if (displayedMenu == 'environment_table')
-	{
-		zoneConf[selectedZone].environment.wetness = $("#wetness_slider_div").slider('value');
-		zoneConf[selectedZone].environment.inPots  = $("#planted_in_select").val() == 'pots' ? 1 : 0;
-		zoneConf[selectedZone].environment.getRain = $("#receives_rain_select").val() == 'Receives rain' ? 1 : 0;
-		zoneConf[selectedZone].environment.soil    = $("#soil_type_select").val();
-		zoneConf[selectedZone].environment.light   = $("#exposure_select").val();
-	}
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/

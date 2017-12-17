@@ -1,21 +1,13 @@
-var MAX_RUNTIME_SLOTS = 5;
-
-var scheduledRuntimeSlots = 0;
-var runTable = [];
-var running = false;
-
-var currentLayer = "schedule";
 /*
- * =====================================================
- * ================ SCHEDULE TABLE =====================
+ * ===================================================== ================
+ * SCHEDULE TABLE =====================
  * =====================================================
  */
 
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
  * @fn displayScheduleTable
- * @brief Display the schedule table. This table is dynamically generated, so
- *        there's no update function. It must be rebuilt every time.
+ * @brief Display the schedule table.
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -47,8 +39,8 @@ function displayScheduleTable() {
 	tableHTML += '	      <td></td> \r\n';
 
 	for (i = 0; i < numDays; i++) {
-		d.setTime(toDate.getTime());
-		d.setDate(toDate.getDate() - (numDays - 1) + i);
+		d.setTime(g.toDate.getTime());
+		d.setDate(g.toDate.getDate() - (numDays - 1) + i);
 
 		dayStr = dayNameStr[d.getDay()];
 
@@ -70,12 +62,12 @@ function displayScheduleTable() {
 	tableHTML += '	      <td></td> \r\n';
 
 	for (i = 0; i < numDays; i++) {
-		d.setTime(toDate.getTime());
-		d.setDate(toDate.getDate() - (numDays - 1) + i);
+		d.setTime(g.toDate.getTime());
+		d.setDate(g.toDate.getDate() - (numDays - 1) + i);
 		var dstr = DateString(d);
-		var temp = Math.round(tempHistory[dstr]);
+		var temp = Math.round(g.tempHistory[dstr]);
 
-		tableHTML += ' <td background="img/weather/' + iconHistory[dstr]
+		tableHTML += ' <td background="img/weather/' + g.iconHistory[dstr]
 				+ '.png"' + 'width="60px"><div data-table-col="' + i
 				+ '" class="weather-icon" align="right"><b>' + temp
 				+ '</b></td> \r\n';
@@ -88,21 +80,21 @@ function displayScheduleTable() {
 
 	// ---- Schedule ----
 
-	for (z = 0; z < numZones; z++) {
+	for (z = 0; z < g.numZones; z++) {
 		var oddStr = '';
 		if (z % 2) {
 			oddStr = 'class="odd"';
 		}
 		tableHTML += '	    <tr ' + oddStr + '> \r\n';
 		tableHTML += '	      <td><div class="zone-name selectable" value="'
-				+ z.toString() + '">' + zoneConf[z].Name + '</div></td> \r\n';
+				+ z.toString() + '">' + g.zoneConf[z].Name + '</div></td> \r\n';
 
 		for (i = 0; i < numDays; i++) {
-			d.setTime(toDate.getTime());
-			d.setDate(toDate.getDate() - (numDays - 1) + i);
+			d.setTime(g.toDate.getTime());
+			d.setDate(g.toDate.getDate() - (numDays - 1) + i);
 			var dstr = DateString(d);
 
-			var runTime = Math.round(runtimeHistory[dstr][z]);
+			var runTime = Math.round(g.runtimeHistory[dstr][z]);
 
 			tableHTML += '	      <td data-table-col="' + i
 					+ '" class="schedule-entry">' + runTime + '</td> \r\n';
@@ -118,11 +110,18 @@ function displayScheduleTable() {
 
 	$("#schedule_table").remove();
 	$("#schedule_table_div").append(tableHTML);
+	
+	$('.zone-name').click(function(event) {
+		$('.zone-name').parent().removeClass("selected");
+		var target = $(this);
+		target.parent().addClass('selected');
+		g.selectedZone = $(this).attr('value');
+	});
 }
 
 /*
- * =====================================================
- * ================== CONFIG TABLE =====================
+ * ===================================================== ==================
+ * CONFIG TABLE =====================
  * =====================================================
  */
 
@@ -134,90 +133,96 @@ function displayScheduleTable() {
 /*-------------------------------------------------------------------------------------------------------------*/
 function displayZoneConfigTable() {
 	showLayer("config");
+	$('#save_button').button("option", "disabled", true);
 
 	var tableHTML = '';
 
-	for (z = 0; z < numZones; z++) {
+	for (z = 0; z < g.numZones; z++) {
 		var oddStr = '';
 		if (z % 2) {
 			oddStr = 'class="odd"';
 		}
 		tableHTML += '      <tr ' + oddStr + '> \r\n';
-		tableHTML += '        <td><input type="checkbox" class="cv run-checkbox"'
-				+ boolToChecked(zoneConf[z].Enabled) + '></td> \r\n';
+		tableHTML += '        <td>' + g.zoneConf[z].Name + '</td> \r\n';
+		tableHTML += '        <td><input type="checkbox" class="run-checkbox"'
+				+ boolToChecked(g.zoneConf[z].Enabled) + '></td> \r\n';
 		tableHTML += '        <td><input type="checkbox" class="rain-checkbox" '
-				+ boolToChecked(zoneConf[z].GetsRain) + '></td> \r\n';
+				+ boolToChecked(g.zoneConf[z].GetsRain) + '></td> \r\n';
 		tableHTML += '        <td><input type="text" class="etrate-input" value="'
-				+ zoneConf[z].ZoneETRate + '"></td> \r\n';
+				+ g.zoneConf[z].ZoneETRate + '"></td> \r\n';
 		tableHTML += '        <td><input type="text" class="runmult-input" value="'
-				+ zoneConf[z].RunTimeMultiplier + '"></td> \r\n';
+				+ g.zoneConf[z].RunTimeMultiplier + '"></td> \r\n';
 		tableHTML += '        <td><input type="text" class="depthin-input" value="'
-				+ zoneConf[z].DepthIn + '"></td> \r\n';
+				+ g.zoneConf[z].DepthIn + '"></td> \r\n';
 		tableHTML += '        <td><input type="text" class="minvwc-input" value="'
-				+ zoneConf[z].MinVWC + '"></td> \r\n';
+				+ g.zoneConf[z].MinVWC + '"></td> \r\n';
 		tableHTML += '        <td><input type="text" class="maxvwc-input" value="'
-				+ zoneConf[z].MaxVWC + '"></td> \r\n';
+				+ g.zoneConf[z].MaxVWC + '"></td> \r\n';
 		tableHTML += '      </tr> \r\n';
 	}
 
 	tableHTML += '      <tr style="height: 40px; font-size: 1.2em;"> \r\n';
 	tableHTML += '      <td></td> \r\n';
-	tableHTML += '      <td colspan="3">Airport code<input type="text" id="airport_code" style="width: 80px;" value="'
-			+ airportCode + '"></td> \r\n';
+	tableHTML += '      <td colspan="4">Airport code<input type="text" id="airport_code" style="width: 80px;" value="'
+			+ g.airportCode + '"></td> \r\n';
 	tableHTML += '      <td colspan="3">Run time<input type="text" id="runtime_input" style="width: 80px;" value="'
-			+ runTime + '"></td> \r\n';
+			+ g.runTime + '"></td> \r\n';
 	tableHTML += '      </tr> \r\n';
 
-	$("#zone_config_table > tbody").html(tableHTML);
-	$('#zone_config_table_div').css('display', 'inline-block');
-	$('#zone_config_table_buttons_div').css('display', 'inline-block');
-	$('.cv').change(onValueChange);
-	$('#zone_config_table > tr > td > input').change(onValueChange);
+	$("#zone_config_table tbody").html(tableHTML);
+	$('#zone_config_table tbody > tr > td > input').change(onValueChange);
+
+	$('#runtime_input').timepicker({
+		showPeriod : true,
+		showLeadingZero : false
+	});
+
 }
 
+// Convert a bool value to "checked" or "". 
 function boolToChecked(boolVal) {
 	return boolVal ? "checked" : "";
 }
 
+// Copy values from UI to globalConf.
 function copyUIToConfig() {
-	for (z = 0; z < numZones; z++) {
+	for (z = 0; z < g.numZones; z++) {
 		zn = (z + 1).toString()
-		zoneConf[z].Enabled = $(
+		g.zoneConf[z].Enabled = $(
 				'#zone_config_table tr:eq(' + zn + ') td input.run-checkbox')
 				.is(':checked');
-		zoneConf[z].GetsRain = $(
+		g.zoneConf[z].GetsRain = $(
 				'#zone_config_table tr:eq(' + zn + ') td input.rain-checkbox')
 				.is(':checked');
-		zoneConf[z].ZoneETRate = parseFloat($(
+		g.zoneConf[z].ZoneETRate = parseFloat($(
 				'#zone_config_table tr:eq(' + zn + ') td input.etrate-input')
 				.val());
-		zoneConf[z].RunTimeMultiplier = parseFloat($(
+		g.zoneConf[z].RunTimeMultiplier = parseFloat($(
 				'#zone_config_table tr:eq(' + zn + ') td input.runmult-input')
 				.val());
-		zoneConf[z].DepthIn = parseFloat($(
+		g.zoneConf[z].DepthIn = parseFloat($(
 				'#zone_config_table tr:eq(' + zn + ') td input.depthin-input')
 				.val());
-		zoneConf[z].MinVWC = parseFloat($(
+		g.zoneConf[z].MinVWC = parseFloat($(
 				'#zone_config_table tr:eq(' + zn + ') td input.minvwc-input')
 				.val());
-		zoneConf[z].MaxVWC = parseFloat($(
+		g.zoneConf[z].MaxVWC = parseFloat($(
 				'#zone_config_table tr:eq(' + zn + ') td input.maxvwc-input')
 				.val());
 	}
 
-	globalConf.GlobalConfig.AirportCode = $('#airport_code').val();
-	globalConf.GlobalConfig.RunTimeAM = "0000-01-01T"
+	g.globalConf.GlobalConfig.AirportCode = $('#airport_code').val();
+	g.globalConf.GlobalConfig.RunTimeAM = "0000-01-01T"
 			+ $('#runtime_input').val() + "Z";
-	globalConf.ZoneConfigs = zoneConf;
+	g.globalConf.ZoneConfigs = g.zoneConf;
 
-	console.log(JSON.stringify(globalConf, null, 2));
+	console.log(JSON.stringify(g.globalConf, null, 2));
 }
 
 // //////////////// Event handlers ///////////////////
 
 function onDoneButtonClick() {
-	$('#zone_config_table_div').css('display', 'none');
-	$('#zone_config_table_buttons_div').css('display', 'none');
+	displayScheduleTable();
 }
 
 function onSaveButtonClick() {
@@ -229,8 +234,8 @@ function onValueChange() {
 }
 
 /*
- * =====================================================
- * =================== RUN TABLE =======================
+ * ===================================================== =================== RUN
+ * TABLE =======================
  * =====================================================
  */
 
@@ -245,10 +250,10 @@ function displayRunTable() {
 	$('#run_table_buttons_div').css('display', 'inline-block');
 
 	var tableHTML = '';
-	for (i = 0; i < scheduledRuntimeSlots; i++) {
+	for (i = 0; i < g.scheduledRuntimeSlots; i++) {
 		tableHTML += '      <tr> \r\n';
-		tableHTML += '        <td>' + runTable[i].ZoneName + ' </td> \r\n';
-		tableHTML += '        <td>' + runTable[i].RunMins + ' </td> \r\n';
+		tableHTML += '        <td>' + g.runTable[i].ZoneName + ' </td> \r\n';
+		tableHTML += '        <td>' + g.runTable[i].RunMins + ' </td> \r\n';
 		tableHTML += '        <td><button value="'
 				+ i.toString()
 				+ '" class="run-cancel-button text-button" style="width: 80px;">Cancel</button></td> \r\n';
@@ -259,58 +264,51 @@ function displayRunTable() {
 
 	$('.run-cancel-button').button();
 	$('.run-cancel-button').click(onRunCancelButtonClick);
-
-	$('.zone-name').click(function(event) {
-		$('.zone-name').parent().removeClass("selected");
-		var target = $(this);
-		target.parent().addClass('selected');
-		selectedZone = $(this).attr('value');
-	});
 }
 
 // Append zone with given runtime to the run table.
 function appendRunTableEntry(zoneNumber, zoneName, runMins) {
-	if (scheduledRuntimeSlots == MAX_RUNTIME_SLOTS) {
+	if (g.scheduledRuntimeSlots == MAX_RUNTIME_SLOTS) {
 		alert("All run slots are full.");
 		return;
 	}
-	ns = scheduledRuntimeSlots;
+	ns = g.scheduledRuntimeSlots;
 
-	runTable[ns] = {};
-	runTable[ns].ZoneNumber = zoneNumber;
-	runTable[ns].ZoneName = zoneName;
-	runTable[ns].RunMins = runMins;
+	g.runTable[ns] = {};
+	g.runTable[ns].ZoneNumber = zoneNumber;
+	g.runTable[ns].ZoneName = zoneName;
+	g.runTable[ns].RunMins = runMins;
 
-	scheduledRuntimeSlots++;
+	g.scheduledRuntimeSlots++;
 
 	displayRunTable();
 }
 
 // Remove zone with the given slotNum from run table.
 function removeRunTableEntry(slotNum) {
-	if (slotNum >= scheduledRuntimeSlots) {
+	if (slotNum >= g.scheduledRuntimeSlots) {
 		alert("Removing non-existent entry.");
 		return;
 	}
 
-	runTable[i] = {};
-	for (i = slotNum; i < scheduledRuntimeSlots - 1; i++) {
-		runTable[i] = runTable[i + 1];
+	g.runTable[i] = {};
+	for (i = slotNum; i < g.scheduledRuntimeSlots - 1; i++) {
+		g.runTable[i] = g.runTable[i + 1];
 	}
 
-	scheduledRuntimeSlots--;
-	runTable[scheduledRuntimeSlots] = {};
+	g.scheduledRuntimeSlots--;
+	g.runTable[g.scheduledRuntimeSlots] = {};
 
 	displayRunTable();
 }
 
 // Start running the next zone if one is scheduled.
 function startNextIfScheduled() {
-	if (scheduledRuntimeSlots == 0) {
+	if (g.scheduledRuntimeSlots == 0) {
 		return;
 	}
-	zoneName = runTable[0].ZoneName;
-	runMins = runTable[0].RunMins;
+	zoneName = g.runTable[0].ZoneName;
+	runMins = g.runTable[0].RunMins;
 	removeRunTableEntry(0);
 	runZone(zoneName, runMins);
 }
@@ -328,7 +326,7 @@ function runZone(zoneName, runMins) {
 		onExpiry : onRunCountdownComplete
 	});
 	$('#run_cancel_button_running').css('display', 'inline-block');
-	running = true;
+	g.running = true;
 
 }
 
@@ -337,34 +335,34 @@ function runZone(zoneName, runMins) {
 function onRunCountdownComplete() {
 	$('#running_zone_countdown').countdown('destroy');
 
-	if (scheduledRuntimeSlots == 0) {
+	if (g.scheduledRuntimeSlots == 0) {
 		$('#running_zone_name').html("");
 		$('#run_table_div thead tr > td').css('background-color', '#fff');
 		$('#run_cancel_button_running').css('display', 'none');
-		running = false;
+		g.running = false;
 		return;
 	}
 	startNextIfScheduled();
 }
 
 function onRunButtonClick() {
-	if (selectedZone == -1) {
+	if (g.selectedZone == -1) {
 		alert("No zone selected.");
 		return;
 	}
-	zoneName = zoneConf[selectedZone].Name;
+	zoneName = g.zoneConf[g.selectedZone].Name;
 	runMins = $('#runtime_mins_input').val();
 	rm = parseInt(runMins);
 	if (rm == 0 || isNaN(rm)) {
 		alert("Enter number of minutes to run.");
 		return;
 	}
-	if (!running) {
+	if (!g.running) {
 		runZone(zoneName, runMins);
 		return;
 	}
 
-	appendRunTableEntry(selectedZone, zoneName, runMins);
+	appendRunTableEntry(g.selectedZone, zoneName, runMins);
 }
 
 function onRunCancelButtonRunningClick() {
@@ -379,15 +377,15 @@ function onRunCancelButtonClick() {
 }
 
 /*
- * =====================================================
- * =================== UTILITY =========================
+ * ===================================================== ===================
+ * UTILITY =========================
  * =====================================================
  */
 
 function showLayer(layerName) {
-	cl = $("[data-layer='"+currentLayer+"']");
+	cl = $("[data-layer='" + g.currentLayer + "']");
 	cl.css('display', 'none');
-	nl = $("[data-layer='"+layerName+"']");
+	nl = $("[data-layer='" + layerName + "']");
 	nl.css('display', 'inline-block');
-	currentLayer = layerName;
+	g.currentLayer = layerName;
 }
