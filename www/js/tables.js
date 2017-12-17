@@ -4,8 +4,10 @@ var scheduledRuntimeSlots = 0;
 var runTable = [];
 var running = false;
 
+var currentLayer = "schedule";
 /*
- * ======================================== SCHEDULE TABLE
+ * =====================================================
+ * ================ SCHEDULE TABLE =====================
  * =====================================================
  */
 
@@ -18,6 +20,7 @@ var running = false;
 /*-------------------------------------------------------------------------------------------------------------*/
 
 function displayScheduleTable() {
+	showLayer("schedule");
 	today = new Date();
 	var d = new Date();
 
@@ -30,7 +33,7 @@ function displayScheduleTable() {
 
 	tableHTML += '<table id="schedule_table" > \r\n';
 	tableHTML += '	<colgroup> \r\n';
-	tableHTML += '	  <col style="width: 355px"/> \r\n';
+	tableHTML += '	  <col style="width: 200px"/> \r\n';
 
 	for (i = 0; i < numDays; i++) {
 		tableHTML += '	  <col style="width: 40px"/> \r\n';
@@ -118,8 +121,9 @@ function displayScheduleTable() {
 }
 
 /*
- * ======================================== CONFIG TABLE
- * =======================================================
+ * =====================================================
+ * ================== CONFIG TABLE =====================
+ * =====================================================
  */
 
 /*-------------------------------------------------------------------------------------------------------------*/
@@ -129,6 +133,8 @@ function displayScheduleTable() {
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 function displayZoneConfigTable() {
+	showLayer("config");
+
 	var tableHTML = '';
 
 	for (z = 0; z < numZones; z++) {
@@ -223,8 +229,9 @@ function onValueChange() {
 }
 
 /*
- * ======================================== RUN TABLE
- * ==========================================================
+ * =====================================================
+ * =================== RUN TABLE =======================
+ * =====================================================
  */
 
 /*-------------------------------------------------------------------------------------------------------------*/
@@ -287,7 +294,7 @@ function removeRunTableEntry(slotNum) {
 	}
 
 	runTable[i] = {};
-	for (i = slotNum; i < scheduledRuntimeSlots-1; i++) {
+	for (i = slotNum; i < scheduledRuntimeSlots - 1; i++) {
 		runTable[i] = runTable[i + 1];
 	}
 
@@ -297,6 +304,7 @@ function removeRunTableEntry(slotNum) {
 	displayRunTable();
 }
 
+// Start running the next zone if one is scheduled.
 function startNextIfScheduled() {
 	if (scheduledRuntimeSlots == 0) {
 		return;
@@ -307,6 +315,7 @@ function startNextIfScheduled() {
 	runZone(zoneName, runMins);
 }
 
+// Run the given zone name for given number of minutes.
 function runZone(zoneName, runMins) {
 	$('#run_table_div thead tr > td').css('background-color', '#0a9b3b');
 	$('#run_table_div thead tr > td').css('color', '#fff');
@@ -367,4 +376,18 @@ function onRunCancelButtonClick() {
 	slotNum = $(this).attr('value');
 	removeRunTableEntry(parseInt(slotNum));
 	displayRunTable();
+}
+
+/*
+ * =====================================================
+ * =================== UTILITY =========================
+ * =====================================================
+ */
+
+function showLayer(layerName) {
+	cl = $("[data-layer='"+currentLayer+"']");
+	cl.css('display', 'none');
+	nl = $("[data-layer='"+layerName+"']");
+	nl.css('display', 'inline-block');
+	currentLayer = layerName;
 }
