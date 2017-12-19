@@ -11,10 +11,10 @@ function runTests() {
 	TestProcessConditions();
 	TestProcessRuntimes();
 	g.toDate.setFullYear(2017,10,26);
-	displayScheduleTable();
-	//displayZoneConfigTable();
-	displayRunTable();
-	initAll();
+  initAll();
+	//displayScheduleTable();
+	displayZoneConfigTable();
+	//displayRunTable();
 }
 
 function TestParseConf() {

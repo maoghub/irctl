@@ -2,12 +2,14 @@
 // //////////////////////////////////////////////////////////////////////
 
 var MAX_RUNTIME_SLOTS = 8;
+var MAX_ALGORITHM_SLOTS = 4;
 var DEFAULT_HISTORY_DAYS = 7;
 
 var g = {
 	globalConf : {},
 	airportCode : "",
 	runTime : "",
+	algorithm: [],
 	zoneConf : [],
 	numZones : 0,
 	tempHistory : {},
@@ -49,7 +51,7 @@ $(document).ready(function() {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 function initAll() {
-	toDate = dateAddDays(today, 1); // Start with tomorrow as the rightmost day
+	//g.toDate = dateAddDays(Date(), 1); // Start with tomorrow as the rightmost day
 
 	if (parent.bottom) {
 		statusArea = parent.bottom.document.getElementById("statusArea");
@@ -259,3 +261,6 @@ function fulltrim() {
 			.replace(/\s+/g, ' ');
 };
 
+function Debug(text) {
+  console.log(text);
+} 
