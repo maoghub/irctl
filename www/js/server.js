@@ -40,15 +40,16 @@ function processConfFileResponse(data) {
 
   // expect format "0000-01-01T16:00:00Z"
   tv = ret.val.split(":");
-  if (tv.length != 3) {
+  if (tv.length != 2 && tv.length != 3) {
     return "bad time string for " + runtimePath + ":" + ret.val;
   }
   hrv = tv[0].split("T");
-  if (tv.length != 3) {
+  if (hrv.length != 2) {
     return "bad time string for " + runtimePath + ":" + ret.val;
   }
 
-  g.runTime = hrv[1] + ":" + tv[1];
+  tvz = tv[1].split("Z");
+  g.runTime = hrv[1] + ":" + tvz[0];
 
   err = parseZoneConfigs(conf);
   if (err) {
@@ -182,7 +183,7 @@ function getPathValue(tree, path) {
     if (!cur) {
       return {
           val: "",
-          err: "could not find path " + path + "in tree at element " + pv[i]
+          err: "could not find path " + path + " in tree at element " + pv[i]
       };
     }
   }
@@ -192,6 +193,39 @@ function getPathValue(tree, path) {
   };
 
 }
+
+function log(msg) {
+	console.log(msg);
+}
+
+/*----------------------------------------------------------------------------*/
+/**
+ * @fn sendRunZoneCmd
+ * @brief Send a run zone command to server.
+ */
+/*----------------------------------------------------------------------------*/
+
+function sendRunZoneCmd(num, mins) {
+	  url = "http://" + server_ip + "/runzone?num=" + num.toString() + "&mins=" + mins.toString();
+	  makeRequest(url, onSendRunZoneCmdDone);	
+}
+ 
+function onSendRunZoneCmdDone(data) {
+	  if (!data.match(/OK/)) {
+		    alert("Problem starting zone: " + data);
+	  }
+	}
+
+function sendRunZoneStopCmd(num) {
+	  url = "http://" + server_ip + "/runzonestop?num=" + num.toString();
+	  makeRequest(url, onSendRunZoneStopCmdDone);	
+}
+
+function onSendRunZoneStopCmdDone(data) {
+	  if (!data.match(/OK/)) {
+		    alert("Problem stopping zone: " + data);
+	  }
+	}
 
 /*----------------------------------------------------------------------------*/
 /**
@@ -204,10 +238,10 @@ function getPathValue(tree, path) {
 function getServerLogData(_fromDate, _toDate) {
   dateRange = "from=" + DateString(_fromDate) + "&to=" + DateString(_toDate);
   url = "http://" + server_ip + "/conditions?" + dateRange;
-  makeRequest(url, processConditions);
+  makeRequest(url, processConditionsResponse);
 
   url = "http://" + server_ip + "/runtimes?" + dateRange;
-  makeRequest(url, processRuntimes);
+  makeRequest(url, processRuntimesResponse);
 }
 
 // Process the conditions response and populate corresponding values in g global.
@@ -225,6 +259,10 @@ function processConditionsResponse(data) {
     g.tempHistory[dateStr] = ja[i]["Temp"];
     g.precipHistory[dateStr] = ja[i]["Precip"];
   }
+  log("processConditionsResponse:");
+  log(JSON.stringify(g.iconHistory, null, 2));
+  log(JSON.stringify(g.tempHistory, null, 2));
+  log(JSON.stringify(g.precipHistory, null, 2));
 }
 
 //Process the runtimes response and populate corresponding values in g global.
@@ -240,6 +278,8 @@ function processRuntimesResponse(data) {
     dateStr = DateString(date);
     g.runtimeHistory[dateStr] = ja[i]["Runtimes"];
   }
+  log("processRuntimesResponse:");
+  log(JSON.stringify(g.runtimeHistory, null, 2));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -251,9 +291,10 @@ function processRuntimesResponse(data) {
 
 function makeRequest(url, callback) {
 
-  writeStatus("Sending request for " + url);
+  log("Sending request for " + url);
 
   $.ajaxSetup({
+	  async: false,
       cache: true,
       timeout: 5000,
       success: callback,
@@ -271,10 +312,10 @@ function makeRequest(url, callback) {
 /*----------------------------------------------------------------------------*/
 
 function postSave() {
-  var posturl = "http://" + server_ip + "/conf/user.conf";
+  var postUrl = "http://" + server_ip + "/setconfig";
   var str;
 
-  writeStatus("Posting to " + postUrl);
+  log("Posting to " + postUrl);
 
   $.ajaxSetup({
       cache: false,
@@ -282,15 +323,13 @@ function postSave() {
       error: saveToServerError
   });
 
-  str = jQuery.param(g.globalConf);
+  str = JSON.stringify(g.globalConf);
   writeStatus(str);
 
-  $.post(posturl, str, function(data) {
+  $.post(postUrl, str, function(data) {
     postDone(data);
   });
 
-  str = jQuery.param(g.zoneConf);
-  writeStatus(str);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -302,10 +341,9 @@ function postSave() {
 
 function postDone(data) {
   if (data.match(/OK/)) {
+	    alert("Config saved.");
   } else {
-    alert("Problem saving configuration: " + data);
-    return;
-
+	    alert("Problem saving configuration: " + data);
   }
 }
 

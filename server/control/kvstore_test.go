@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	testKVStorePath = "/tmp/badgerTest"
+	testKVStorePath = "testdata/badgerTest"
 
 	testKey = "answer"
 	testVal = "forty-two"

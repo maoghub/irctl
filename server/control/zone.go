@@ -5,10 +5,6 @@ import (
 	"time"
 )
 
-const (
-	maxPossibleValves = 16
-)
-
 // ZoneState is the state of the zone. The state machine is as follows:
 // Idle - initial state
 type ZoneState string
@@ -123,13 +119,7 @@ func (zc *ZoneController) TurnOff(n int) error {
 // without modifying the zone state. it is used to override any glitches in the
 // physical controller which may cause a valve to be stuck in open state.
 func (zc *ZoneController) TurnAllOff() error {
-	var ret error
-	for i := 0; i < maxPossibleValves; i++ {
-		if err := zc.vc.CloseValve(i); err != nil {
-			ret = err
-		}
-	}
-	return ret
+	return zc.vc.CloseAllValves()
 }
 
 // zoneKey returns the key for zone n to be used in a KV store.

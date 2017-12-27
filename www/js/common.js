@@ -39,10 +39,18 @@ var confFilename = "conf/irctl_conf.json"
 /*-------------------------------------------------------------------------------------------------------------*/
 
 $(document).ready(function() {
-	runTests();
-	// initAll();
-});
+	// runTests();
+	initAll();
+	g.toDate.setFullYear(2017,10,26);
+	getConfFile();
+	getServerLogData(gFromDate(), g.toDate);
+	displayScheduleTable();
+	displayRunTable();
+	});
 
+function gFromDate() {
+	return dateAddDays(g.toDate, -1 * (DEFAULT_HISTORY_DAYS-1));
+}
 /*-------------------------------------------------------------------------------------------------------------*/
 /**
  * @fn initAll
@@ -51,7 +59,7 @@ $(document).ready(function() {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 function initAll() {
-	//g.toDate = dateAddDays(Date(), 1); // Start with tomorrow as the rightmost day
+	g.toDate = dateAddDays(Date(), 1); // Start with tomorrow as the rightmost day
 
 	if (parent.bottom) {
 		statusArea = parent.bottom.document.getElementById("statusArea");
@@ -175,18 +183,10 @@ function writeStatus(str) {
  */
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function fromDate() {
-	return new Date(toDate.getDate() - historyDays);
-}
-
 function dateAddDays(_date, _days) {
 	var newDate = new Date(_date);
-	newDate.setDate(_date.getDate() + _days);
+	newDate.setDate(newDate.getDate() + _days);
 	return newDate;
-}
-
-function dateSubDays(_date, _days) {
-	return new Date(toDate.getDate() - _days);
 }
 
 function firstDate(_date1, _date2) {
@@ -211,8 +211,7 @@ function displayDateStr(ds) {
 }
 
 function DateString(mydate) {
-	return (mydate.getMonth() + 1) + "-" + mydate.getDate() + "-"
-			+ mydate.getFullYear();
+	return mydate.getFullYear()+ "-" + (mydate.getMonth() + 1) + "-" + mydate.getDate();
 }
 
 function to24hrStr(hr, min, am_pm) {

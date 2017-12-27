@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+    "sync"
 	"time"
 
 )
@@ -15,6 +16,11 @@ const (
 	dateFormat = "2006-Jan-02"
 	// timeOfDayFormat is the string format for time of day.
 	timeOfDayFormat = "15:04"
+)
+
+var (
+	RunningManuallyMu sync.RWMutex
+	RunningManually = false
 )
 
 // RunParams is a collection of run options.
@@ -72,6 +78,18 @@ func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, 
 func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, now time.Time) (bool, error) {
 	log.Debugf("RunOnce at time %s", now.Format("Mon 2 Jan 2006 15:04"))
 
+	RunningManuallyMu.RLock()
+	defer RunningManuallyMu.RUnlock()
+	if RunningManually {
+		return false, nil
+	}
+	
+	// Every time, if not running manually, close all valves directly on the 
+	// valve controller. 
+	if err := zc.TurnAllOff(); err != nil {
+		return false, nil
+	}
+	
 	if alreadyRan, err := checkIfRanToday(kv, log, now); alreadyRan || err != nil {
 		log.Debugf("Already ran today, exiting.")
 		return alreadyRan, err
@@ -99,14 +117,14 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 	if err != nil {
 		return false, err
 	}
-	if err := dl.WriteConditions(now, iconYesterday, tempYesterday, precipYesterday); err != nil {
+	if err := dl.WriteConditions(yesterday(now), iconYesterday, tempYesterday, precipYesterday); err != nil {
 		er.Report(err)
 	}
 	iconForecast, tempForecast, precipForecast, err := cg.GetForecast(sc.GlobalConfig.AirportCode)
 	if err != nil {
 		return false, err
 	}
-	if err := dl.WriteConditions(yesterday(now), iconForecast, tempForecast, precipForecast); err != nil {
+	if err := dl.WriteConditions(now, iconForecast, tempForecast, precipForecast); err != nil {
 		er.Report(err)
 	}
 	log.Infof("Yesterday: %s / %3.1f degF / %1.1f In, Forecast: %s /  %3.1f degF / %1.1f In",

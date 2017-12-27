@@ -279,6 +279,13 @@ div.weather-icon {
   text-align: center;
 }
 
+#zone_config_table tbody tr td input[type="text"].name-input {
+  margin: 1px 15px 1px 1px;
+  width: 90%;
+  text-align: left;
+  font-size: 14pt;
+}
+
 table#zone_config_table tbody tr.odd td {
   background: #E7E4DD;
 }

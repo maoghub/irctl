@@ -12,13 +12,22 @@ type ValveController interface {
 	OpenValve(n int) error
 	// CloseValve closes valve number n.
 	CloseValve(n int) error
+	// CloseAllValves closes all valves.
+	CloseAllValves() error
 }
 
+const (
+	MaxRain8Valves = 8
+)
+
 func NewRain8ValveController() *Rain8ValveController {
-	return &Rain8ValveController{}
+	return &Rain8ValveController{
+		numValves: MaxRain8Valves,
+	}
 }
 
 type Rain8ValveController struct {
+	numValves int
 }
 
 func (*Rain8ValveController) OpenValve(n int) error {
@@ -27,6 +36,16 @@ func (*Rain8ValveController) OpenValve(n int) error {
 
 func (*Rain8ValveController) CloseValve(n int) error {
 	return runRain8Command(n, false)
+}
+
+func (r *Rain8ValveController) CloseAllValves() error {
+	var ret error
+	for n := 0; n < r.numValves; n++ {
+		if err := r.CloseValve(n); err != nil {
+			ret = err
+		}
+	}
+	return ret
 }
 
 func runRain8Command(num int, on bool) error {
@@ -51,12 +70,14 @@ func runRain8Command(num int, on bool) error {
 
 func NewConsoleValveController(log Logger) *ConsoleValveController {
 	return &ConsoleValveController{
-		log: log,
+		numValves: MaxRain8Valves,
+		log:       log,
 	}
 }
 
 type ConsoleValveController struct {
-	log Logger
+	numValves int
+	log       Logger
 }
 
 func (c *ConsoleValveController) OpenValve(n int) error {
@@ -67,4 +88,14 @@ func (c *ConsoleValveController) OpenValve(n int) error {
 func (c *ConsoleValveController) CloseValve(n int) error {
 	c.log.Infof("CloseValve %d.", n)
 	return nil
+}
+
+func (c *ConsoleValveController) CloseAllValves() error {
+	var ret error
+	for n := 0; n < c.numValves; n++ {
+		if err := c.CloseValve(n); err != nil {
+			ret = err
+		}
+	}
+	return ret
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,8 +16,9 @@ const (
 	maxRunMins = 90
 
 	//	wwwRoot = "/Users/sarahkim/Documents/code/go/src/irctl/www"
-	wwwRoot     = "../www"
-	dataLogPath = "../data"
+	wwwRoot      = "../www"
+	dataLogPath  = "../data"
+	confFilePath = "../www/conf/irctl_conf.json"
 )
 
 var (
@@ -32,8 +34,10 @@ func main() {
 
 	http.Handle("/", loggingHandler(http.FileServer(http.Dir(wwwRoot))))
 	http.HandleFunc("/runzone", runzoneHandler)
+	http.HandleFunc("/runzonestop", runzoneStopHandler)
 	http.HandleFunc("/conditions", conditionsHandler)
 	http.HandleFunc("/runtimes", runtimesHandler)
+	http.HandleFunc("/setconfig", setConfigHandler)
 
 	fmt.Println("Listening...")
 	err := http.ListenAndServe(":8080", nil)
@@ -89,13 +93,13 @@ func conditionsHandler(w http.ResponseWriter, r *http.Request) {
 	if errs != nil {
 		log.Errorf(errs.Error())
 	}
-	
+
 	resp := struct {
 		Conditions []*control.ConditionsEntry
-		Errors []string
-	} {
+		Errors     []string
+	}{
 		Conditions: conditions,
-		Errors:  control.ToStringSlice(errs), 
+		Errors:     control.ToStringSlice(errs),
 	}
 
 	j, err := json.Marshal(resp)
@@ -119,13 +123,13 @@ func runtimesHandler(w http.ResponseWriter, r *http.Request) {
 	if errs != nil {
 		log.Errorf(errs.Error())
 	}
-	
+
 	resp := struct {
 		Runtimes []*control.RuntimesEntry
-		Errors []string
-	} {
+		Errors   []string
+	}{
 		Runtimes: runtimes,
-		Errors:  control.ToStringSlice(errs), 
+		Errors:   control.ToStringSlice(errs),
 	}
 
 	j, err := json.Marshal(resp)
@@ -138,6 +142,30 @@ func runtimesHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", string(j))
 }
 
+// setConfigHandler updates the config with the given JSON POST body string.
+func setConfigHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+
+	j := make(map[string]interface{})
+	if err := json.Unmarshal(body, &j); err != nil {
+		http.Error(w, "Error unmarshaling body: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	js, err := json.MarshalIndent(j, "", "  ")
+	if err := ioutil.WriteFile(confFilePath, js, 0644); err != nil {
+		http.Error(w, "Error writing file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Infof("setConfHandler succeeded with \n%s\n", js)
+	fmt.Fprintf(w, "OK")
+}
+
+// runzoneHandler runs a zone for a number of minutes.
 func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 	numStr := r.FormValue("num")
 	if numStr == "" {
@@ -174,16 +202,54 @@ func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 		httpError(w, r, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	SetRunningManuallyState(true)
 
-	time.Sleep(time.Duration(mins) * time.Minute)
+	go func() {
+		time.Sleep(time.Duration(mins) * time.Minute)
 
-	err = valveController.CloseValve(int(num))
-	if err != nil {
-		httpError(w, r, err.Error(), http.StatusInternalServerError)
+		err = valveController.CloseValve(int(num))
+		if err != nil {
+			log.Errorf("CloseValve %d failed: %s", num, err)
+			return
+		}
+		SetRunningManuallyState(false)
+	}()
+
+	fmt.Fprintf(w, "OK - running zone %d for %d mins.", num, mins)
+}
+
+// runzoneStopHandler runs a zone for a number of minutes.
+func runzoneStopHandler(w http.ResponseWriter, r *http.Request) {
+	numStr := r.FormValue("num")
+	if numStr == "" {
+		httpError(w, r, "num parameter not specified", http.StatusBadRequest)
 		return
 	}
 
-	fmt.Fprintf(w, "<div>Successfully ran zone %d for %d mins.</div>", num, mins)
+	num, err := strconv.ParseInt(numStr, 10, 32)
+	if err != nil {
+		httpError(w, r, "num: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if num < 0 || num > maxZoneNum {
+		httpError(w, r, fmt.Sprintf("num value %d out of range [0,%d]", num, maxZoneNum), http.StatusBadRequest)
+		return
+	}
+	err = valveController.CloseValve(int(num))
+	if err != nil {
+		log.Errorf("CloseValve %d failed: %s", num, err)
+		return
+	}
+	SetRunningManuallyState(false)
+
+	fmt.Fprintf(w, "OK")
+}
+
+// SetRunningManuallyState sets the manually running state in a reentrant manner.
+func SetRunningManuallyState(isOn bool) {
+	control.RunningManuallyMu.Lock()
+	defer control.RunningManuallyMu.Unlock()
+	control.RunningManually = isOn
 }
 
 func httpError(w http.ResponseWriter, r *http.Request, msg string, status int) error {

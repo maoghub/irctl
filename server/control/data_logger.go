@@ -36,18 +36,18 @@ type ConditionsEntry struct {
 	Precip float64
 }
 
-func (l *DataLogger) WriteConditions(t time.Time, iconYesterday string, tempYesterday, precipYesterday float64) error {
+func (l *DataLogger) WriteConditions(t time.Time, iconStr string, tempStr, precipStr float64) error {
 	fp := l.conditionsFilePath(t)
 	if err := createDirIfMissing(fp); err != nil {
 		return err
 	}
 	ce := &ConditionsEntry{
 		Date:   dateOnly(t),
-		Icon:   iconYesterday,
-		Temp:   tempYesterday,
-		Precip: precipYesterday,
+		Icon:   iconStr,
+		Temp:   tempStr,
+		Precip: precipStr,
 	}
-	//	logStr := fmt.Sprintf("%s,%s,%.1f,%.2f", t.Format("2006-01-02"), iconYesterday, tempYesterday, precipYesterday)
+	//	logStr := fmt.Sprintf("%s,%s,%.1f,%.2f", t.Format("2006-01-02"), iconStr, tempStr, precipStr)
 	j, err := json.Marshal(ce)
 	if err != nil {
 		return err

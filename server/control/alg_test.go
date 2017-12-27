@@ -75,11 +75,11 @@ SOIL,Loam,40.0
 		inVWC    Pct
 		want     Pct
 	}{
-		{inTemp: 80, inVWC: 15, want: 8},
-		{inTemp: 80, inVWC: 15, inPrecip: 0.1, want: 18},
+		{inTemp: 80, inVWC: 15, want: 10},
+		{inTemp: 80, inVWC: 15, inPrecip: 0.1, want: 20},
 		{inTemp: 80, inVWC: 15, inPrecip: 10, want: 20},
 		{inTemp: 80, inVWC: 5, want: 0},
-		{inTemp: 20, inVWC: 15, want: 13.25},
+		{inTemp: 20, inVWC: 15, want: 13.75},
 	}
 
 	for idx, tt := range tests {
