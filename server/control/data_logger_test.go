@@ -29,7 +29,7 @@ func TestConditions(t *testing.T) {
 	}
 
 	log := &TestLogger{}
-	l := NewDataLogger(log, testPath, 0)
+	l := NewDataLogger(log, testPath)
 
 	for _, c := range want {
 		if err := l.WriteConditions(c.Date, c.Icon, c.Temp, c.Precip); err != nil {
@@ -61,7 +61,7 @@ func TestRuntimes(t *testing.T) {
 	}
 
 	log := &TestLogger{}
-	l := NewDataLogger(log, testPath, len(want[0].Runtimes))
+	l := NewDataLogger(log, testPath)
 
 	for _, r := range want {
 		if err := l.WriteRuntimes(r.Date, r.Runtimes); err != nil {

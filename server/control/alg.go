@@ -80,7 +80,7 @@ func NewETAlgorithmSimple(r *RangeMapper) *ETAlgorithmSimple {
 
 // CalculateVWC implements ETAlgorithm#CalculateVWC method.
 func (e *ETAlgorithmSimple) CalculateVWC(currentVWC Pct, tempF, precipIn float64, now time.Time, zconf *ZoneConfig) (Pct, error) {
-	remove := Pct(e.etPct(tempF) * float64(zconf.MaxVWC-zconf.MinVWC) * zconf.ZoneETRate.ToRatio() * growthFactor[now.Month()])
+	remove := Pct(e.etPct(tempF) * float64(zconf.MaxVWC-zconf.MinVWC) * zconf.ZoneETRate * growthFactor[now.Month()])
 	add := Pct(precipIn * pctPerPrecipIn)
 	//fmt.Printf("remove=%f, add=%f, et=%f, delta=%f, etrate=%f, gfactor=%f\n", remove, add, e.etPct(tempF), (zconf.MaxVWC-zconf.MinVWC), zconf.ZoneETRate, growthFactor[now.Month()])
 	return min(max(0, currentVWC+add-remove), zconf.MaxVWC), nil

@@ -377,7 +377,7 @@ function copyUIToConfig() {
 	}
 
 	g.globalConf.GlobalConfig.AirportCode = $('#airport_code').val();
-	g.globalConf.GlobalConfig.RunTimeAM = "0000-01-01T" + $('#runtime_input').val() + "Z";
+	g.globalConf.GlobalConfig.RunTimeAM = "0000-01-01T" + $('#runtime_input').val() + ":00Z";
 
 	populateAlgorithmValues();
 

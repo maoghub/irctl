@@ -27,8 +27,7 @@
   },
   "GlobalConfig": {
     "AirportCode": "KSJC",
-    "RunTimeAM": "0000-01-01T09:00Z",
-    "RunTimePM": "0000-01-01T16:00:00Z"
+    "RunTimeAM": "0000-01-01T09:00:00Z"
   },
   "SoilConfigMap": {
     "Clay": {
@@ -44,10 +43,10 @@
       "Name": "Sandy Loam"
     }
   },
-  "ZoneConfigs": [
-    {
+  "ZoneConfigs": {
+    "0": {
       "DepthIn": 8,
-      "Enabled": true,
+      "Enabled": false,
       "GetsRain": true,
       "MaxVWC": 40,
       "MinVWC": 25,
@@ -58,9 +57,9 @@
         "MaxVWC": 40,
         "Name": "Potting Mix"
       },
-      "ZoneETRate": 10
+      "ZoneETRate": 1
     },
-    {
+    "1": {
       "DepthIn": 16,
       "Enabled": true,
       "GetsRain": true,
@@ -73,9 +72,9 @@
         "MaxVWC": 50,
         "Name": "Clay Loam"
       },
-      "ZoneETRate": 10
+      "ZoneETRate": 1
     },
-    {
+    "2": {
       "DepthIn": 16,
       "Enabled": true,
       "GetsRain": true,
@@ -88,82 +87,82 @@
         "MaxVWC": 30,
         "Name": "Sandy Loam"
       },
-      "ZoneETRate": 10
+      "ZoneETRate": 1
     },
-    {
+    "3": {
       "DepthIn": 8,
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 40,
       "MinVWC": 30,
       "Name": "Shade pots",
-      "Number": 2,
+      "Number": 3,
       "RunTimeMultiplier": 1,
       "SoilConfig": {
         "MaxVWC": 30,
         "Name": "Sandy Loam"
       },
-      "ZoneETRate": 7
+      "ZoneETRate": 0.7
     },
-    {
+    "4": {
       "DepthIn": 16,
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 30,
       "MinVWC": 15,
       "Name": "Succulents",
-      "Number": 2,
+      "Number": 4,
       "RunTimeMultiplier": 1,
       "SoilConfig": {
         "MaxVWC": 30,
         "Name": "Sandy Loam"
       },
-      "ZoneETRate": 10
+      "ZoneETRate": 1
     },
-    {
+    "5": {
       "DepthIn": 16,
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
       "MinVWC": 25,
       "Name": "Ground back 2",
-      "Number": 2,
+      "Number": 5,
       "RunTimeMultiplier": 3,
       "SoilConfig": {
         "MaxVWC": 30,
         "Name": "Sandy Loam"
       },
-      "ZoneETRate": 10
+      "ZoneETRate": 1
     },
-    {
+    "6": {
       "DepthIn": 8,
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
       "MinVWC": 20,
       "Name": "Basement",
-      "Number": 2,
+      "Number": 6,
       "RunTimeMultiplier": 2,
       "SoilConfig": {
         "MaxVWC": 30,
         "Name": "Sandy Loam"
       },
-      "ZoneETRate": 10
+      "ZoneETRate": 1
     },
-    {
+    "7": {
       "DepthIn": 32,
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
       "MinVWC": 25,
       "Name": "Trees",
-      "Number": 2,
+      "Number": 7,
       "RunTimeMultiplier": 3,
       "SoilConfig": {
         "MaxVWC": 30,
         "Name": "Sandy Loam"
       },
-      "ZoneETRate": 10
+      "ZoneETRate": 1
     }
-  ]
+  }
 }

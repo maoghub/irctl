@@ -3,6 +3,7 @@ package control
 import (
 	"fmt"
 	"net/smtp"
+	"os"
 )
 
 // ErrorReporter is used to report an error.
@@ -47,4 +48,56 @@ func (er *SMTPErrorReporter) Report(sendErr error) error {
 	}
 
 	return sendErr
+}
+
+// LogErrorReporter is an error reporter than logs to file.
+type LogErrorReporter struct {
+	logPath string
+}
+
+// NewLogErrorReporter returns a ptr to a LogErrorReporter.
+func NewLogErrorReporter(logPath string) (*LogErrorReporter, error) {
+	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	return &LogErrorReporter{
+		logPath: logPath,
+	}, nil
+}
+
+// Report implements ErrorReporter#Report.
+func (er *LogErrorReporter) Report(sendErr error) error {
+	f, err := os.OpenFile(er.logPath, os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	if _, err = f.WriteString(sendErr.Error() + "\n"); err != nil {
+		return err
+	}
+	
+	return nil
+}
+
+// LoggerErrorReporter is an error reporter than logs to the supplied Logger.
+type LoggerErrorReporter struct {
+	log Logger
+}
+
+// NewLoggerErrorReporter returns a ptr to a LoggerErrorReporter.
+func NewLoggerErrorReporter(log Logger) (*LoggerErrorReporter, error) {
+	return &LoggerErrorReporter{
+		log: log,
+	}, nil	
+}
+
+// Report implements ErrorReporter#Report.
+func (er *LoggerErrorReporter) Report(err error) error {
+	er.log.Errorf("ERROR_LOGGER: " + err.Error())
+	return nil
 }

@@ -8,6 +8,13 @@ import (
 	"time"
 )
 
+func errToString(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
+}
+
 type TestErrorReporter struct {
 	Err error
 }
@@ -75,6 +82,15 @@ func (t *TestValveController) CloseValve(n int) error {
 	return nil
 }
 
+func (t *TestValveController) CloseAllValves() error {
+	t.log.Infof("CloseAllValves.")
+	return nil
+}
+
+func (t *TestValveController) NumValves() int {
+	return 8
+}
+
 func (t *TestValveController) ValvesRan(numValves int) ([]bool, error) {
 	var errs []string
 	didOpen := make(map[int]bool)
@@ -138,12 +154,70 @@ func setState(zc ZoneController, vwc []float64, zoneState []ZoneState) {
 
 func TestRunOnce(t *testing.T) {
 	testConfig := `
-GLOBAL_CONFIG,KSJC,0,9:00,16:00,0
-#ZONE,number,name,run,rain,soil_name,min_moist_pct,max_moist_pct,run_time_mult,root_depth,et_rate
-ZONE,0,zone 0,1,1,Loam,10,20,1.0,8.0,1.0
-ZONE,1,zone 1,1,1,Loam,10,20,2.0,16.0,1.0
-SOIL,Loam,40.0	
-ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
+{
+  "ETAlgorithmSimpleConfig": {
+    "EtPctMap": {
+      "R": [
+        {
+          "X1": -999,
+          "X2": 50,
+          "Y": 2.5
+        },
+        {
+          "X1": 50,
+          "X2": 65,
+          "Y": 5.0
+        },
+        {
+          "X1": 65,
+          "X2": 75,
+          "Y": 7.5
+        },
+        {
+          "X1": 75,
+          "X2": 999,
+          "Y": 10.0
+        }
+      ]
+    }
+  },
+  "GlobalConfig": {
+    "AirportCode": "KSJC",
+    "RunTimeAM": "0000-01-01T09:00:00Z"
+  },
+  "ZoneConfigs": {
+    "0": {
+      "DepthIn": 8,
+      "Enabled": true,
+      "GetsRain": true,
+      "MaxVWC": 20,
+      "MinVWC": 10,
+      "Name": "zone 0",
+      "Number": 0,
+      "RunTimeMultiplier": 1,
+      "SoilConfig": {
+        "MaxVWC": 40,
+        "Name": "Potting Mix"
+      },
+      "ZoneETRate": 0.1
+    },
+    "1": {
+      "DepthIn": 16,
+      "Enabled": true,
+      "GetsRain": true,
+      "MaxVWC": 20,
+      "MinVWC": 10,
+      "Name": "zone 1",
+      "Number": 1,
+      "RunTimeMultiplier": 2,
+      "SoilConfig": {
+        "MaxVWC": 40,
+        "Name": "Potting Mix"
+      },
+      "ZoneETRate": 0.1
+    }
+  }
+}
 `
 	tests := []struct {
 		desc                  string
@@ -207,58 +281,60 @@ ALGORITHM,-50,25,50-65,50,65-75,75,75-,100
 	}
 
 	for _, tt := range tests {
-		kv := NewTestKVStore()
-		er := &TestErrorReporter{}
-		log := &TestLogger{}
-		tcg := &TestConditionsGetter{"test", 80, 0, "test", 80, 0}
-		tvc := &TestValveController{log: log}
-		zc := *NewZoneController(tvc, kv, log)
-		now, _ := time.Parse("3:04pm", tt.timeStr)
+		t.Run(tt.desc, func(t *testing.T) {
+			kv := NewTestKVStore()
+			er := &TestErrorReporter{}
+			log := &TestLogger{}
+			tcg := &TestConditionsGetter{"test", 80, 0, "test", 80, 0}
+			tvc := &TestValveController{log: log}
+			zc := *NewZoneController(tvc, kv, log)
+			now, _ := time.Parse("3:04pm", tt.timeStr)
 
-		kv.Set(LastZoneResetDateKey, now.Format(dateFormat))
-		setState(zc, tt.startVWC, tt.startState)
+			kv.Set(LastZoneResetDateKey, now.Format(dateFormat))
+			setState(zc, tt.startVWC, tt.startState)
 
-		didRun, err := RunOnce(&RunParams{config: testConfig, logLevel:Debug, dontSleep: true}, kv, tcg, zc, er, log, now)
-		t.Log(tt.desc + "\n" + log.Contents())
+			didRun, err := RunOnce(&RunParams{Config: testConfig, LogLevel: Debug, DontSleep: true}, kv, tcg, zc, er, log, now)
+			t.Log(tt.desc + "\n" + log.Contents())
 
-		if got, want := didRun, tt.wantDidRun; got != want {
-			t.Errorf("%s: got didRun %t, want didRun: %t", tt.desc, got, want)
-			continue
-		}
-		if tt.wantDidRun == false {
-			continue
-		}
+			if got, want := didRun, tt.wantDidRun; got != want {
+				t.Errorf("%s: got didRun %t, want didRun: %t", tt.desc, got, want)
+				return
+			}
+			if tt.wantDidRun == false {
+				return
+			}
 
-		if got, want := errToString(err), tt.wantErr; got != want {
-			t.Errorf("%s: got error %s, want error: %s", tt.desc, got, want)
-			continue
-		}
-		if tt.wantErr != "" {
-			continue
-		}
+			if got, want := errToString(err), tt.wantErr; got != want {
+				t.Errorf("%s: got error %s, want error: %s", tt.desc, got, want)
+				return
+			}
+			if tt.wantErr != "" {
+				return
+			}
 
-		numValves := len(tt.startState)
-		gotVWC, gotState := getState(zc, numValves)
-		if got, want := gotVWC, tt.wantEndVWC; !reflect.DeepEqual(got, want) {
-			t.Errorf("%s final VWC: got: %v, want: %v", tt.desc, got, want)
-		}
-		if got, want := gotState, tt.wantEndState; !reflect.DeepEqual(got, want) {
-			t.Errorf("%s final State: got: %v, want: %v", tt.desc, got, want)
-		}
+			numValves := len(tt.startState)
+			gotVWC, gotState := getState(zc, numValves)
+			if got, want := gotVWC, tt.wantEndVWC; !reflect.DeepEqual(got, want) {
+				t.Errorf("%s final VWC: got: %v, want: %v", tt.desc, got, want)
+			}
+			if got, want := gotState, tt.wantEndState; !reflect.DeepEqual(got, want) {
+				t.Errorf("%s final State: got: %v, want: %v", tt.desc, got, want)
+			}
 
-		gotValvesRan, err := tvc.ValvesRan(numValves)
-		if got, want := errToString(err), tt.wantValveControlError; got != want {
-			t.Errorf("%d valves ran: got error %s, want error: %s", tt.desc, got, want)
-			continue
-		}
-		if got, want := gotValvesRan, tt.wantValvesRan; !reflect.DeepEqual(got, want) {
-			t.Errorf("%s valves ran: got: %v, want: %v", tt.desc, got, want)
-		}
+			gotValvesRan, err := tvc.ValvesRan(numValves)
+			if got, want := errToString(err), tt.wantValveControlError; got != want {
+				t.Errorf("%d valves ran: got error %s, want error: %s", tt.desc, got, want)
+				return
+			}
+			if got, want := gotValvesRan, tt.wantValvesRan; !reflect.DeepEqual(got, want) {
+				t.Errorf("%s valves ran: got: %v, want: %v", tt.desc, got, want)
+			}
 
-		/*		if got, want := strings.Join(log.Contents(), "\n"), tt.want; got != want {
-					t.Errorf("%d: got: %s, want: %s", idx, got, want)
-					continue
-				}
-		*/
+			/*		if got, want := strings.Join(log.Contents(), "\n"), tt.want; got != want {
+						t.Errorf("%d: got: %s, want: %s", idx, got, want)
+						continue
+					}
+			*/
+		})
 	}
 }

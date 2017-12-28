@@ -195,7 +195,7 @@ function getPathValue(tree, path) {
 }
 
 function log(msg) {
-	console.log(msg);
+  console.log(msg);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -206,26 +206,26 @@ function log(msg) {
 /*----------------------------------------------------------------------------*/
 
 function sendRunZoneCmd(num, mins) {
-	  url = "http://" + server_ip + "/runzone?num=" + num.toString() + "&mins=" + mins.toString();
-	  makeRequest(url, onSendRunZoneCmdDone);	
+  url = "http://" + server_ip + "/runzone?num=" + num.toString() + "&mins=" + mins.toString();
+  makeRequest(url, onSendRunZoneCmdDone);
 }
- 
+
 function onSendRunZoneCmdDone(data) {
-	  if (!data.match(/OK/)) {
-		    alert("Problem starting zone: " + data);
-	  }
-	}
+  if (!data.match(/OK/)) {
+    alert("Problem starting zone: " + data);
+  }
+}
 
 function sendRunZoneStopCmd(num) {
-	  url = "http://" + server_ip + "/runzonestop?num=" + num.toString();
-	  makeRequest(url, onSendRunZoneStopCmdDone);	
+  url = "http://" + server_ip + "/runzonestop?num=" + num.toString();
+  makeRequest(url, onSendRunZoneStopCmdDone);
 }
 
 function onSendRunZoneStopCmdDone(data) {
-	  if (!data.match(/OK/)) {
-		    alert("Problem stopping zone: " + data);
-	  }
-	}
+  if (!data.match(/OK/)) {
+    alert("Problem stopping zone: " + data);
+  }
+}
 
 /*----------------------------------------------------------------------------*/
 /**
@@ -294,7 +294,7 @@ function makeRequest(url, callback) {
   log("Sending request for " + url);
 
   $.ajaxSetup({
-	  async: false,
+      async: false,
       cache: true,
       timeout: 5000,
       success: callback,
@@ -319,8 +319,7 @@ function postSave() {
 
   $.ajaxSetup({
       cache: false,
-      timeout: 1000,
-      error: saveToServerError
+      timeout: 5000,
   });
 
   str = JSON.stringify(g.globalConf);
@@ -328,6 +327,8 @@ function postSave() {
 
   $.post(postUrl, str, function(data) {
     postDone(data);
+  }).fail(function(response) {
+    alert('Error: ' + response.responseText);
   });
 
 }
@@ -341,9 +342,9 @@ function postSave() {
 
 function postDone(data) {
   if (data.match(/OK/)) {
-	    alert("Config saved.");
+    alert("Config saved.");
   } else {
-	    alert("Problem saving configuration: " + data);
+    alert("Problem saving configuration: " + data);
   }
 }
 
@@ -351,4 +352,3 @@ function postDone(data) {
 function saveToServerError() {
   alert("Problem saving configuration! Server error.");
 }
-

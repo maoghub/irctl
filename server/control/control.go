@@ -7,6 +7,7 @@ import (
     "sync"
 	"time"
 
+	"github.com/kylelemons/godebug/pretty"
 )
 
 const (
@@ -19,23 +20,27 @@ const (
 )
 
 var (
-	RunningManuallyMu sync.RWMutex
-	RunningManually = false
+	// CommandRunningMu locks CommandRunning.
+	CommandRunningMu sync.RWMutex
+	// CommandRunning reports whether a manual or auto command is currently
+	// running. It should be set to true under lock before commencing an 
+	// operation that can turn on a valve.
+	CommandRunning = false
 )
 
 // RunParams is a collection of run options.
 type RunParams struct {
-	// config is the config to use. If empty, the file contents at configPath
+	// Config is the config to use. If empty, the file contents at ConfigPath
 	// are used instead.
-	config string
-	// configPath is the file path of the config file.
-	configPath string
-	// dataLogPath is the root path of the data logs.
-	dataLogPath string
-	// dontSleep avoids sleep when set to true. Used for testing only.
-	dontSleep bool
-	// logLevel is the log LogVerbosity level.
-	logLevel LogVerbosity
+	Config string
+	// ConfigPath is the file path of the config file.
+	ConfigPath string
+	// DataLogPath is the root path of the data logs.
+	DataLogPath string
+	// DontSleep avoids sleep when set to true. Used for testing only.
+	DontSleep bool
+	// LogLevel is the log LogVerbosity level.
+	LogLevel LogVerbosity
 }
 
 const (
@@ -54,14 +59,12 @@ const (
 //   log to log messages
 // Never exits.
 func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger) {
+	log.Infof("control.Run called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T), Logger(%T)", 
+		pretty.Sprint(*rparam), kv, cg, zc, er, log)
 	for {
-		if err := zc.TurnAllOff(); err != nil {
-			er.Report(err)
-		}
 		if _, err := RunOnce(rparam, kv, cg, zc, er, log, time.Now()); err != nil {
 			er.Report(err)
 		}
-
 		time.Sleep(runInterval)
 	}
 }
@@ -78,14 +81,17 @@ func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, 
 func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, now time.Time) (bool, error) {
 	log.Debugf("RunOnce at time %s", now.Format("Mon 2 Jan 2006 15:04"))
 
-	RunningManuallyMu.RLock()
-	defer RunningManuallyMu.RUnlock()
-	if RunningManually {
+	if CommandRunning {
+		log.Infof("Manual command is running, will retry later.")
 		return false, nil
 	}
 	
+	// Locking excludes manual runs from happening.
+	CommandRunningMu.Lock()
+	defer CommandRunningMu.Unlock()
+
 	// Every time, if not running manually, close all valves directly on the 
-	// valve controller. 
+	// valve controller as a safety/recovery measure.
 	if err := zc.TurnAllOff(); err != nil {
 		return false, nil
 	}
@@ -95,10 +101,12 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 		return alreadyRan, err
 	}
 
+	log.Infof("Reading config from %s.", rparam.ConfigPath)
 	sc, alg, err := readConfig(rparam)
 	if err != nil {
 		return false, err
 	}
+	log.Infof("Read config from %s.", rparam.ConfigPath)
 
 	// Reset zone states from Complete to Idle once per day.
 	if err := resetZones(zc, kv, now, sc.NumZones()); err != nil {
@@ -106,12 +114,14 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 	}
 
 	// If current time is before scheduled run time, exit.
+	log.Debugf("Current time is %s, scheduled time is %s.", now.Format(timeOfDayFormat), sc.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
 	if tooEarly(now, sc.GlobalConfig.RunTimeAM) {
-		log.Debugf("Current time %s is before scheduled time of %s, exiting.", now.Format(timeOfDayFormat), sc.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
+		log.Debugf("Too early, exiting.")
 		return false, nil
 	}
 
-	dl := NewDataLogger(log, rparam.dataLogPath, sc.NumZones())
+	log.Infof("Getting conditions.")
+	dl := NewDataLogger(log, rparam.DataLogPath)
 	// Check conditions.
 	iconYesterday, tempYesterday, precipYesterday, err := cg.GetYesterday(sc.GlobalConfig.AirportCode)
 	if err != nil {
@@ -186,7 +196,7 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 			}
 			log.Infof("Below minimum of %3.2f.", z.MinVWC)
 			if !dontRun {
-				err = zc.Run(znum, runDuration, rparam.dontSleep)
+				err = zc.Run(znum, runDuration, rparam.DontSleep)
 				if err != nil {
 					er.Report(err)
 					continue
@@ -201,10 +211,12 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 		}
 	}
 
+	log.Infof("Writing runtimes.")
 	if err := dl.WriteRuntimes(now, runtimes); err != nil {
 		return true, er.Report(err)
 	}
 
+	log.Infof("Updating last run time.")
 	if err := kv.Set(LastRunDateKey, now.Format(dateFormat)); err != nil {
 		return true, er.Report(err)
 	}
@@ -232,11 +244,11 @@ func checkIfRanToday(kv KVStore, log Logger, now time.Time) (bool, error) {
 
 // readConfig reads the config.
 func readConfig(rparam *RunParams) (*SystemConfig, ETAlgorithm, error) {
-	config := rparam.config
+	config := rparam.Config
 	if config == "" {
-		scb, err := ioutil.ReadFile(rparam.configPath)
+		scb, err := ioutil.ReadFile(rparam.ConfigPath)
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not read config file at %s: %s", rparam.configPath, err)
+			return nil, nil, fmt.Errorf("could not read config file at %s: %s", rparam.ConfigPath, err)
 		}
 		config = string(scb)
 	}
