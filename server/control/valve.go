@@ -4,17 +4,23 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 /*
 To add a new valve controller named FooController:
   1. Add method implementations of ValveController for FooController.
   2. Add "foo": NewFooController entry to the controllerFactories map.
-See the comment lines beginning with // ADD: 
+See the comment lines beginning with // ADD:
 */
 
-// NewValveController returns an instance of ValveController with the given 
-// name if a driver with that name exists. 
+const (
+	rain8MaxRetries    = 5
+	rain8RetryInterval = 10 * time.Second
+)
+
+// NewValveController returns an instance of ValveController with the given
+// name if a driver with that name exists.
 func NewValveController(controllerName string, log Logger) (ValveController, error) {
 	vcf, ok := controllerFactories[controllerName]
 	if !ok {
@@ -30,8 +36,8 @@ var (
 	// controllerFactories is a map of available controller factories. This map
 	// must be updated when adding a new controller.
 	controllerFactories = map[string]controllerFactory{
-		"console" : NewConsoleValveController, 
-		"rain8" : NewRain8ValveController,
+		"console": NewConsoleValveController,
+		"rain8":   NewRain8ValveController,
 		// ADD: "foo" : NewFooController,
 	}
 )
@@ -61,14 +67,14 @@ type ValveController interface {
 func NewRain8ValveController(log Logger) ValveController {
 	return &Rain8ValveController{
 		numValves: 8,
-		log: log,
+		log:       log,
 	}
 }
 
 // Rain8ValveController is a Rain8 valve controller.
 type Rain8ValveController struct {
 	numValves int
-	log Logger
+	log       Logger
 }
 
 // OpenValve implements ValveController method.
@@ -94,29 +100,32 @@ func (r *Rain8ValveController) CloseAllValves() error {
 
 // NumValves implements ValveController method.
 func (r *Rain8ValveController) NumValves() int {
-	return r.numValves 
+	return r.numValves
 }
 
-// runRain8Command turns on or off the given valve number, depending on the 
+// runRain8Command turns on or off the given valve number, depending on the
 // value of on.
 func runRain8Command(num int, on bool) error {
 	onStr := "off"
 	if on {
 		onStr = "on"
 	}
-	cmdStr := fmt.Sprintf("/usr/local/bin/Rain8Net -v -d \"/dev/ttyUSB0\" -c %d -u 1 -z %s 2>&1", num, onStr)
-	outB, err := exec.Command(cmdStr).Output()
-	if err != nil {
-		return err
+	var err error
+	cmdStr := fmt.Sprintf("Rain8Net -v -d \"/dev/ttyUSB0\" -c %d -u 1 -z %s 2>&1", num, onStr)
+	for i := 0; i < rain8MaxRetries; i++ {
+		outB, err := exec.Command(cmdStr).Output()
+		if err != nil {
+			return err
+		}
+		out := string(outB)
+		switch {
+		case strings.Contains(out, "OK"):
+			return nil
+		case strings.Contains(out, "FAIL"):
+			err = fmt.Errorf("%s", out)
+		}
 	}
-	out := string(outB)
-	switch {
-	case strings.Contains(out, "OK"):
-		return nil
-	case strings.Contains(out, "FAIL"):
-		return fmt.Errorf("%s retured FAIL", cmdStr)
-	}
-	return fmt.Errorf("%s retured error: %s", cmdStr, err)
+	return fmt.Errorf("%s retured error after $=%d retries: %s", cmdStr, rain8MaxRetries, err)
 }
 
 // NewConsoleValveController returns a new ConsoleValveController.
@@ -127,7 +136,7 @@ func NewConsoleValveController(log Logger) ValveController {
 	}
 }
 
-// ConsoleValveController is a Rain8 valve controller. It simply prints the 
+// ConsoleValveController is a Rain8 valve controller. It simply prints the
 // valve commands to the log.
 type ConsoleValveController struct {
 	numValves int
@@ -154,10 +163,10 @@ func (c *ConsoleValveController) CloseAllValves() error {
 
 // NumValves implements ValveController method.
 func (c *ConsoleValveController) NumValves() int {
-	return c.numValves 
+	return c.numValves
 }
 
-/* ADD: to add a new controller type Foo, implement the methods below and 
+/* ADD: to add a new controller type Foo, implement the methods below and
         add to controllerFactories map.
 
 // NewFooValveController returns a new FooValveController.
@@ -168,7 +177,7 @@ func NewFooValveController(log Logger) ValveController {
 	}
 }
 
-// FooValveController is a Rain8 valve controller. It simply prints the 
+// FooValveController is a Rain8 valve controller. It simply prints the
 // valve commands to the log.
 type FooValveController struct {
 	numValves int
@@ -200,6 +209,6 @@ func (c *FooValveController) CloseAllValves() error {
 
 // NumValves implements ValveController method.
 func (c *FooValveController) NumValves() int {
-	return c.numValves 
+	return c.numValves
 }
 */
