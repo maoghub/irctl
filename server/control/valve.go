@@ -17,6 +17,8 @@ See the comment lines beginning with // ADD:
 const (
 	rain8MaxRetries    = 5
 	rain8RetryInterval = 10 * time.Second
+	// rain8Command is the serial command that controls the zones.
+	rain8Command = "Rain8Net"
 )
 
 // NewValveController returns an instance of ValveController with the given
@@ -111,9 +113,9 @@ func runRain8Command(num int, on bool) error {
 		onStr = "on"
 	}
 	var err error
-	cmdStr := fmt.Sprintf("Rain8Net -v -d \"/dev/ttyUSB0\" -c %d -u 1 -z %s 2>&1", num, onStr)
+	cmdStr := fmt.Sprintf("-v -d \"/dev/ttyUSB0\" -c %d -u 1 -z %s 2>&1", num, onStr)
 	for i := 0; i < rain8MaxRetries; i++ {
-		outB, err := exec.Command(cmdStr).Output()
+		outB, err := exec.Command(rain8Command, cmdStr).Output()
 		if err != nil {
 			return err
 		}
@@ -125,7 +127,7 @@ func runRain8Command(num int, on bool) error {
 			err = fmt.Errorf("%s", out)
 		}
 	}
-	return fmt.Errorf("%s retured error after $=%d retries: %s", cmdStr, rain8MaxRetries, err)
+	return fmt.Errorf("%s %s retured error after $=%d retries: %s", rain8Command, cmdStr, rain8MaxRetries, err)
 }
 
 // NewConsoleValveController returns a new ConsoleValveController.
