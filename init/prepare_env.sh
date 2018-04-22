@@ -2,16 +2,15 @@
 
 set -e 
 
-apt-get install git
-apt-get install golang
+sudo apt-get install git
+sudo apt-get install golang
 
 export GOROOT=/usr/local/go
 export GOPATH=~/go
 
-mkdir -p ~/github
-mkdir -p ~/go/src/irctl/server
+mkdir -p ${GOROOT}/src/github.com
 
-cd ~/github
+cd ${GOROOT}/src/github.com
 if [ ! -d ./irctl ]; then  
   git clone https://github.com/maoghub/irctl.git
 fi
@@ -22,6 +21,8 @@ git pull
 cd server
 go get ./...
 
-ln -fs ~/github/irctl/server/control ~/go/src/irctl/server/control
+ln -fs ${GOROOT}/src/github.com/irctl/server/control ~/go/src/irctl/server/control
 
 go build server.go
+
+sudo cp server /usr/local/bin/irrigation_control

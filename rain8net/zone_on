@@ -1,0 +1,2 @@
+#!/bin/bash
+Rain8Net -v -d "/dev/ttyUSB0" -c on -u 1 -z ${1}

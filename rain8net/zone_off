@@ -1,19 +1,2 @@
 #!/bin/bash
-
-dtime=`date +"%m-%d-%Y %H:%M:%S"`
-logstr=$dtime" Zone "$1" off"
-
-onstr=`/usr/local/bin/irr/Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z $1`
-if [[ $onstr != *SUCCESS* ]]; then
-    echo $dtime" Something failed!!!" >> /var/www/logs/zone_error.log
-    #echo $onstr
-    echo $onstr >> /var/www/logs/zone_error.log
-    echo "FAIL"
-    exit 0
-fi
-
-#echo $logstr
-echo $logstr >> /var/www/data/zone_logs/zone$1.log
-echo "OK"
-exit 1
-
+Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z ${1}

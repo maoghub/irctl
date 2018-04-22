@@ -3,31 +3,23 @@
 time=$(($2 * 60))
 dtime=`date +"%m-%d-%Y %H:%M:%S"`
 logstr=$dtime" Zone "$1" for "$2" min"
+echo $logstr
 
-onstr=`/usr/local/bin/irr/Rain8Net -v -d "/dev/ttyUSB0" -c on -u 1 -z $1`
+onstr=`Rain8Net -v -d "/dev/ttyUSB0" -c on -u 1 -z $1`
 if [[ $onstr != *SUCCESS* ]]; then
-    echo $dtime" Something failed!!!" >> /var/www/logs/zone_error.log
-    #echo $onstr
-    echo $onstr >> /var/www/logs/zone_error.log
-    echo "FAIL"
-    exit 0
+    echo $dtime" ON FAIL: "$onstr
+    exit 1
 fi
 
-#sleep $time
-sleep 10
+sleep $time
 
-offstr=`/usr/local/bin/irr/Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z $1`
+offstr=`Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z $1`
 while [[ $offstr != *SUCCESS* ]]; do
-    echo $dtime" Something failed!!!" >> /var/www/logs/zone_error.log
-    #echo $onstr
-    echo $onstr >> /var/www/logs/zone_error.log
-    #echo $offstr
-    echo $offstr >> /var/www/logs/zone_error.log
-    offstr=`/usr/local/bin/irr/Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z $1`
+    echo $dtime" OFF FAIL: "$offstr
+    offstr=`Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z $1`
+    sleep 5
 done
 
-#echo $logstr
-echo $logstr >> /var/www/data/zone_logs/zone$1.log
 echo "OK"
-exit 1
+exit 0
 
