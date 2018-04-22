@@ -76,11 +76,11 @@
     },
     "2": {
       "DepthIn": 16,
-      "Enabled": true,
+      "Enabled": false,
       "GetsRain": true,
       "MaxVWC": 35,
       "MinVWC": 20,
-      "Name": "Ground back",
+      "Name": "Broken",
       "Number": 2,
       "RunTimeMultiplier": 2,
       "SoilConfig": {
@@ -125,7 +125,7 @@
       "GetsRain": true,
       "MaxVWC": 35,
       "MinVWC": 25,
-      "Name": "Ground back 2",
+      "Name": "Ground back trees",
       "Number": 5,
       "RunTimeMultiplier": 3,
       "SoilConfig": {
@@ -155,7 +155,7 @@
       "GetsRain": true,
       "MaxVWC": 35,
       "MinVWC": 25,
-      "Name": "Trees",
+      "Name": "Ground back roses",
       "Number": 7,
       "RunTimeMultiplier": 3,
       "SoilConfig": {

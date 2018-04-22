@@ -2,8 +2,9 @@
 
 set -e 
 
-sudo apt-get install git
-sudo apt-get install golang
+# sudo apt-get install git
+# NOTE: Must be recent version, ubuntu LTS is too old
+# sudo apt-get install golang
 
 export GOROOT=/usr/local/go
 export GOPATH=~/go

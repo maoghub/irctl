@@ -15,7 +15,7 @@ See the comment lines beginning with // ADD:
 */
 
 const (
-	rain8MaxRetries    = 5
+	rain8MaxRetries    = 1
 	rain8RetryInterval = 10 * time.Second
 	// rain8Command is the serial command that controls the zones.
 	rain8Command = "Rain8Net"
@@ -113,22 +113,23 @@ func runRain8Command(num int, on bool) error {
 		onStr = "on"
 	}
 	var err error
-	cmdStr := fmt.Sprintf("%s -v -d \"/dev/ttyUSB0\" -c %d -u 1 -z %s 2>&1", rain8Command, num, onStr)
+	cmdStr := fmt.Sprintf(`%s -v -c %s -u 1 -z %d`, rain8Command, onStr, num+1)
+	fmt.Println(cmdStr)
 	args := strings.Split(cmdStr, " ")
 	for i := 0; i < rain8MaxRetries; i++ {
-		outB, err := exec.Command(args[0], args[1:]...).Output()
-		if err != nil {
-			return err
-		}
+		outB, _ := exec.Command(args[0], args[1:]...).Output()
 		out := string(outB)
+		fmt.Println(out)
 		switch {
-		case strings.Contains(out, "OK"):
+		case strings.Contains(out, "SUCCESS"):
 			return nil
 		case strings.Contains(out, "FAIL"):
 			err = fmt.Errorf("%s", out)
 		}
+	        time.Sleep(rain8RetryInterval)
+		
 	}
-	return fmt.Errorf("%s retured error after $=%d retries: %s", cmdStr, rain8MaxRetries, err)
+	return fmt.Errorf("%s retured error after %d retries: %s", cmdStr, rain8MaxRetries, err)
 }
 
 // NewConsoleValveController returns a new ConsoleValveController.
