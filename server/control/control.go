@@ -92,9 +92,7 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 
 	// Every time, if not running manually, close all valves directly on the 
 	// valve controller as a safety/recovery measure.
-	if err := zc.TurnAllOff(); err != nil {
-		return false, nil
-	}
+	zc.TurnAllOff()
 	
 	if alreadyRan, err := checkIfRanToday(kv, log, now); alreadyRan || err != nil {
 		log.Debugf("Already ran today, exiting.")

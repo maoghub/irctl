@@ -114,12 +114,10 @@ func runRain8Command(num int, on bool) error {
 	}
 	var err error
 	cmdStr := fmt.Sprintf(`%s -v -c %s -u 1 -z %d`, rain8Command, onStr, num+1)
-	fmt.Println(cmdStr)
 	args := strings.Split(cmdStr, " ")
 	for i := 0; i < rain8MaxRetries; i++ {
 		outB, _ := exec.Command(args[0], args[1:]...).Output()
 		out := string(outB)
-		fmt.Println(out)
 		switch {
 		case strings.Contains(out, "SUCCESS"):
 			return nil
