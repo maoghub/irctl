@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
-    "sync"
+	"sync"
 	"time"
 
 	"github.com/kylelemons/godebug/pretty"
@@ -23,9 +23,11 @@ var (
 	// CommandRunningMu locks CommandRunning.
 	CommandRunningMu sync.RWMutex
 	// CommandRunning reports whether a manual or auto command is currently
-	// running. It should be set to true under lock before commencing an 
+	// running. It should be set to true under lock before commencing an
 	// operation that can turn on a valve.
 	CommandRunning = false
+	// doInit set to true causes Run to be skipped once only.
+	doInit = false
 )
 
 // RunParams is a collection of run options.
@@ -58,13 +60,15 @@ const (
 //   er to report errors
 //   log to log messages
 // Never exits.
-func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger) {
-	log.Infof("control.Run called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T), Logger(%T)", 
-		pretty.Sprint(*rparam), kv, cg, zc, er, log)
+func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, init bool) {
+	log.Infof("control.Run called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T), Logger(%T, init=%v)",
+		pretty.Sprint(*rparam), kv, cg, zc, er, log, init)
+	doInit = init
 	for {
-		if _, err := RunOnce(rparam, kv, cg, zc, er, log, time.Now()); err != nil {
+		if _, err := RunOnce(rparam, kv, cg, zc, er, log, time.Now(), doInit); err != nil {
 			er.Report(err)
 		}
+		doInit = false
 		time.Sleep(runInterval)
 	}
 }
@@ -78,22 +82,22 @@ func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, 
 //   zc to control zones
 //   er to report errors
 //   log to log messages
-func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, now time.Time) (bool, error) {
+func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, now time.Time, init bool) (bool, error) {
 	log.Debugf("RunOnce at time %s", now.Format("Mon 2 Jan 2006 15:04"))
 
 	if CommandRunning {
 		log.Infof("Manual command is running, will retry later.")
 		return false, nil
 	}
-	
+
 	// Locking excludes manual runs from happening.
 	CommandRunningMu.Lock()
 	defer CommandRunningMu.Unlock()
 
-	// Every time, if not running manually, close all valves directly on the 
+	// Every time, if not running manually, close all valves directly on the
 	// valve controller as a safety/recovery measure.
 	zc.TurnAllOff()
-	
+
 	if alreadyRan, err := checkIfRanToday(kv, log, now); alreadyRan || err != nil {
 		log.Debugf("Already ran today, exiting.")
 		return alreadyRan, err
@@ -193,7 +197,7 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 				continue
 			}
 			log.Infof("Below minimum of %3.2f.", z.MinVWC)
-			if !dontRun {
+			if !dontRun && !init { // init assumes that all zones are already watered, so skip.
 				err = zc.Run(znum, runDuration, rparam.DontSleep)
 				if err != nil {
 					er.Report(err)

@@ -15,7 +15,7 @@ See the comment lines beginning with // ADD:
 */
 
 const (
-	rain8MaxRetries    = 1
+	rain8MaxRetries    = 5
 	rain8RetryInterval = 10 * time.Second
 	// rain8Command is the serial command that controls the zones.
 	rain8Command = "Rain8Net"
