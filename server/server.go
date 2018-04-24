@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -41,11 +42,16 @@ func main() {
 	dataLogger = control.NewDataLogger(log, dataLogPath)
 
 	var valveControllerStr string
-	var runControlLoop bool
+	var runControlLoop, init bool
 	acn := fmt.Sprint(control.AvailableControllerNames())
 	flag.StringVar(&valveControllerStr, "controller", "console", "Valve controller to use (default console). Choose from "+acn)
 	flag.BoolVar(&runControlLoop, "runloop", false, "Run the control loop (false runs server only).")
+	flag.BoolVar(&runControlLoop, "init", false, "Erase the keystore state (reset) and assume that all zones are fully watered.")
 	flag.Parse()
+
+	if init {
+		log.Infof("Removing keystore...: %s", os.RemoveAll(kVStorePath))
+	}
 
 	var err error
 	valveController, err = control.NewValveController(valveControllerStr, log)
@@ -76,7 +82,7 @@ func main() {
 	}
 
 	if runControlLoop {
-		go control.Run(&rparam, kv, cg, zc, er, log)
+		go control.Run(&rparam, kv, cg, zc, er, log, init)
 	} else {
 		fmt.Println("Not running control loop, HTTP server only.")
 	}
