@@ -46,7 +46,7 @@ func main() {
 	acn := fmt.Sprint(control.AvailableControllerNames())
 	flag.StringVar(&valveControllerStr, "controller", "console", "Valve controller to use (default console). Choose from "+acn)
 	flag.BoolVar(&runControlLoop, "runloop", false, "Run the control loop (false runs server only).")
-	flag.BoolVar(&runControlLoop, "init", false, "Erase the keystore state (reset) and assume that all zones are fully watered.")
+	flag.BoolVar(&init, "init", false, "Erase the keystore state (reset) and assume that all zones are fully watered.")
 	flag.Parse()
 
 	if init {

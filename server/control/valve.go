@@ -91,13 +91,18 @@ func (*Rain8ValveController) CloseValve(n int) error {
 
 // CloseAllValves implements ValveController method.
 func (r *Rain8ValveController) CloseAllValves() error {
-	var ret error
-	for n := 0; n < r.numValves; n++ {
-		if err := r.CloseValve(n); err != nil {
-			ret = err
-		}
+	cmdStr := fmt.Sprintf(`%s -v -c alloff -u 1`, rain8Command)
+	args := strings.Split(cmdStr, " ")
+	outB, _ := exec.Command(args[0], args[1:]...).Output()
+	out := string(outB)
+	switch {
+	case strings.Contains(out, "SUCCESS"):
+		return nil
+	case strings.Contains(out, "FAIL"):
+		return fmt.Errorf("%s", out)
 	}
-	return ret
+	r.log.Errorf("Unknown response to %s:%s", cmdStr, out)
+	return nil
 }
 
 // NumValves implements ValveController method.
@@ -124,8 +129,8 @@ func runRain8Command(num int, on bool) error {
 		case strings.Contains(out, "FAIL"):
 			err = fmt.Errorf("%s", out)
 		}
-	        time.Sleep(rain8RetryInterval)
-		
+		time.Sleep(rain8RetryInterval)
+
 	}
 	return fmt.Errorf("%s retured error after %d retries: %s", cmdStr, rain8MaxRetries, err)
 }
