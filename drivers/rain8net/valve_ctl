@@ -1,4 +1,0 @@
-#!/bin/bash
-
-echo Rain8Net -v -d "/dev/ttyUSB0" -c $1 -u 1 -z $2
-Rain8Net -v -d "/dev/ttyUSB0" -c $1 -u 1 -z $2

@@ -1,2 +1,9 @@
 #!/bin/bash
-Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z ${1}
+# First zone has number 1 (not 0).
+out=`Rain8Net -v -d ${1} -c off -u 1 -z $((${2} + 1)) 2>&1 |tr '\n' ' '`
+if [[ $out = *"SUCCESS"* ]]; then
+  echo "OK - Off"
+  exit 0
+fi
+echo "FAIL - Off: " ${out}
+exit -1

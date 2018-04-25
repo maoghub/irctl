@@ -1,25 +1,33 @@
 #!/bin/bash
 
-time=$(($2 * 60))
+# Command for running zone directly for n minutes.
+#
+#  e.g. zone_run /dev/ttyUSB0 0 10
+#
+# Rain8net is flaky! Sometimes error code is returned 
+# when command succeeded.
+
+time=$(($3 * 60))
 dtime=`date +"%m-%d-%Y %H:%M:%S"`
-logstr=$dtime" Zone "$1" for "$2" min"
+logstr=$dtime" Zone "$2" for "$3" min"
 echo $logstr
 
-onstr=`Rain8Net -v -d "/dev/ttyUSB0" -c on -u 1 -z $1`
-if [[ $onstr != *SUCCESS* ]]; then
-    echo $dtime" ON FAIL: "$onstr
-    exit 1
-fi
+for i in `seq 1 5`; do
+  if ./zone_on ${1} ${2}; then
+    break
+  fi
+  sleep 1
+done
 
 sleep $time
 
-offstr=`Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z $1`
-while [[ $offstr != *SUCCESS* ]]; do
-    echo $dtime" OFF FAIL: "$offstr
-    offstr=`Rain8Net -v -d "/dev/ttyUSB0" -c off -u 1 -z $1`
-    sleep 5
+while [ 1 ]; do
+  if ./zone_off ${1} ${2}; then
+    break
+  fi  
+  sleep 1
 done
 
-echo "OK"
+echo "OK - Run"
 exit 0
 

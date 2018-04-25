@@ -18,5 +18,5 @@ $serPort->buffers(4096, 4096);
 $serPort->lookclear();
 $serPort->purge_all;
 
-$serPort->write("gpio set ".$zoneNumber. "\r");
-#$serPort->purge_all;
+$serPort->write("gpio clear ".$zoneNumber. "\r");
+print "OK - Off\n"
