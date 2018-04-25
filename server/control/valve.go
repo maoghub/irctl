@@ -1,53 +1,37 @@
 package control
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
 
 /*
 To add a new valve controller named FooController:
-  1. Add method implementations of ValveController for FooController.
-  2. Add "foo": NewFooController entry to the controllerFactories map.
-See the comment lines beginning with // ADD:
+1. The drivers are subdirs of driverDirPath with the name of the driver being the
+   subdir name.
+2. Each subdir must contain "zone_on", "zone_off" and "zone_all_off" exectuable e.g.
+     ../../drivers/rain8/zone_on /dev/ttyUSB0 0 10
+   This command runs the rain8 zone on command for zone 0 for 10 minutes, with the
+   controller at serial port /dev/ttyUSB.
+3. Commands must return 0 for success and non-zero for failure. The output of the
+   command  is the command response or error code, if appropriate.
 */
 
 const (
-	commandMaxRetries    = 5
+	// onCommandMaxRetries is the maximum retries for an on command.
+	// Off commands loop forever on failure.
+	onCommandMaxRetries = 5
+	// commandRetryInterval is the time to sleep between command retries.
 	commandRetryInterval = 10 * time.Second
-	// rain8Command is the serial command that controls the zones.
-	rain8Command  = "Rain8Net"
-	driverDirPath = "../"
+	// driverDirPath is the relative path of the root dir to the
+	// controller drivers.
+	driverDirPath = "../../drivers/"
 )
-
-// NewValveController returns an instance of ValveController with the given
-// name if a driver with that name exists.
-func NewValveController(controllerName string, log Logger) (ValveController, error) {
-	switch controllerName {
-	case "console":
-		return NewConsoleValveController(log), nil
-	case "rain8", "numato":
-		return NewPhysicalValveController(controllerName, log), nil
-	}
-	return nil, fmt.Errorf("unknown controller driver %s", controllerName)
-}
-
-// AvailableControllerNames returns the names of all available controllers.
-func AvailableControllerNames() []string {
-	files, err := ioutil.ReadDir(".")
-	if err != nil {
-		log.Fatal(err)
-	}
-	var out []string
-	for k := range controllerFactories {
-		out = append(out, k)
-	}
-	return out
-}
 
 // ValveController is a valve controller.
 type ValveController interface {
@@ -61,76 +45,88 @@ type ValveController interface {
 	NumValves() int
 }
 
-// NewPhysicalValveController returns a new PhysicalValveController.
-func NewPhysicalValveController(driverDir string, log Logger) ValveController {
-	return &PhysicalValveController{
-		driverDir: driverDir,
-		numValves: 8,
-		log:       log,
+// NewValveController returns an instance of ValveController with the given
+// name if a driver with that name exists.
+func NewValveController(controllerName, portName string, log Logger) (ValveController, error) {
+	if controllerName == "console" {
+		return NewConsoleValveController(log), nil
 	}
+	ac, err := AvailableControllerNames()
+	if err != nil {
+		return nil, err
+	}
+	if isInStringSlice(ac, controllerName) {
+		return NewPhysicalValveController(controllerName, portName, log), nil
+	}
+	return nil, fmt.Errorf("unknown controller driver %s", controllerName)
+}
+
+// AvailableControllerNames returns the names of all available controllers.
+func AvailableControllerNames() ([]string, error) {
+	files, err := ioutil.ReadDir(driverDirPath)
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, subdir := range files {
+		out = append(out, subdir.Name())
+	}
+	return out, nil
 }
 
 // PhysicalValveController is a Rain8 valve controller.
 type PhysicalValveController struct {
 	driverDir string
+	portName  string
 	numValves int
 	log       Logger
 }
 
+// NewPhysicalValveController returns a new PhysicalValveController.
+func NewPhysicalValveController(driverDir, portName string, log Logger) ValveController {
+	return &PhysicalValveController{
+		driverDir: driverDir,
+		portName:  portName,
+		numValves: 8,
+		log:       log,
+	}
+}
+
 // OpenValve implements ValveController method.
-func (*PhysicalValveController) OpenValve(n int) error {
-	return runRain8Command(n, true)
+func (vc *PhysicalValveController) OpenValve(n int) error {
+	return vc.valveCommand("zone_on", n, onCommandMaxRetries)
 }
 
 // CloseValve implements ValveController method.
-func (*PhysicalValveController) CloseValve(n int) error {
-	return runRain8Command(n, false)
+func (vc *PhysicalValveController) CloseValve(n int) error {
+	return vc.valveCommand("zone_off", n, 0 /*retry forever*/)
 }
 
 // CloseAllValves implements ValveController method.
-func (r *Rain8ValveController) CloseAllValves() error {
-	cmdStr := fmt.Sprintf(`%s -v -c alloff -u 1`, rain8Command)
-	args := strings.Split(cmdStr, " ")
-	outB, _ := exec.Command(args[0], args[1:]...).Output()
-	out := string(outB)
-	switch {
-	case strings.Contains(out, "SUCCESS"):
-		return nil
-	case strings.Contains(out, "FAIL"):
-		return fmt.Errorf("%s", out)
+func (vc *PhysicalValveController) CloseAllValves() error {
+	return vc.valveCommand("zone_all_off", 0, 0 /*retry forever*/)
+}
+
+// valveCommand issues the given command to vc for repeated number of times (or forever).
+func (vc *PhysicalValveController) valveCommand(cmdStr string, zoneNum, repeat int) error {
+	cmd := fmt.Sprintf("%s %s %d", filepath.Join(driverDirPath, vc.driverDir, cmdStr), vc.portName, zoneNum)
+	out := ""
+	for i := 0; i < repeat || repeat == 0; i++ {
+		args := strings.Split(cmd, " ")
+		outB, err := exec.Command(args[0], args[1:]...).Output()
+		if err == nil {
+			return nil
+		}
+		out = string(outB)
+		vc.log.Errorf(out)
+		time.Sleep(commandRetryInterval)
 	}
-	r.log.Errorf("Unknown response to %s:%s", cmdStr, out)
-	return nil
+	return errors.New(out)
 }
 
 // NumValves implements ValveController method.
-func (r *PhysicalValveController) NumValves() int {
-	return r.numValves
-}
-
-// runRain8Command turns on or off the given valve number, depending on the
-// value of on.
-func runRain8Command(num int, on bool) error {
-	onStr := "off"
-	if on {
-		onStr = "on"
-	}
-	var err error
-	cmdStr := fmt.Sprintf(`%s -v -c %s -u 1 -z %d`, rain8Command, onStr, num+1)
-	args := strings.Split(cmdStr, " ")
-	for i := 0; i < commandMaxRetries; i++ {
-		outB, _ := exec.Command(args[0], args[1:]...).Output()
-		out := string(outB)
-		switch {
-		case strings.Contains(out, "SUCCESS"):
-			return nil
-		case strings.Contains(out, "FAIL"):
-			err = fmt.Errorf("%s", out)
-		}
-		time.Sleep(commandRetryInterval)
-
-	}
-	return fmt.Errorf("%s retured error after %d retries: %s", cmdStr, commandMaxRetries, err)
+func (vc *PhysicalValveController) NumValves() int {
+	return vc.numValves
 }
 
 // NewConsoleValveController returns a new ConsoleValveController.
@@ -171,49 +167,11 @@ func (c *ConsoleValveController) NumValves() int {
 	return c.numValves
 }
 
-/* ADD: to add a new controller type Foo, implement the methods below and
-        add to controllerFactories map.
-
-// NewFooValveController returns a new FooValveController.
-func NewFooValveController(log Logger) ValveController {
-	return &FooValveController{
-		numValves: 8,
-		log:       log,
-	}
-}
-
-// FooValveController is a Rain8 valve controller. It simply prints the
-// valve commands to the log.
-type FooValveController struct {
-	numValves int
-	log       Logger
-}
-
-// OpenValve implements ValveController method.
-func (c *FooValveController) OpenValve(n int) error {
-	c.log.Infof("OpenValve %d.", n)
-	return nil
-}
-
-// CloseValve implements ValveController method.
-func (c *FooValveController) CloseValve(n int) error {
-	c.log.Infof("CloseValve %d.", n)
-	return nil
-}
-
-// CloseAllValves implements ValveController method.
-func (c *FooValveController) CloseAllValves() error {
-	var ret error
-	for n := 0; n < c.numValves; n++ {
-		if err := c.CloseValve(n); err != nil {
-			ret = err
+func isInStringSlice(ss []string, v string) bool {
+	for _, s := range ss {
+		if s == v {
+			return true
 		}
 	}
-	return ret
+	return false
 }
-
-// NumValves implements ValveController method.
-func (c *FooValveController) NumValves() int {
-	return c.numValves
-}
-*/
