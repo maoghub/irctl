@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "OK - Off ${2} console"
+exit 0

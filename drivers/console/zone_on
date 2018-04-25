@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "OK - On ${2} console"
+exit 0

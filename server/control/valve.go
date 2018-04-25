@@ -52,9 +52,6 @@ type ValveController interface {
 // NewValveController returns an instance of ValveController with the given
 // name if a driver with that name exists.
 func NewValveController(controllerName, portName string, log Logger) (ValveController, error) {
-	if controllerName == "console" {
-		return NewConsoleValveController(log), nil
-	}
 	ac, err := AvailableControllerNames()
 	if err != nil {
 		return nil, err
@@ -131,44 +128,6 @@ func (vc *PhysicalValveController) valveCommand(cmdStr string, zoneNum, repeat i
 // NumValves implements ValveController method.
 func (vc *PhysicalValveController) NumValves() int {
 	return vc.numValves
-}
-
-// NewConsoleValveController returns a new ConsoleValveController.
-func NewConsoleValveController(log Logger) ValveController {
-	return &ConsoleValveController{
-		numValves: 8,
-		log:       log,
-	}
-}
-
-// ConsoleValveController is a Rain8 valve controller. It simply prints the
-// valve commands to the log.
-type ConsoleValveController struct {
-	numValves int
-	log       Logger
-}
-
-// OpenValve implements ValveController method.
-func (c *ConsoleValveController) OpenValve(n int) error {
-	c.log.Infof("OpenValve %d.", n)
-	return nil
-}
-
-// CloseValve implements ValveController method.
-func (c *ConsoleValveController) CloseValve(n int) error {
-	c.log.Infof("CloseValve %d.", n)
-	return nil
-}
-
-// CloseAllValves implements ValveController method.
-func (c *ConsoleValveController) CloseAllValves() error {
-	c.log.Infof("CloseAllValves.")
-	return nil
-}
-
-// NumValves implements ValveController method.
-func (c *ConsoleValveController) NumValves() int {
-	return c.numValves
 }
 
 func isInStringSlice(ss []string, v string) bool {
