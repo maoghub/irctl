@@ -2,6 +2,8 @@ package control
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os/exec"
 	"strings"
 	"time"
@@ -15,37 +17,31 @@ See the comment lines beginning with // ADD:
 */
 
 const (
-	rain8MaxRetries    = 5
-	rain8RetryInterval = 10 * time.Second
+	commandMaxRetries    = 5
+	commandRetryInterval = 10 * time.Second
 	// rain8Command is the serial command that controls the zones.
-	rain8Command = "Rain8Net"
+	rain8Command  = "Rain8Net"
+	driverDirPath = "../"
 )
 
 // NewValveController returns an instance of ValveController with the given
 // name if a driver with that name exists.
 func NewValveController(controllerName string, log Logger) (ValveController, error) {
-	vcf, ok := controllerFactories[controllerName]
-	if !ok {
-		return nil, fmt.Errorf("%s is not a valid controller name, available options are %v", controllerName, AvailableControllerNames())
+	switch controllerName {
+	case "console":
+		return NewConsoleValveController(log), nil
+	case "rain8", "numato":
+		return NewPhysicalValveController(controllerName, log), nil
 	}
-	return vcf(log), nil
+	return nil, fmt.Errorf("unknown controller driver %s", controllerName)
 }
-
-// controllerFactory is a factory for creating ValveControllers.
-type controllerFactory func(log Logger) ValveController
-
-var (
-	// controllerFactories is a map of available controller factories. This map
-	// must be updated when adding a new controller.
-	controllerFactories = map[string]controllerFactory{
-		"console": NewConsoleValveController,
-		"rain8":   NewRain8ValveController,
-		// ADD: "foo" : NewFooController,
-	}
-)
 
 // AvailableControllerNames returns the names of all available controllers.
 func AvailableControllerNames() []string {
+	files, err := ioutil.ReadDir(".")
+	if err != nil {
+		log.Fatal(err)
+	}
 	var out []string
 	for k := range controllerFactories {
 		out = append(out, k)
@@ -65,27 +61,29 @@ type ValveController interface {
 	NumValves() int
 }
 
-// NewRain8ValveController returns a new Rain8ValveController.
-func NewRain8ValveController(log Logger) ValveController {
-	return &Rain8ValveController{
+// NewPhysicalValveController returns a new PhysicalValveController.
+func NewPhysicalValveController(driverDir string, log Logger) ValveController {
+	return &PhysicalValveController{
+		driverDir: driverDir,
 		numValves: 8,
 		log:       log,
 	}
 }
 
-// Rain8ValveController is a Rain8 valve controller.
-type Rain8ValveController struct {
+// PhysicalValveController is a Rain8 valve controller.
+type PhysicalValveController struct {
+	driverDir string
 	numValves int
 	log       Logger
 }
 
 // OpenValve implements ValveController method.
-func (*Rain8ValveController) OpenValve(n int) error {
+func (*PhysicalValveController) OpenValve(n int) error {
 	return runRain8Command(n, true)
 }
 
 // CloseValve implements ValveController method.
-func (*Rain8ValveController) CloseValve(n int) error {
+func (*PhysicalValveController) CloseValve(n int) error {
 	return runRain8Command(n, false)
 }
 
@@ -106,7 +104,7 @@ func (r *Rain8ValveController) CloseAllValves() error {
 }
 
 // NumValves implements ValveController method.
-func (r *Rain8ValveController) NumValves() int {
+func (r *PhysicalValveController) NumValves() int {
 	return r.numValves
 }
 
@@ -120,7 +118,7 @@ func runRain8Command(num int, on bool) error {
 	var err error
 	cmdStr := fmt.Sprintf(`%s -v -c %s -u 1 -z %d`, rain8Command, onStr, num+1)
 	args := strings.Split(cmdStr, " ")
-	for i := 0; i < rain8MaxRetries; i++ {
+	for i := 0; i < commandMaxRetries; i++ {
 		outB, _ := exec.Command(args[0], args[1:]...).Output()
 		out := string(outB)
 		switch {
@@ -129,10 +127,10 @@ func runRain8Command(num int, on bool) error {
 		case strings.Contains(out, "FAIL"):
 			err = fmt.Errorf("%s", out)
 		}
-		time.Sleep(rain8RetryInterval)
+		time.Sleep(commandRetryInterval)
 
 	}
-	return fmt.Errorf("%s retured error after %d retries: %s", cmdStr, rain8MaxRetries, err)
+	return fmt.Errorf("%s retured error after %d retries: %s", cmdStr, commandMaxRetries, err)
 }
 
 // NewConsoleValveController returns a new ConsoleValveController.
