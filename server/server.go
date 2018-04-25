@@ -41,20 +41,25 @@ func main() {
 	log = &control.ConsoleLogger{LogVerbosity: control.Debug}
 	dataLogger = control.NewDataLogger(log, dataLogPath)
 
-	var valveControllerStr string
+	var valveControllerStr, portNameStr string
 	var runControlLoop, init bool
 	acn := fmt.Sprint(control.AvailableControllerNames())
 	flag.StringVar(&valveControllerStr, "controller", "console", "Valve controller to use (default console). Choose from "+acn)
+	flag.StringVar(&portNameStr, "port_name", "", "Serial port to valve controller. Must be set.")
 	flag.BoolVar(&runControlLoop, "runloop", false, "Run the control loop (false runs server only).")
 	flag.BoolVar(&init, "init", false, "Erase the keystore state (reset) and assume that all zones are fully watered.")
 	flag.Parse()
 
+	if portNameStr == "" {
+		fmt.Println("port_name must be set")
+		return
+	}
 	if init {
 		log.Infof("Removing keystore...: %s", os.RemoveAll(kVStorePath))
 	}
 
 	var err error
-	valveController, err = control.NewValveController(valveControllerStr, log)
+	valveController, err = control.NewValveController(valveControllerStr, portNameStr, log)
 	if err != nil {
 		fmt.Println(err)
 		return

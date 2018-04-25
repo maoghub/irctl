@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -28,9 +29,12 @@ const (
 	onCommandMaxRetries = 5
 	// commandRetryInterval is the time to sleep between command retries.
 	commandRetryInterval = 10 * time.Second
+)
+
+var (
 	// driverDirPath is the relative path of the root dir to the
 	// controller drivers.
-	driverDirPath = "../../drivers/"
+	driverDirPath = filepath.Join(os.Getenv("GOPATH"), "src/irctl/drivers/")
 )
 
 // ValveController is a valve controller.
@@ -58,7 +62,7 @@ func NewValveController(controllerName, portName string, log Logger) (ValveContr
 	if isInStringSlice(ac, controllerName) {
 		return NewPhysicalValveController(controllerName, portName, log), nil
 	}
-	return nil, fmt.Errorf("unknown controller driver %s", controllerName)
+	return nil, fmt.Errorf("unknown controller driver %s, choices are %v", controllerName, ac)
 }
 
 // AvailableControllerNames returns the names of all available controllers.
