@@ -245,6 +245,8 @@ func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = valveController.OpenValve(int(num))
 	if err != nil {
+		control.CommandRunningMu.Unlock()
+		control.CommandRunning = false
 		httpError(w, r, err.Error(), http.StatusInternalServerError)
 		return
 	}
