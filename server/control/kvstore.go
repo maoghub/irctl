@@ -78,7 +78,7 @@ func NewBadgerKVStore(dbPath string, log Logger) (*BadgerKVStore, error) {
 // runGC runs garbage collection if necessary.
 func (kv *BadgerKVStore) runGC() {
 	if time.Since(kv.lastGC) < kvGCInterval {
-		kv.log.Infof("skipping badger GC")
+		//kv.log.Infof("skipping badger GC")
 		return
 	}
 	kv.log.Infof("running badger GC")

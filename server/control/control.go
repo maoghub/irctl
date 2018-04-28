@@ -83,7 +83,7 @@ func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, 
 //   er to report errors
 //   log to log messages
 func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, now time.Time, init bool) (bool, error) {
-	log.Debugf("RunOnce at time %s", now.Format("Mon 2 Jan 2006 15:04"))
+	//log.Debugf("RunOnce at time %s", now.Format("Mon 2 Jan 2006 15:04"))
 
 	if CommandRunning {
 		log.Infof("Manual command is running, will retry later.")
@@ -103,12 +103,12 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 		return alreadyRan, err
 	}
 
-	log.Infof("Reading config from %s.", rparam.ConfigPath)
+	//log.Infof("Reading config from %s.", rparam.ConfigPath)
 	sc, alg, err := readConfig(rparam)
 	if err != nil {
 		return false, err
 	}
-	log.Infof("Read config from %s.", rparam.ConfigPath)
+	//log.Infof("Read config from %s.", rparam.ConfigPath)
 
 	// Reset zone states from Complete to Idle once per day.
 	if err := resetZones(zc, kv, now, sc.NumZones()); err != nil {
@@ -118,7 +118,7 @@ func RunOnce(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneControll
 	// If current time is before scheduled run time, exit.
 	log.Debugf("Current time is %s, scheduled time is %s.", now.Format(timeOfDayFormat), sc.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
 	if tooEarly(now, sc.GlobalConfig.RunTimeAM) {
-		log.Debugf("Too early, exiting.")
+		//log.Debugf("Too early, exiting.")
 		return false, nil
 	}
 

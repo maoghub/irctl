@@ -41,7 +41,7 @@ var confFilename = "conf/irctl_conf.json"
 $(document).ready(function() {
 	// runTests();
 	initAll();
-	g.toDate.setFullYear(2017,10,26);
+	// g.toDate.setFullYear(2017,10,26); - set for debugging
 	getConfFile();
 	getServerLogData(gFromDate(), g.toDate);
 	displayScheduleTable();
