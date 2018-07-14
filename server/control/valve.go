@@ -95,16 +95,19 @@ func NewPhysicalValveController(driverDir, portName string, log Logger) ValveCon
 
 // OpenValve implements ValveController method.
 func (vc *PhysicalValveController) OpenValve(n int) error {
+	vc.log.Debugf("OpenValve %d", n)
 	return vc.valveCommand("zone_on", n, onCommandMaxRetries)
 }
 
 // CloseValve implements ValveController method.
 func (vc *PhysicalValveController) CloseValve(n int) error {
+	vc.log.Debugf("CloseValve %d", n)
 	return vc.valveCommand("zone_off", n, 0 /*retry forever*/)
 }
 
 // CloseAllValves implements ValveController method.
 func (vc *PhysicalValveController) CloseAllValves() error {
+	//vc.log.Debugf("CloseAllValves")
 	return vc.valveCommand("zone_all_off", 0, 0 /*retry forever*/)
 }
 
@@ -119,7 +122,7 @@ func (vc *PhysicalValveController) valveCommand(cmdStr string, zoneNum, repeat i
 			return nil
 		}
 		out = string(outB)
-		vc.log.Errorf(out)
+		vc.log.Errorf(out + err.Error())
 		time.Sleep(commandRetryInterval)
 	}
 	return errors.New(out)

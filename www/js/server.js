@@ -249,7 +249,7 @@ function processConditionsResponse(data) {
   jt = JSON.parse(data);
   if (jt.Errors != null) {
     alert(jt.Errors);
-    return;
+    //return;
   }
   ja = jt.Conditions;
   for (i = 0; i < ja.length; i++) {
@@ -270,7 +270,7 @@ function processRuntimesResponse(data) {
   jt = JSON.parse(data);
   if (jt.Errors != null) {
     alert(jt.Errors);
-    return;
+    //return;
   }
   ja = jt.Runtimes;
   for (i = 0; i < ja.length; i++) {

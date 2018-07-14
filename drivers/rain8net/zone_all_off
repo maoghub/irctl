@@ -1,8 +1,9 @@
 #!/bin/bash
-out=`Rain8Net -v -d ${1} -c alloff -u 1 2>&1 |tr '\n' ' '`
+cmd="Rain8Net -v -d ${1} -c alloff -u 1 2>&1 |tr '\n' ' '"
+out=`${cmd}`
 if [[ $out = *"SUCCESS"* ]]; then
   echo "OK - AllOff"
   exit 0
 fi
-echo "FAIL - AllOff: " ${out}
+echo "FAIL - AllOff: " ${cmd} " has output:" ${out}
 exit -1

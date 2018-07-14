@@ -241,11 +241,11 @@ func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	control.CommandRunningMu.Lock()
+	defer control.CommandRunningMu.Unlock()
 	control.CommandRunning = true
 
 	err = valveController.OpenValve(int(num))
 	if err != nil {
-		control.CommandRunningMu.Unlock()
 		control.CommandRunning = false
 		httpError(w, r, err.Error(), http.StatusInternalServerError)
 		return
@@ -253,7 +253,6 @@ func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		time.Sleep(time.Duration(mins) * time.Minute)
-		control.CommandRunningMu.Unlock()
 		control.CommandRunning = false
 
 		err = valveController.CloseValve(int(num))
@@ -291,7 +290,6 @@ func runzoneStopHandler(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("CloseValve %d failed: %s", num, err)
 		return
 	}
-	control.CommandRunningMu.Unlock()
 	control.CommandRunning = false
 
 	fmt.Fprintf(w, "OK")

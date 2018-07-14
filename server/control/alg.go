@@ -123,7 +123,7 @@ func NewRangeMapper(r []Range) *RangeMapper {
 func (rm *RangeMapper) GetY(x32 float64) float64 {
 	x := float64(x32)
 	for _, r := range rm.R {
-		if x > r.X1 && x < r.X2 {
+		if x >= r.X1 && x < r.X2 {
 			return r.Y
 		}
 	}

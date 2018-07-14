@@ -9,6 +9,11 @@
         },
         {
           "X1": 65,
+          "X2": 70,
+          "Y": 5
+        },
+        {
+          "X1": 70,
           "X2": 75,
           "Y": 10
         },
@@ -20,14 +25,14 @@
         {
           "X1": 85,
           "X2": 999,
-          "Y": 30
+          "Y": 25
         }
       ]
     }
   },
   "GlobalConfig": {
     "AirportCode": "KSJC",
-    "RunTimeAM": "0000-01-01T09:00:00Z"
+    "RunTimeAM": "0000-01-01T08:01:00Z"
   },
   "SoilConfigMap": {
     "Clay": {
@@ -46,18 +51,18 @@
   "ZoneConfigs": {
     "0": {
       "DepthIn": 8,
-      "Enabled": false,
+      "Enabled": true,
       "GetsRain": true,
-      "MaxVWC": 40,
-      "MinVWC": 25,
+      "MaxVWC": 35,
+      "MinVWC": 28,
       "Name": "Sun pots",
       "Number": 0,
-      "RunTimeMultiplier": 1,
+      "RunTimeMultiplier": 0.8,
       "SoilConfig": {
         "MaxVWC": 40,
         "Name": "Potting Mix"
       },
-      "ZoneETRate": 1
+      "ZoneETRate": 0.8
     },
     "1": {
       "DepthIn": 16,
@@ -67,7 +72,7 @@
       "MinVWC": 25,
       "Name": "Front",
       "Number": 1,
-      "RunTimeMultiplier": 3,
+      "RunTimeMultiplier": 1.5,
       "SoilConfig": {
         "MaxVWC": 50,
         "Name": "Clay Loam"
@@ -76,13 +81,13 @@
     },
     "2": {
       "DepthIn": 16,
-      "Enabled": false,
+      "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
       "MinVWC": 20,
-      "Name": "Broken",
+      "Name": "Ground back roses",
       "Number": 2,
-      "RunTimeMultiplier": 2,
+      "RunTimeMultiplier": 1.5,
       "SoilConfig": {
         "MaxVWC": 30,
         "Name": "Sandy Loam"
@@ -93,16 +98,16 @@
       "DepthIn": 8,
       "Enabled": true,
       "GetsRain": true,
-      "MaxVWC": 40,
-      "MinVWC": 30,
+      "MaxVWC": 35,
+      "MinVWC": 28,
       "Name": "Shade pots",
       "Number": 3,
       "RunTimeMultiplier": 1,
       "SoilConfig": {
-        "MaxVWC": 30,
+        "MaxVWC": 40,
         "Name": "Sandy Loam"
       },
-      "ZoneETRate": 0.7
+      "ZoneETRate": 0.6
     },
     "4": {
       "DepthIn": 16,
@@ -127,9 +132,9 @@
       "MinVWC": 25,
       "Name": "Ground back trees",
       "Number": 5,
-      "RunTimeMultiplier": 3,
+      "RunTimeMultiplier": 1.5,
       "SoilConfig": {
-        "MaxVWC": 30,
+        "MaxVWC": 40,
         "Name": "Sandy Loam"
       },
       "ZoneETRate": 1
@@ -142,7 +147,7 @@
       "MinVWC": 20,
       "Name": "Basement",
       "Number": 6,
-      "RunTimeMultiplier": 2,
+      "RunTimeMultiplier": 1.5,
       "SoilConfig": {
         "MaxVWC": 30,
         "Name": "Sandy Loam"
@@ -155,14 +160,14 @@
       "GetsRain": true,
       "MaxVWC": 35,
       "MinVWC": 25,
-      "Name": "Ground back roses",
+      "Name": "Trees",
       "Number": 7,
       "RunTimeMultiplier": 3,
       "SoilConfig": {
-        "MaxVWC": 30,
+        "MaxVWC": 35,
         "Name": "Sandy Loam"
       },
-      "ZoneETRate": 1
+      "ZoneETRate": 0.3
     }
   }
 }

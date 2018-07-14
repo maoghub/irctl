@@ -137,7 +137,8 @@ func (w *WundergroundConditionsGetter) ParseYesterday(resp []byte) (icon string,
 
 	precipIn, err = strIfToFloat32(pi)
 	if err != nil {
-		return "", 0.0, 0.0, fmt.Errorf("precipIn: %s", err)
+		w.log.Errorf("precipIn has non-float value %s, returning 0.0", pi)
+		return icon, tempF, 0.0, nil
 	}
 
 	return
