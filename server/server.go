@@ -290,6 +290,7 @@ func runzoneStopHandler(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("CloseValve %d failed: %s", num, err)
 		return
 	}
+	control.CommandRunningMu.Unlock()
 	control.CommandRunning = false
 
 	fmt.Fprintf(w, "OK")
@@ -335,7 +336,7 @@ func getToFromRange(w http.ResponseWriter, r *http.Request) (from, to time.Time,
 // strToDate creates a time object from a date string, which has only the date
 // fields set to the supplied values and other fields as default.
 func strToDate(s string) (time.Time, error) {
-	return time.Parse("2006-1-2", s)
+	return time.Parse("2006-01-02", s)
 }
 
 // httpError logs the given error and status and adds it to the response writer,

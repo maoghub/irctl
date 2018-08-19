@@ -61,7 +61,7 @@ const (
 //   log to log messages
 // Never exits.
 func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, init bool) {
-	log.Infof("control.Run called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T), Logger(%T, init=%v)",
+	log.Infof("control.Run2 called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T), Logger(%T, init=%v)",
 		pretty.Sprint(*rparam), kv, cg, zc, er, log, init)
 	ctrl := NewController(rparam, kv, cg, zc, er, log)
 	for {
@@ -108,7 +108,7 @@ func NewController(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneCo
 //   er to report errors
 //   log to log messages
 func (c *Controller) RunOnce(now time.Time) (bool, error) {
-	//c.log.Debugf("RunOnce at time %s.", now.Format("Mon 2 Jan 2006 15:04"))
+	c.log.Debugf("RunOnce at time %s.", now.Format("Mon 2 Jan 2006 15:04"))
 
 	if CommandRunning {
 		c.log.Infof("Manual command is running, will retry later.")
@@ -121,13 +121,15 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 
 	// Every time, if not running manually, close all valves directly on the
 	// valve controller as a safety/recovery measure.
+	fmt.Println("1")
 	c.zoneController.TurnAllOff()
+	fmt.Println("1")
 	if alreadyRan, err := checkIfRanToday(c.kvStore, c.log, now); alreadyRan || err != nil {
-		//c.log.Debugf("Already ran today, exiting.")
+		c.log.Debugf("Already ran today, exiting.")
 		return alreadyRan, err
 	}
 
-	//c.log.Infof("Reading config from %s.", c.rparam.ConfigPath)
+	c.log.Infof("Reading config from %s.", c.rparam.ConfigPath)
 	var err error
 	c.systemConfig, c.algorithm, err = readConfig(c.rparam)
 	if err != nil {
