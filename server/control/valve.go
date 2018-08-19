@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	log "github.com/golang/glog"
 )
 
 /*
@@ -51,13 +53,13 @@ type ValveController interface {
 
 // NewValveController returns an instance of ValveController with the given
 // name if a driver with that name exists.
-func NewValveController(controllerName, portName string, log Logger) (ValveController, error) {
+func NewValveController(controllerName, portName string) (ValveController, error) {
 	ac, err := AvailableControllerNames()
 	if err != nil {
 		return nil, err
 	}
 	if isInStringSlice(ac, controllerName) {
-		return NewPhysicalValveController(controllerName, portName, log), nil
+		return NewPhysicalValveController(controllerName, portName), nil
 	}
 	return nil, fmt.Errorf("unknown controller driver %s, choices are %v", controllerName, ac)
 }
@@ -80,34 +82,32 @@ type PhysicalValveController struct {
 	driverDir string
 	portName  string
 	numValves int
-	log       Logger
 }
 
 // NewPhysicalValveController returns a new PhysicalValveController.
-func NewPhysicalValveController(driverDir, portName string, log Logger) ValveController {
+func NewPhysicalValveController(driverDir, portName string) ValveController {
 	return &PhysicalValveController{
 		driverDir: driverDir,
 		portName:  portName,
 		numValves: 8,
-		log:       log,
 	}
 }
 
 // OpenValve implements ValveController method.
 func (vc *PhysicalValveController) OpenValve(n int) error {
-	vc.log.Debugf("OpenValve %d", n)
+	log.Infof("OpenValve %d", n)
 	return vc.valveCommand("zone_on", n, onCommandMaxRetries)
 }
 
 // CloseValve implements ValveController method.
 func (vc *PhysicalValveController) CloseValve(n int) error {
-	vc.log.Debugf("CloseValve %d", n)
+	log.Infof("CloseValve %d", n)
 	return vc.valveCommand("zone_off", n, 0 /*retry forever*/)
 }
 
 // CloseAllValves implements ValveController method.
 func (vc *PhysicalValveController) CloseAllValves() error {
-	//vc.log.Debugf("CloseAllValves")
+	//log.Infof("CloseAllValves")
 	return vc.valveCommand("zone_all_off", 0, 0 /*retry forever*/)
 }
 
@@ -122,7 +122,7 @@ func (vc *PhysicalValveController) valveCommand(cmdStr string, zoneNum, repeat i
 			return nil
 		}
 		out = string(outB)
-		vc.log.Errorf(out + err.Error())
+		log.Errorf(out + err.Error())
 		time.Sleep(commandRetryInterval)
 	}
 	return errors.New(out)

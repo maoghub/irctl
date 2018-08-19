@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	log "github.com/golang/glog"
 )
 
 // ConditionsGetter reports conditions used in ET calculations.
@@ -23,12 +25,11 @@ type ConditionsGetter interface {
 type WundergroundConditionsGetter struct {
 	apiKey  string
 	urlBase string
-	log     Logger
 }
 
 // NewWundergroundConditionsGetter returns a ptr to an initialized
 // WundergroundConditionsGetter.
-func NewWundergroundConditionsGetter(log Logger) *WundergroundConditionsGetter {
+func NewWundergroundConditionsGetter() *WundergroundConditionsGetter {
 	// forecast
 	//http://api.wunderground.com/api/4f746c425fb69966/geolookup/conditions/forecast/q/KSJC.json
 	// yesterady
@@ -37,14 +38,13 @@ func NewWundergroundConditionsGetter(log Logger) *WundergroundConditionsGetter {
 	return &WundergroundConditionsGetter{
 		apiKey:  apiKeyStr,
 		urlBase: `http://api.wunderground.com/api/` + apiKeyStr + `/geolookup/conditions/`,
-		log:     log,
 	}
 }
 
 // GetForecast implements ConditionsGetter#GetForecast.
 func (w *WundergroundConditionsGetter) GetForecast(airportCode string) (icon string, tempF float64, precipIn float64, err error) {
 	url := w.urlBase + "forecast/q/" + airportCode + ".json"
-	w.log.Debugf("GetForecast send request %s", url)
+	log.Infof("GetForecast send request %s", url)
 	resp, err := w.getURL(url)
 	if err != nil {
 		return "", 0.0, 0.0, fmt.Errorf("GetForecast: %s", err)
@@ -55,7 +55,7 @@ func (w *WundergroundConditionsGetter) GetForecast(airportCode string) (icon str
 // GetYesterday implements ConditionsGetter#GetYesterday.
 func (w *WundergroundConditionsGetter) GetYesterday(airportCode string) (icon string, tempF float64, precipIn float64, err error) {
 	url := w.urlBase + "yesterday/q/" + airportCode + ".json"
-	w.log.Debugf("GetYesterday send request %s", url)
+	log.Infof("GetYesterday send request %s", url)
 	resp, err := w.getURL(url)
 	if err != nil {
 		return "", 0.0, 0.0, fmt.Errorf("GetYesterday: %s", err)
@@ -137,7 +137,7 @@ func (w *WundergroundConditionsGetter) ParseYesterday(resp []byte) (icon string,
 
 	precipIn, err = strIfToFloat32(pi)
 	if err != nil {
-		w.log.Errorf("precipIn has non-float value %s, returning 0.0", pi)
+		log.Errorf("precipIn has non-float value %s, returning 0.0", pi)
 		return icon, tempF, 0.0, nil
 	}
 

@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	log "github.com/golang/glog"
+
 	"irctl/server/control"
 )
 
@@ -33,13 +35,11 @@ const (
 var (
 	// Instance variables to share with HTTP handlers.
 	valveController control.ValveController
-	log             control.Logger
 	dataLogger      *control.DataLogger
 )
 
 func main() {
-	log = &control.ConsoleLogger{LogVerbosity: control.Debug}
-	dataLogger = control.NewDataLogger(log, dataLogPath)
+	dataLogger = control.NewDataLogger(dataLogPath)
 
 	var valveControllerStr, portNameStr string
 	var runControlLoop, init bool
@@ -51,7 +51,7 @@ func main() {
 	flag.Parse()
 
 	if portNameStr == "" {
-		fmt.Println("port_name must be set")
+		log.Error("port_name must be set")
 		return
 	}
 	if init {
@@ -59,37 +59,36 @@ func main() {
 	}
 
 	var err error
-	valveController, err = control.NewValveController(valveControllerStr, portNameStr, log)
+	valveController, err = control.NewValveController(valveControllerStr, portNameStr)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		return
 	}
-	fmt.Printf("Using controller %s.\n", valveControllerStr)
+	log.Infof("Using controller %s.\n", valveControllerStr)
 
-	kv, err := control.NewBadgerKVStore(kVStorePath, log)
+	kv, err := control.NewBadgerKVStore(kVStorePath)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		return
 	}
 
 	rparam := control.RunParams{
 		ConfigPath:  confFilePath,
 		DataLogPath: dataLogPath,
-		LogLevel:    control.Debug,
 	}
 
-	zc := *control.NewZoneController(valveController, kv, log)
-	cg := control.NewWundergroundConditionsGetter(log)
-	er, err := control.NewLoggerErrorReporter(log)
+	zc := *control.NewZoneController(valveController, kv)
+	cg := control.NewWundergroundConditionsGetter()
+	er, err := control.NewLogErrorReporter()
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		return
 	}
 
 	if runControlLoop {
-		go control.Run(&rparam, kv, cg, zc, er, log, init)
+		go control.Run(&rparam, kv, cg, zc, er, init)
 	} else {
-		fmt.Println("Not running control loop, HTTP server only.")
+		log.Info("Not running control loop, HTTP server only.")
 	}
 
 	http.Handle("/", loggingHandler(http.FileServer(http.Dir(wwwRoot))))
@@ -99,9 +98,9 @@ func main() {
 	http.HandleFunc("/runtimes", runtimesHandler)
 	http.HandleFunc("/setconfig", setConfigHandler)
 
-	fmt.Println("Listening...")
+	log.Info("Listening...")
 	err = http.ListenAndServe(":8080", nil)
-	fmt.Println(err)
+	log.Error(err)
 }
 
 // conditionsHandler returns the conditions for the specified "from" to "to" URL
@@ -133,7 +132,7 @@ func conditionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debugf("return value: %s", string(j))
+	log.Infof("return value: %s", string(j))
 	fmt.Fprintf(w, "%s", string(j))
 }
 
@@ -166,7 +165,7 @@ func runtimesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debugf("return value: %s", string(j))
+	log.Infof("return value: %s", string(j))
 	fmt.Fprintf(w, "%s", string(j))
 }
 
@@ -336,7 +335,7 @@ func getToFromRange(w http.ResponseWriter, r *http.Request) (from, to time.Time,
 // strToDate creates a time object from a date string, which has only the date
 // fields set to the supplied values and other fields as default.
 func strToDate(s string) (time.Time, error) {
-	return time.Parse("2006-01-02", s)
+	return time.Parse("2006-1-2", s)
 }
 
 // httpError logs the given error and status and adds it to the response writer,

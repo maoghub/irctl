@@ -1,0 +1,13 @@
+[Unit]
+Description=Irrigation controller
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+User=ostromart
+ExecStart=/home/ostromart/go/src/irctl/bin/irctl.sh
+
+[Install]
+WantedBy=multi-user.target

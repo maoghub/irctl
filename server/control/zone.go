@@ -3,6 +3,8 @@ package control
 import (
 	"fmt"
 	"time"
+
+	log "github.com/golang/glog"
 )
 
 // ZoneState is the state of the zone. The state machine is as follows:
@@ -18,17 +20,15 @@ const (
 
 // ZoneController is a controller of a zone.
 type ZoneController struct {
-	vc  ValveController
-	kv  KVStore
-	log Logger
+	vc ValveController
+	kv KVStore
 }
 
 // NewZoneController returns a ptr to an intialized ZoneController.
-func NewZoneController(vc ValveController, kv KVStore, log Logger) *ZoneController {
+func NewZoneController(vc ValveController, kv KVStore) *ZoneController {
 	return &ZoneController{
-		vc:  vc,
-		kv:  kv,
-		log: log,
+		vc: vc,
+		kv: kv,
 	}
 }
 
@@ -78,7 +78,7 @@ func (zc *ZoneController) ResetZones(numZones int) error {
 //   3. closing valve number n and updating state to Complete.
 // If dontSleep is set, it skips step 2.
 func (zc *ZoneController) Run(n int, d time.Duration, dontSleep bool) error {
-	zc.log.Infof("RunZone %d for %d mins.", n, int(d.Minutes()))
+	log.Infof("RunZone %d for %d mins.", n, int(d.Minutes()))
 	if err := zc.TurnOn(n); err != nil {
 		return err
 	}

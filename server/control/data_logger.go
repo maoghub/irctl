@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	log "github.com/golang/glog"
 )
 
 const (
@@ -19,16 +21,14 @@ const (
 )
 
 // NewDataLogger returns a ptr to an intializes DataLogger.
-func NewDataLogger(log Logger, rootPath string) *DataLogger {
+func NewDataLogger(rootPath string) *DataLogger {
 	return &DataLogger{
-		log:  log,
 		root: rootPath,
 	}
 }
 
 // DataLogger is a logger for conditions and runtimes.
 type DataLogger struct {
-	log  Logger
 	root string
 }
 
@@ -62,7 +62,7 @@ func (l *DataLogger) WriteConditions(t time.Time, iconStr string, tempStr, preci
 	if err := ioutil.WriteFile(fp, j, 0644); err != nil {
 		return err
 	}
-	l.log.Infof("WriteConditions for %s : %s", ce.Date, string(j))
+	log.Infof("WriteConditions for %s : %s", ce.Date, string(j))
 	return nil
 }
 
@@ -70,7 +70,7 @@ func (l *DataLogger) WriteConditions(t time.Time, iconStr string, tempStr, preci
 // root and the date portions of the date range "from"-"to". Any entries that
 // cannot be read result in errors being appended to the returned Errors.
 func (l *DataLogger) ReadConditions(from, to time.Time) ([]*ConditionsEntry, Errors) {
-	l.log.Debugf("ReadConditions: %s to %s", dateStr(from), dateStr(to))
+	log.Infof("ReadConditions: %s to %s", dateStr(from), dateStr(to))
 	now := dateOnly(from)
 	after := dateOnly(to.AddDate(0, 0, 1))
 	var out []*ConditionsEntry
@@ -89,7 +89,7 @@ func (l *DataLogger) ReadConditions(from, to time.Time) ([]*ConditionsEntry, Err
 
 // readConditionsOneDay reads conditions for one day with the date in t.
 func (l *DataLogger) readConditionsOneDay(t time.Time) (*ConditionsEntry, error) {
-	l.log.Debugf("readConditionsOneDay: %s", dateStr(t))
+	log.Infof("readConditionsOneDay: %s", dateStr(t))
 	j, err := ioutil.ReadFile(l.conditionsFilePath(t))
 	if err != nil {
 		return nil, fmt.Errorf("ReadFile: %s", err)
@@ -137,7 +137,7 @@ func (l *DataLogger) WriteRuntimes(t time.Time, numZones int, runtimesMap map[in
 	if err := ioutil.WriteFile(fp, j, 0644); err != nil {
 		return err
 	}
-	l.log.Infof("WriteRuntimes for %s : %s", dateOnly(t), string(j))
+	log.Infof("WriteRuntimes for %s : %s", dateOnly(t), string(j))
 	return nil
 }
 

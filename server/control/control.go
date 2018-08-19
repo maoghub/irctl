@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/golang/glog"
 	"github.com/kylelemons/godebug/pretty"
 )
 
@@ -41,8 +42,6 @@ type RunParams struct {
 	DataLogPath string
 	// DontSleep avoids sleep when set to true. Used for testing only.
 	DontSleep bool
-	// LogLevel is the log LogVerbosity level.
-	LogLevel LogVerbosity
 }
 
 const (
@@ -58,12 +57,11 @@ const (
 //   cg to get current conditions
 //   zc to control zones
 //   er to report errors
-//   log to log messages
 // Never exits.
-func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger, init bool) {
-	log.Infof("control.Run2 called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T), Logger(%T, init=%v)",
-		pretty.Sprint(*rparam), kv, cg, zc, er, log, init)
-	ctrl := NewController(rparam, kv, cg, zc, er, log)
+func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, init bool) {
+	log.Infof("control.Run called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T), init=%v)",
+		pretty.Sprint(*rparam), kv, cg, zc, er, init)
+	ctrl := NewController(rparam, kv, cg, zc, er)
 	for {
 		if _, err := ctrl.RunOnce(time.Now()); err != nil {
 			er.Report(err)
@@ -83,18 +81,16 @@ type Controller struct {
 	zoneController   ZoneController
 	dataLogger       *DataLogger
 	errorReporter    ErrorReporter
-	log              Logger
 }
 
 // NewController creates an initialized Controller and returns a pointer to it.
-func NewController(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, log Logger) *Controller {
+func NewController(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter) *Controller {
 	return &Controller{
 		rparam:           rparam,
 		kvStore:          kv,
 		conditionsGetter: cg,
 		zoneController:   zc,
 		errorReporter:    er,
-		log:              log,
 	}
 }
 
@@ -106,12 +102,11 @@ func NewController(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneCo
 //   cg to get current conditions
 //   zc to control zones
 //   er to report errors
-//   log to log messages
 func (c *Controller) RunOnce(now time.Time) (bool, error) {
-	c.log.Debugf("RunOnce at time %s.", now.Format("Mon 2 Jan 2006 15:04"))
+	log.Infof("RunOnce at time %s.", now.Format("Mon 2 Jan 2006 15:04"))
 
 	if CommandRunning {
-		c.log.Infof("Manual command is running, will retry later.")
+		log.Infof("Manual command is running, will retry later.")
 		return false, nil
 	}
 
@@ -121,21 +116,18 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 
 	// Every time, if not running manually, close all valves directly on the
 	// valve controller as a safety/recovery measure.
-	fmt.Println("1")
 	c.zoneController.TurnAllOff()
-	fmt.Println("1")
-	if alreadyRan, err := checkIfRanToday(c.kvStore, c.log, now); alreadyRan || err != nil {
-		c.log.Debugf("Already ran today, exiting.")
+	if alreadyRan, err := checkIfRanToday(c.kvStore, now); alreadyRan || err != nil {
+		//log.Infof("Already ran today, exiting.")
 		return alreadyRan, err
 	}
 
-	c.log.Infof("Reading config from %s.", c.rparam.ConfigPath)
 	var err error
 	c.systemConfig, c.algorithm, err = readConfig(c.rparam)
 	if err != nil {
 		return false, err
 	}
-	c.log.Infof("Read config from %s.", c.rparam.ConfigPath)
+	log.Infof("Read config from %s.", c.rparam.ConfigPath)
 
 	// Reset zone states from Complete to Idle once per day.
 	if err := resetZones(c.zoneController, c.kvStore, now, c.systemConfig.NumZones()); err != nil {
@@ -143,13 +135,13 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 	}
 
 	// If current time is before scheduled run time, exit.
-	c.log.Debugf("Current time is %s, scheduled time is %s.", now.Format(timeOfDayFormat), c.systemConfig.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
+	log.Infof("Current time is %s, scheduled time is %s.", now.Format(timeOfDayFormat), c.systemConfig.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
 	if tooEarly(now, c.systemConfig.GlobalConfig.RunTimeAM) {
-		//c.log.Debugf("Too early, exiting.")
+		//log.Infof("Too early, exiting.")
 		return false, nil
 	}
 
-	c.dataLogger = NewDataLogger(c.log, c.rparam.DataLogPath)
+	c.dataLogger = NewDataLogger(c.rparam.DataLogPath)
 
 	tempYesterday, precipYesterday, _, precipForecast, err := c.getConditions(now)
 	if err != nil {
@@ -165,12 +157,12 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 		return false, c.errorReporter.Report(err)
 	}
 
-	c.log.Infof("Writing runtimes.")
+	log.Infof("Writing runtimes.")
 	if err := c.dataLogger.WriteRuntimes(now, c.systemConfig.NumZones(), runtimes); err != nil {
 		return true, c.errorReporter.Report(err)
 	}
 
-	c.log.Infof("Updating last run time.")
+	log.Infof("Updating last run time.")
 	if err := c.kvStore.Set(LastRunDateKey, now.Format(dateFormat)); err != nil {
 		return true, c.errorReporter.Report(err)
 	}
@@ -179,7 +171,7 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 }
 
 func (c *Controller) getConditions(now time.Time) (tempY, precipY, tempT, precipT float64, err error) {
-	c.log.Infof("Getting conditions.")
+	log.Infof("Getting conditions.")
 	// Check conditions.
 	iconYesterday, tempYesterday, precipYesterday, err := c.conditionsGetter.GetYesterday(c.systemConfig.GlobalConfig.AirportCode)
 	if err != nil {
@@ -195,7 +187,7 @@ func (c *Controller) getConditions(now time.Time) (tempY, precipY, tempT, precip
 	if err := c.dataLogger.WriteConditions(now, iconForecast, tempForecast, precipForecast); err != nil {
 		c.errorReporter.Report(err)
 	}
-	c.log.Infof("Yesterday: %s / %3.1f degF / %1.1f In, Forecast: %s /  %3.1f degF / %1.1f In",
+	log.Infof("Yesterday: %s / %3.1f degF / %1.1f In, Forecast: %s /  %3.1f degF / %1.1f In",
 		iconYesterday, tempYesterday, precipYesterday, iconForecast, tempForecast, precipForecast)
 
 	return tempYesterday, precipYesterday, tempForecast, precipForecast, nil
@@ -219,7 +211,7 @@ func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipFor
 			c.errorReporter.Report(err)
 			continue
 		}
-		c.log.Infof("Zone %d VWC: %3.2f -> %3.2f", znum, vWC, newVWC)
+		log.Infof("Zone %d VWC: %3.2f -> %3.2f", znum, vWC, newVWC)
 		// Check if VWC is below the threshold. If so, run the zone, otherwise
 		// just update it to new value.
 		if newVWC >= z.MinVWC {
@@ -227,7 +219,7 @@ func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipFor
 				c.errorReporter.Report(err)
 				continue
 			}
-			c.log.Infof("Update VWC to %3.2f, don't run zone.", newVWC)
+			log.Infof("Update VWC to %3.2f, don't run zone.", newVWC)
 		} else {
 			runDuration, err := c.algorithm.CalculateRuntime(newVWC, z.MaxVWC, precipForecast, z)
 			if err != nil {
@@ -235,7 +227,7 @@ func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipFor
 				continue
 			}
 			runtimes[znum] = time.Duration(float64(runDuration.Nanoseconds()) * z.RunTimeMultiplier)
-			c.log.Infof("Below minimum of %3.2f, run time is %d mins x mult of %f = %d minutes.", z.MinVWC, runDuration.Minutes(), z.RunTimeMultiplier, runtimes[znum].Minutes())
+			log.Infof("Below minimum of %3.2f, run time is %2f mins x mult of %1.1f = %3f minutes.", z.MinVWC, runDuration.Minutes(), z.RunTimeMultiplier, runtimes[znum].Minutes())
 		}
 	}
 
@@ -243,7 +235,11 @@ func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipFor
 }
 
 func (c *Controller) runZones(runtimes map[int]time.Duration) error {
-	for znum, runtime := range runtimes {
+	for znum := 0; znum < c.systemConfig.NumZones(); znum++ {
+		runtime, ok := runtimes[znum]
+		if !ok {
+			continue
+		}
 		z, ok := c.systemConfig.ZoneConfigs[znum]
 		if !ok {
 			// zone is not defined in the config.
@@ -255,7 +251,7 @@ func (c *Controller) runZones(runtimes map[int]time.Duration) error {
 			c.errorReporter.Report(err)
 			continue
 		}
-		c.log.Infof("Zone %d state is %s.", znum, zs)
+		log.Infof("Zone %d state is %s.", znum, zs)
 
 		if zs == Complete {
 			// This zone already ran and VWC was updated.
@@ -263,7 +259,7 @@ func (c *Controller) runZones(runtimes map[int]time.Duration) error {
 		}
 		dontRun := false
 		if zs == Running || zs == Unknown {
-			c.log.Errorf("Zone %d still Running, turning off", znum)
+			log.Errorf("Zone %d still Running, turning off", znum)
 			c.zoneController.TurnOff(znum)
 			// It's not known how long the zone was running, therefore just
 			// shut it off and don't run it any more today.
@@ -282,14 +278,14 @@ func (c *Controller) runZones(runtimes map[int]time.Duration) error {
 			c.errorReporter.Report(err)
 			continue
 		}
-		c.log.Infof("Set VWC to max %3.2f after run.", z.MaxVWC)
+		log.Infof("Set VWC to max %3.2f after run.", z.MaxVWC)
 	}
 
 	return nil
 }
 
 // checkIfRanToday reports whether the action was already run today.
-func checkIfRanToday(kv KVStore, log Logger, now time.Time) (bool, error) {
+func checkIfRanToday(kv KVStore, now time.Time) (bool, error) {
 	lrStr, found, err := kv.Get(LastRunDateKey)
 	if err != nil {
 		return false, fmt.Errorf("kv.Get(LastRunDateKey): %s", err)

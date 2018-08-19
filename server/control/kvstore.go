@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger"
+	log "github.com/golang/glog"
 )
 
 const (
@@ -55,11 +56,10 @@ func (kv *TestKVStore) Close() error { return nil }
 // BadgerKVStore is a badger KV store.
 type BadgerKVStore struct {
 	db     *badger.DB
-	log    Logger
 	lastGC time.Time
 }
 
-func NewBadgerKVStore(dbPath string, log Logger) (*BadgerKVStore, error) {
+func NewBadgerKVStore(dbPath string) (*BadgerKVStore, error) {
 	opts := badger.DefaultOptions
 	opts.Dir = dbPath
 	opts.ValueDir = dbPath
@@ -70,7 +70,6 @@ func NewBadgerKVStore(dbPath string, log Logger) (*BadgerKVStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	ret.log = log
 	ret.runGC()
 	return ret, nil
 }
@@ -78,10 +77,10 @@ func NewBadgerKVStore(dbPath string, log Logger) (*BadgerKVStore, error) {
 // runGC runs garbage collection if necessary.
 func (kv *BadgerKVStore) runGC() {
 	if time.Since(kv.lastGC) < kvGCInterval {
-		//kv.log.Infof("skipping badger GC")
+		//log.Infof("skipping badger GC")
 		return
 	}
-	kv.log.Infof("running badger GC")
+	log.Infof("running badger GC")
 	kv.db.PurgeOlderVersions()
 	kv.db.RunValueLogGC(kvDiscardRatio)
 	kv.lastGC = time.Now()
@@ -114,7 +113,7 @@ func (kv *BadgerKVStore) Get(key string) (string, bool, error) {
 		return "", false, nil
 	}
 
-	if val, err = RetryThenFail(getFunc, kv.log, kVNumAttempts, kVRetryInterval); err != nil {
+	if val, err = RetryThenFail(getFunc, kVNumAttempts, kVRetryInterval); err != nil {
 		return "", true, err
 	}
 
@@ -138,7 +137,7 @@ func (kv *BadgerKVStore) Set(key, value string) error {
 		})
 	})
 
-	_, err := RetryThenFail(setFunc, kv.log, kVNumAttempts, kVRetryInterval)
+	_, err := RetryThenFail(setFunc, kVNumAttempts, kVRetryInterval)
 	kv.runGC()
 	return err
 }
@@ -154,7 +153,7 @@ type RetryFunction func() (interface{}, error)
 // RetryThenFail retries the given function fn for the given number of attempts,
 // with a pause of retryMins in between attempts. It keeps retrying until
 // either fn returns nil or attempts is exceeded.
-func RetryThenFail(fn RetryFunction, log Logger, attempts int, retryInterval time.Duration) (interface{}, error) {
+func RetryThenFail(fn RetryFunction, attempts int, retryInterval time.Duration) (interface{}, error) {
 	var err error
 	var ret interface{}
 	for a := 0; a < attempts; a++ {
