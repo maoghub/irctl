@@ -122,7 +122,7 @@ func (vc *PhysicalValveController) valveCommand(cmdStr string, zoneNum, repeat i
 			return nil
 		}
 		out = string(outB)
-		log.Errorf(out + err.Error())
+		log.Errorf(cmd + ":" + out + err.Error())
 		time.Sleep(commandRetryInterval)
 	}
 	return errors.New(out)

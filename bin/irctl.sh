@@ -1,7 +1,8 @@
 #!/bin/bash
+set -e
+
+# This is suitable for calling as a service, should be run as user not root.
 
 export GOPATH=/home/ostromart/go
-#chmod 777 /dev/ttyACM0
 cd ${GOPATH}/src/irctl/server
-go run server.go -controller numato -port_name /dev/ttyACM0 -alsologtostderr -log_dir=${GOPATH}/src/irctl
-
+/usr/local/go/bin/go run server.go -controller numato -port_name /dev/ttyACM0 -alsologtostderr -runloop -log_dir=${GOPATH}/src/irctl/logs

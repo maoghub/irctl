@@ -2,16 +2,16 @@
 
 set -e 
 
-# sudo apt-get install git
+# sudo apt-get install -q git
 # NOTE: Must be recent version, ubuntu LTS is too old
-# sudo apt-get install golang
+# sudo apt-get install -q golang
 
 export GOROOT=/usr/local/go
 export GOPATH=~/go
 
-mkdir -p ${GOROOT}/src/github.com
+mkdir -p ${GOROOT}/src
 
-cd ${GOROOT}/src/github.com
+cd ${GOROOT}/src
 if [ ! -d ./irctl ]; then  
   git clone https://github.com/maoghub/irctl.git
 fi
@@ -22,8 +22,15 @@ git pull
 cd server
 go get ./...
 
-ln -fs ${GOROOT}/src/github.com/irctl/server/control ~/go/src/irctl/server/control
+# Change USB serial port write perms every reboot.
+sudo (crontab -l ; echo "@reboot chmod 777 /dev/ttyACM0")| crontab -
 
-go build server.go
+# Configure irctl as a service
+sudo cp ${GOROOT}/src/irctl/init/systemd/irctl.service /etc/systemd/system/.
+sudo systemd start irctl
+sudo systemd enable irctl
 
-sudo cp server /usr/local/bin/irrigation_control
+# Software watchdog
+sudo apt-get install -q watchdog
+sudo service watchdog start
+sudo update-rc.d watchdog defaults
