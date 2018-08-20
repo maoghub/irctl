@@ -60,7 +60,7 @@ function displayScheduleTable() {
 
 	for (i = 0; i < numDays; i++) {
 		d.setTime(g.toDate.getTime());
-		d.setDate(g.toDate.getDate() - (numDays - 1) + i);
+		d.setDate(g.toDate.getDate() - (numDays) + i);
 		var dstr = DateString(d);
 		var temp = 0;
 		if (g.tempHistory[dstr] != undefined) {
@@ -89,7 +89,7 @@ function displayScheduleTable() {
 
 		for (i = 0; i < numDays; i++) {
 			d.setTime(g.toDate.getTime());
-			d.setDate(g.toDate.getDate() - (numDays - 1) + i);
+			d.setDate(g.toDate.getDate() - (numDays) + i);
 			var dstr = DateString(d);
 
 			

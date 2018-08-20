@@ -227,7 +227,7 @@ func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipFor
 				continue
 			}
 			runtimes[znum] = time.Duration(float64(runDuration.Nanoseconds()) * z.RunTimeMultiplier)
-			log.Infof("Below minimum of %3.2f, run time is %2.0f mins x mult of %1.1f = %3.0sf minutes.", z.MinVWC, runDuration.Minutes(), z.RunTimeMultiplier, runtimes[znum].Minutes())
+			log.Infof("Below minimum of %3.2f, run time is %2.0f mins x mult of %1.1f = %3.0f minutes.", z.MinVWC, runDuration.Minutes(), z.RunTimeMultiplier, runtimes[znum].Minutes())
 		}
 	}
 

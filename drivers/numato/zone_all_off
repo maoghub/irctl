@@ -26,4 +26,5 @@ $serPort->write("gpio clear 4\r");
 $serPort->write("gpio clear 5\r");
 $serPort->write("gpio clear 6\r");
 $serPort->write("gpio clear 7\r");
-print "OK - AllOff\n"
+
+print "OK - AllOff\n";
