@@ -6,4 +6,4 @@ set -e
 export GOPATH=/home/ostromart/go
 cd ${GOPATH}/src/irctl/server
 # default log dir is /tmp/server.INFO etc.
-/usr/local/go/bin/go run server.go -controller numato -port_name /dev/ttyACM0 -alsologtostderr -runloop 
+/usr/local/go/bin/go run server.go -controller numato -port_name /dev/ttyACM0 -runloop -log_dir=/var/log/irctl
