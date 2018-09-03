@@ -15,7 +15,8 @@ import (
 type ConditionsGetter interface {
 	// GetForecast reports the forecast for the coming day for the given
 	// airportCode.
-	GetForecast(airportCode string) (icon string, tempF float64, precipIn float64, err error)
+	GetForecast(airportCode string) (icon string, tempF float64, precipIn float64,
+		iconTom string, tempFTom float64, precipInTom float64, err error)
 	// GetForecast reports the conditions for the previous day for the given
 	// airportCode.
 	GetYesterday(airportCode string) (icon string, tempF float64, precipIn float64, err error)
@@ -42,14 +43,19 @@ func NewWundergroundConditionsGetter() *WundergroundConditionsGetter {
 }
 
 // GetForecast implements ConditionsGetter#GetForecast.
-func (w *WundergroundConditionsGetter) GetForecast(airportCode string) (icon string, tempF float64, precipIn float64, err error) {
+func (w *WundergroundConditionsGetter) GetForecast(airportCode string) (icon string, tempF float64, precipIn float64, iconTom string, tempFTom float64, precipInTom float64, err error) {
 	url := w.urlBase + "forecast/q/" + airportCode + ".json"
 	log.Infof("GetForecast send request %s", url)
 	resp, err := w.getURL(url)
 	if err != nil {
-		return "", 0.0, 0.0, fmt.Errorf("GetForecast: %s", err)
+		return "", 0, 0, "", 0.0, 0.0, fmt.Errorf("GetForecast: %s", err)
 	}
-	return w.ParseForecast(resp)
+	ic, t, p, err := w.ParseForecast(resp, 0)
+	if err != nil {
+		return "", 0, 0, "", 0.0, 0.0, fmt.Errorf("GetForecast: %s", err)
+	}
+	ict, tt, pt, err2 := w.ParseForecast(resp, 1)
+	return ic, t, p, ict, tt, pt, err2
 }
 
 // GetYesterday implements ConditionsGetter#GetYesterday.
@@ -64,23 +70,25 @@ func (w *WundergroundConditionsGetter) GetYesterday(airportCode string) (icon st
 }
 
 // ParseForecast parses a forecast response from Wunderground.
-func (w *WundergroundConditionsGetter) ParseForecast(resp []byte) (icon string, tempF float64, precipIn float64, err error) {
+// daysFromNow is how many days to look ahead (0 == today).
+func (w *WundergroundConditionsGetter) ParseForecast(resp []byte, daysFromNow int) (icon string, tempF float64, precipIn float64, err error) {
 	var jt map[string]interface{}
 	if err := json.Unmarshal(resp, &jt); err != nil {
 		return "", 0.0, 0.0, err
 	}
 
-	ici, err := w.getPath(jt, "forecast/simpleforecast/forecastday/0/icon")
+	dstr := fmt.Sprint(daysFromNow)
+	ici, err := w.getPath(jt, "forecast/simpleforecast/forecastday/"+dstr+"/icon")
 	if err != nil {
 		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
 	}
 
-	ti, err := w.getPath(jt, "forecast/simpleforecast/forecastday/0/high/fahrenheit")
+	ti, err := w.getPath(jt, "forecast/simpleforecast/forecastday/"+dstr+"/high/fahrenheit")
 	if err != nil {
 		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
 	}
 
-	pi, err := w.getPath(jt, "forecast/simpleforecast/forecastday/0/qpf_allday/in")
+	pi, err := w.getPath(jt, "forecast/simpleforecast/forecastday/"+dstr+"/qpf_allday/in")
 	if err != nil {
 		return "", 0.0, 0.0, fmt.Errorf("%v: \n\n%s", err, string(resp))
 	}

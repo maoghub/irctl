@@ -132,6 +132,16 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 	// Nothing should be running at this point in the loop.
 	c.zoneController.TurnAllOff()
 
+	var err error
+	c.systemConfig, c.algorithm, err = readConfig(c.rparam)
+	if err != nil {
+		// can't do anything without a config, return and try again.
+		return false, err
+	}
+	log.Infof("Read config from %s.", c.rparam.ConfigPath)
+
+	c.dataLogger = NewDataLogger(c.rparam.DataLogPath)
+
 	// alreadyRan will be true only if ALL zones were successfully completed.
 	if alreadyRan, err := checkIfRanToday(c.kvStore, now); alreadyRan || err != nil {
 		// Since all ran successfully, transition states from Complete to Idle.
@@ -153,21 +163,11 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 		return alreadyRan, err
 	}
 
-	var err error
-	c.systemConfig, c.algorithm, err = readConfig(c.rparam)
-	if err != nil {
-		// can't do anything without a config, return and try again.
-		return false, err
-	}
-	log.Infof("Read config from %s.", c.rparam.ConfigPath)
-
 	// If current time is before scheduled run time, exit.
 	log.Infof("Current time is %s, scheduled time is %s.", now.Format(timeOfDayFormat), c.systemConfig.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
 	if tooEarly(now, c.systemConfig.GlobalConfig.RunTimeAM) {
 		return false, nil
 	}
-
-	c.dataLogger = NewDataLogger(c.rparam.DataLogPath)
 
 	tempYesterday, precipYesterday, _, precipForecast := c.getConditions(now)
 	runtimes, err := c.calculateRuntimes(tempYesterday, precipYesterday, precipForecast, now)
@@ -215,10 +215,10 @@ func (c *Controller) getConditions(now time.Time) (tempY, precipY, tempT, precip
 			c.errorReporter.Report(err)
 		}
 	}
-	icf, tf, pf, err := c.conditionsGetter.GetForecast(c.systemConfig.GlobalConfig.AirportCode)
+	icf, tf, pf, ict, tt, pt, err := c.conditionsGetter.GetForecast(c.systemConfig.GlobalConfig.AirportCode)
 	for retries := 10; err != nil && retries > 0; retries-- {
 		time.Sleep(time.Minute)
-		icf, tf, pf, err = c.conditionsGetter.GetForecast(c.systemConfig.GlobalConfig.AirportCode)
+		icf, tf, pf, ict, tt, pt, err = c.conditionsGetter.GetForecast(c.systemConfig.GlobalConfig.AirportCode)
 	}
 	if err != nil {
 		// Can't get forecast, use yesterday's conditions.
@@ -226,6 +226,9 @@ func (c *Controller) getConditions(now time.Time) (tempY, precipY, tempT, precip
 		c.errorReporter.Report(err)
 	} else {
 		if err := c.dataLogger.WriteConditions(now, icf, tf, pf); err != nil {
+			c.errorReporter.Report(err)
+		}
+		if err := c.dataLogger.WriteConditions(tomorrow(now), ict, tt, pt); err != nil {
 			c.errorReporter.Report(err)
 		}
 	}

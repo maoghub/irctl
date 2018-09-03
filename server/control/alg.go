@@ -3,6 +3,8 @@ package control
 import (
 	"fmt"
 	"time"
+
+	log "github.com/golang/glog"
 )
 
 const (
@@ -82,7 +84,7 @@ func NewETAlgorithmSimple(r *RangeMapper) *ETAlgorithmSimple {
 func (e *ETAlgorithmSimple) CalculateVWC(currentVWC Pct, tempF, precipIn float64, now time.Time, zconf *ZoneConfig) (Pct, error) {
 	remove := Pct(e.etPct(tempF) * zconf.ZoneETRate * growthFactor[now.Month()])
 	add := Pct(precipIn * pctPerPrecipIn)
-	fmt.Printf("etPct=%f, ZoneETRate=%f, growthFactor=%f, removePct=%f, addPct=%f\n", e.etPct(tempF), zconf.ZoneETRate, growthFactor[now.Month()], remove, add )
+	log.Infof("etPct=%f, ZoneETRate=%f, growthFactor=%f, removePct=%f, addPct=%f\n", e.etPct(tempF), zconf.ZoneETRate, growthFactor[now.Month()], remove, add)
 	return min(max(0, currentVWC+add-remove), zconf.MaxVWC), nil
 }
 
