@@ -37,6 +37,7 @@ func NewSMTPErrorReporter(sMTPServerAddr string, sMTPServerPort uint, senderAddr
 
 // Report implements ErrorReporter#Report.
 func (er *SMTPErrorReporter) Report(sendErr error) error {
+	log.Error(err)
 	auth := smtp.PlainAuth("", er.userName, er.password, er.sMTPServerAddr)
 	addrPort := er.sMTPServerAddr + ":" + fmt.Sprint(er.sMTPServerPort)
 

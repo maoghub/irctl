@@ -87,6 +87,23 @@ func (l *DataLogger) ReadConditions(from, to time.Time) ([]*ConditionsEntry, Err
 	return out, errs
 }
 
+// ReadMostRecentConditions returns the most recently written conditions value, going
+// up to a month into the past.
+func (l *DataLogger) ReadMostRecentConditions(t time.Time) (temp, precip float64) {
+	now := dateOnly(t)
+	c, err := l.readConditionsOneDay(now)
+	for maxDays := 30; err != nil && maxDays > 0; maxDays-- {
+		now.AddDate(0, 0, -1)
+		c, err = l.readConditionsOneDay(now)
+	}
+	if err != nil {
+		// return some "reasonable number".
+		log.Error("Unable to read any past values, using 70degF, no rain!")
+		return 70.0, 0.0
+	}
+	return c.Temp, c.Precip
+}
+
 // readConditionsOneDay reads conditions for one day with the date in t.
 func (l *DataLogger) readConditionsOneDay(t time.Time) (*ConditionsEntry, error) {
 	log.Infof("readConditionsOneDay: %s", dateStr(t))

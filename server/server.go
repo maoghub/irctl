@@ -86,7 +86,7 @@ func main() {
 	}
 
 	if runControlLoop {
-		go control.Run(&rparam, kv, cg, zc, er, init)
+		go control.Run(&rparam, kv, cg, zc, er)
 	} else {
 		log.Info("Not running control loop, HTTP server only.")
 	}

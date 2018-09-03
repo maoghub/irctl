@@ -1,3 +1,11 @@
+// package control contains the logic for the control run loop. A run loop is
+// an execution of the run algorithm based on the state saved in the KV store.
+// In general, most run loops will exit immediately with no work to do.
+// If the current time is later than the start time, RunOnce will check whether
+// the loop successfully ran to completion today already and if so, exit.
+// Otherwise, RunOnce will check conditions, compute the runtimes for each
+// zone and run each zone in turn, if that zone has not already been run.
+// This is done to avoid repeatedly running zones in case of a crash.
 package control
 
 import (
@@ -12,7 +20,7 @@ import (
 )
 
 const (
-	// runInterval is the amount of time to sleep before running again.
+	// runInterval is the interval between run loops.
 	runInterval = 10 * time.Minute
 	// dateFormat is the string format for dates.
 	dateFormat = "2006-Jan-02"
@@ -21,14 +29,12 @@ const (
 )
 
 var (
-	// CommandRunningMu locks CommandRunning.
-	CommandRunningMu sync.RWMutex
 	// CommandRunning reports whether a manual or auto command is currently
 	// running. It should be set to true under lock before commencing an
 	// operation that can turn on a valve.
 	CommandRunning = false
-	// doInit set to true causes Run to be skipped once only.
-	doInit = false
+	// CommandRunningMu locks CommandRunning.
+	CommandRunningMu sync.RWMutex
 )
 
 // RunParams is a collection of run options.
@@ -44,11 +50,11 @@ type RunParams struct {
 	DontSleep bool
 }
 
+// Keys for KVStore.
 const (
-	ZoneStateKey         = "ZoneState"
-	LastRunDateKey       = "LastRunDate"
-	LastZoneResetDateKey = "LastZoneResetDate"
-	CurrentVWCKey        = "CurrentVWC"
+	ZoneStateKey   = "ZoneState"
+	LastRunDateKey = "LastRunDate"
+	CurrentVWCKey  = "CurrentVWC"
 )
 
 // Run repeatedly runs the entire action, with a sleep interval of runInterval.
@@ -58,15 +64,14 @@ const (
 //   zc to control zones
 //   er to report errors
 // Never exits.
-func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter, init bool) {
-	log.Infof("control.Run called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T), init=%v)",
-		pretty.Sprint(*rparam), kv, cg, zc, er, init)
+func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter) {
+	log.Infof("control.Run called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T))",
+		pretty.Sprint(*rparam), kv, cg, zc, er)
 	ctrl := NewController(rparam, kv, cg, zc, er)
 	for {
 		if _, err := ctrl.RunOnce(time.Now()); err != nil {
 			er.Report(err)
 		}
-		doInit = false
 		time.Sleep(runInterval)
 	}
 }
@@ -94,14 +99,23 @@ func NewController(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneCo
 	}
 }
 
-// RunOnce runs the entire action once. It returns a bool to indicate whether
-// the action was run, and an error. The action is not run either if it has
+// RunOnce runs the entire loop once. It returns a bool to indicate whether
+// the loop was run, and an error code. The loop is not run either if it has
 // already completed today, or is not yet scheduled to run.
 // It uses:
-//   kv to persist run state
+//   kv to persist state
 //   cg to get current conditions
 //   zc to control zones
 //   er to report errors
+//
+// The zone state transitions are Idle->Running->Complete->Idle.
+// Complete means the zone has run today. If all zones run successfully,
+// alreadyRan is set, otherwise, the loop attempts to run any zones
+// that are not Complete.
+// Once alreadyRan is set, all Zones are reset from Complete to
+// Idle. Zones can only go to Running from Idle state.
+// All state is stored in the KV store. If there's a crash when a zone is
+// running, upon restart its state is changed from Running to Complete.
 func (c *Controller) RunOnce(now time.Time) (bool, error) {
 	log.Infof("RunOnce at time %s.", now.Format("Mon 2 Jan 2006 15:04"))
 
@@ -110,87 +124,114 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 		return false, nil
 	}
 
-	// Locking excludes manual runs from happening.
+	// Locking excludes manual (web UI) runs from happening.
 	CommandRunningMu.Lock()
 	defer CommandRunningMu.Unlock()
 
-	// Every time, if not running manually, close all valves directly on the
-	// valve controller as a safety/recovery measure.
+	// Close all valves directly on the valve controller for safety/recovery.
+	// Nothing should be running at this point in the loop.
 	c.zoneController.TurnAllOff()
+
+	// alreadyRan will be true only if ALL zones were successfully completed.
 	if alreadyRan, err := checkIfRanToday(c.kvStore, now); alreadyRan || err != nil {
-		//log.Infof("Already ran today, exiting.")
+		// Since all ran successfully, transition states from Complete to Idle.
+		if err := c.zoneController.ResetZones(c.systemConfig.NumZones()); err != nil {
+			// If this fails, zones will not be able to run.
+			log.Error(err)
+		}
+		// This is to show the predicted runtimes for tomorrow in the web UI. The times will be
+		// recalculated based on the most accurate conditions before they are run, so the actual
+		// runtimes may differ. This prediction can only be done after VWC is updated after
+		// today's run.
+		_, _, tempForecast, precipForecast := c.getConditions(now)
+		tomorrowRuntimes, err := c.calculateRuntimes(tempForecast, precipForecast, 0.0, now)
+		if err != nil {
+			log.Error(err)
+		} else if err := c.dataLogger.WriteRuntimes(tomorrow(now), c.systemConfig.NumZones(), tomorrowRuntimes); err != nil {
+			log.Error(err)
+		}
 		return alreadyRan, err
 	}
 
 	var err error
 	c.systemConfig, c.algorithm, err = readConfig(c.rparam)
 	if err != nil {
+		// can't do anything without a config, return and try again.
 		return false, err
 	}
 	log.Infof("Read config from %s.", c.rparam.ConfigPath)
 
-	// Reset zone states from Complete to Idle once per day.
-	if err := resetZones(c.zoneController, c.kvStore, now, c.systemConfig.NumZones()); err != nil {
-		return false, err
-	}
-
 	// If current time is before scheduled run time, exit.
 	log.Infof("Current time is %s, scheduled time is %s.", now.Format(timeOfDayFormat), c.systemConfig.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
 	if tooEarly(now, c.systemConfig.GlobalConfig.RunTimeAM) {
-		//log.Infof("Too early, exiting.")
 		return false, nil
 	}
 
 	c.dataLogger = NewDataLogger(c.rparam.DataLogPath)
 
-	tempYesterday, precipYesterday, _, precipForecast, err := c.getConditions(now)
-	if err != nil {
-		return false, err
-	}
-
+	tempYesterday, precipYesterday, _, precipForecast := c.getConditions(now)
 	runtimes, err := c.calculateRuntimes(tempYesterday, precipYesterday, precipForecast, now)
 	if err != nil {
 		return false, err
 	}
 
+	// Returns success only if ALL zones ran correctly. If not, runtimes and ran today will not
+	// be updated and run loop will attempt to re-run any remaining zones.
 	if err := c.runZones(runtimes); err != nil {
-		return false, c.errorReporter.Report(err)
+		return false, err
 	}
 
 	log.Infof("Writing runtimes.")
 	if err := c.dataLogger.WriteRuntimes(now, c.systemConfig.NumZones(), runtimes); err != nil {
-		return true, c.errorReporter.Report(err)
+		// If this fails, run times will simply not appear on the web UI.
+		c.errorReporter.Report(err)
 	}
 
 	log.Infof("Updating last run time.")
+	// This causes alreadyRan to be true for the next time the loop runs.
 	if err := c.kvStore.Set(LastRunDateKey, now.Format(dateFormat)); err != nil {
-		return true, c.errorReporter.Report(err)
+		c.errorReporter.Report(err)
 	}
 
 	return true, nil
 }
 
-func (c *Controller) getConditions(now time.Time) (tempY, precipY, tempT, precipT float64, err error) {
+// getConditions repeatedly tries to get current and forecast conditions. If it is unsuccessful
+// it returns the most recent past conditions read from the data log. If data log can't be read,
+// it returns a "reasonable" value.
+func (c *Controller) getConditions(now time.Time) (tempY, precipY, tempT, precipT float64) {
 	log.Infof("Getting conditions.")
-	// Check conditions.
-	iconYesterday, tempYesterday, precipYesterday, err := c.conditionsGetter.GetYesterday(c.systemConfig.GlobalConfig.AirportCode)
+	iy, ty, py, err := c.conditionsGetter.GetYesterday(c.systemConfig.GlobalConfig.AirportCode)
+	for retries := 10; err != nil && retries > 0; retries-- {
+		time.Sleep(time.Minute)
+		iy, ty, py, err = c.conditionsGetter.GetYesterday(c.systemConfig.GlobalConfig.AirportCode)
+	}
 	if err != nil {
-		return 0, 0, 0, 0, err
-	}
-	if err := c.dataLogger.WriteConditions(yesterday(now), iconYesterday, tempYesterday, precipYesterday); err != nil {
+		// Can't get online conditions, use most recent available conditions.
 		c.errorReporter.Report(err)
+		ty, py = c.dataLogger.ReadMostRecentConditions(now)
+	} else {
+		if err := c.dataLogger.WriteConditions(yesterday(now), iy, ty, py); err != nil {
+			c.errorReporter.Report(err)
+		}
 	}
-	iconForecast, tempForecast, precipForecast, err := c.conditionsGetter.GetForecast(c.systemConfig.GlobalConfig.AirportCode)
+	icf, tf, pf, err := c.conditionsGetter.GetForecast(c.systemConfig.GlobalConfig.AirportCode)
+	for retries := 10; err != nil && retries > 0; retries-- {
+		time.Sleep(time.Minute)
+		icf, tf, pf, err = c.conditionsGetter.GetForecast(c.systemConfig.GlobalConfig.AirportCode)
+	}
 	if err != nil {
-		return 0, 0, 0, 0, err
-	}
-	if err := c.dataLogger.WriteConditions(now, iconForecast, tempForecast, precipForecast); err != nil {
+		// Can't get forecast, use yesterday's conditions.
+		icf, tf, pf = iy, ty, py
 		c.errorReporter.Report(err)
+	} else {
+		if err := c.dataLogger.WriteConditions(now, icf, tf, pf); err != nil {
+			c.errorReporter.Report(err)
+		}
 	}
-	log.Infof("Yesterday: %s / %3.1f degF / %1.1f In, Forecast: %s /  %3.1f degF / %1.1f In",
-		iconYesterday, tempYesterday, precipYesterday, iconForecast, tempForecast, precipForecast)
 
-	return tempYesterday, precipYesterday, tempForecast, precipForecast, nil
+	log.Infof("Yesterday: %s %3.1f degF / %1.1f In, Forecast: %s /  %3.1f degF / %1.1f In", iy, ty, py, icf, tf, pf)
+	return ty, py, tf, pf
 }
 
 func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipForecast float64, now time.Time) (map[int]time.Duration, error) {
@@ -329,35 +370,6 @@ func readConfig(rparam *RunParams) (*SystemConfig, ETAlgorithm, error) {
 	return sc, alg, nil
 }
 
-// resetZones changes any zone state which is Complete to Idle. It performs
-// this action once per day.
-func resetZones(zc ZoneController, kv KVStore, now time.Time, numZones int) error {
-	lresetStr, found, err := kv.Get(LastZoneResetDateKey)
-	if err != nil {
-		return fmt.Errorf("kv.Get(LastZoneResetDateKey): %s", err)
-	}
-	doReset := false
-	if found {
-		lrTime, err := time.Parse(dateFormat, lresetStr)
-		if err != nil {
-			return fmt.Errorf("time.Parse(%s): %s", lresetStr, err)
-		}
-		if !datesAreEqual(now, lrTime) {
-			doReset = true
-		}
-	}
-	if !found || doReset {
-		if err := zc.ResetZones(numZones); err != nil {
-			return err
-		}
-		if err := kv.Set(LastZoneResetDateKey, now.Format(dateFormat)); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // updateStateAndVWC updates both the state of zone znum to Complete and the
 // VWC to vwc. If either action cannot be performed, restores the original
 // state and returns error.
@@ -426,4 +438,8 @@ func tooEarly(now, runtime time.Time) bool {
 
 func yesterday(t time.Time) time.Time {
 	return t.AddDate(0, 0, -1)
+}
+
+func tomorrow(t time.Time) time.Time {
+	return t.AddDate(0, 0, 1)
 }
