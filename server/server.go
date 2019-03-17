@@ -13,6 +13,7 @@ import (
 	log "github.com/golang/glog"
 
 	"irctl/server/control"
+	"irctl/server/control/weather"
 )
 
 const (
@@ -78,7 +79,7 @@ func main() {
 	}
 
 	zc := *control.NewZoneController(valveController, kv)
-	cg := control.NewWundergroundConditionsGetter()
+	cg := weather.NewAccuWeatherConditionsGetter()
 	er, err := control.NewLogErrorReporter()
 	if err != nil {
 		log.Error(err)

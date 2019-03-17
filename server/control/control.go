@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"irctl/server/control/weather"
 	log "github.com/golang/glog"
 	"github.com/kylelemons/godebug/pretty"
 )
@@ -64,7 +65,7 @@ const (
 //   zc to control zones
 //   er to report errors
 // Never exits.
-func Run(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter) {
+func Run(rparam *RunParams, kv KVStore, cg weather.ConditionsGetter, zc ZoneController, er ErrorReporter) {
 	log.Infof("control.Run called with \n%v\nKV store (%T), ConditionsGetter(%T), ZoneController(%T), ErrorReporter(%T))",
 		pretty.Sprint(*rparam), kv, cg, zc, er)
 	ctrl := NewController(rparam, kv, cg, zc, er)
@@ -82,14 +83,14 @@ type Controller struct {
 	systemConfig     *SystemConfig
 	algorithm        ETAlgorithm
 	kvStore          KVStore
-	conditionsGetter ConditionsGetter
+	conditionsGetter weather.ConditionsGetter
 	zoneController   ZoneController
 	dataLogger       *DataLogger
 	errorReporter    ErrorReporter
 }
 
 // NewController creates an initialized Controller and returns a pointer to it.
-func NewController(rparam *RunParams, kv KVStore, cg ConditionsGetter, zc ZoneController, er ErrorReporter) *Controller {
+func NewController(rparam *RunParams, kv KVStore, cg weather.ConditionsGetter, zc ZoneController, er ErrorReporter) *Controller {
 	return &Controller{
 		rparam:           rparam,
 		kvStore:          kv,
@@ -205,6 +206,9 @@ func (c *Controller) getConditions(now time.Time) (tempY, precipY, tempT, precip
 	for retries := 10; err != nil && retries > 0; retries-- {
 		time.Sleep(time.Minute)
 		iy, ty, py, err = c.conditionsGetter.GetYesterday(c.systemConfig.GlobalConfig.AirportCode)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 	if err != nil {
 		// Can't get online conditions, use most recent available conditions.

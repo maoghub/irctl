@@ -247,6 +247,10 @@ function getServerLogData(_fromDate, _toDate) {
 // Process the conditions response and populate corresponding values in g global.
 function processConditionsResponse(data) {
   jt = JSON.parse(data);
+  if (jt.Conditions == null) {
+    alert("No conditions data available")
+    return
+  }
   if (jt.Errors != null) {
     alert(jt.Errors);
     //return;

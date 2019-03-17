@@ -67,7 +67,7 @@ type ValveOperation struct {
 
 type TestValveController struct {
 	ops []ValveOperation
-	log Logger
+	log TestLogger
 }
 
 func (t *TestValveController) OpenValve(n int) error {
@@ -323,7 +323,7 @@ func TestRunOnce(t *testing.T) {
 
 			gotValvesRan, err := tvc.ValvesRan(numValves)
 			if got, want := errToString(err), tt.wantValveControlError; got != want {
-				t.Errorf("%d valves ran: got error %s, want error: %s", tt.desc, got, want)
+				t.Errorf("%s valves ran: got error %s, want error: %s", tt.desc, got, want)
 				return
 			}
 			if got, want := gotValvesRan, tt.wantValvesRan; !reflect.DeepEqual(got, want) {

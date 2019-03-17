@@ -144,6 +144,7 @@ func (rm *RangeMapper) String() string {
 	return out + "}"
 }
 
+/*
 type PlantHeight int
 
 const (
@@ -151,7 +152,7 @@ const (
 	Tall
 )
 
-/*
+
 // ETAlgorithmPenMon is a Penman-Monteith ET model.
 type ETAlgorithmPenMon struct {
 	latitude    float64
