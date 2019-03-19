@@ -22,7 +22,7 @@ import (
 
 const (
 	// runInterval is the interval between run loops.
-	runInterval = 10 * time.Minute
+	runInterval = 60 * time.Minute
 	// dateFormat is the string format for dates.
 	dateFormat = "2006-Jan-02"
 	// timeOfDayFormat is the string format for time of day.
@@ -161,6 +161,7 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 		} else if err := c.dataLogger.WriteRuntimes(tomorrow(now), c.systemConfig.NumZones(), tomorrowRuntimes); err != nil {
 			log.Error(err)
 		}
+		log.Infof("Already ran today is %v.", alreadyRan)
 		return alreadyRan, err
 	}
 
@@ -283,6 +284,7 @@ func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipFor
 }
 
 func (c *Controller) runZones(runtimes map[int]time.Duration) error {
+	log.Infof("runZones with %d zones.", c.systemConfig.NumZones())	
 	for znum := 0; znum < c.systemConfig.NumZones(); znum++ {
 		runtime, ok := runtimes[znum]
 		if !ok {
@@ -290,6 +292,7 @@ func (c *Controller) runZones(runtimes map[int]time.Duration) error {
 		}
 		z, ok := c.systemConfig.ZoneConfigs[znum]
 		if !ok {
+			log.Infof("Zone %d not in config, skip.", znum)
 			// zone is not defined in the config.
 			continue
 		}
