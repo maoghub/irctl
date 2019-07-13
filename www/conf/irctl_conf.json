@@ -14,13 +14,13 @@
         },
         {
           "X1": 70,
-          "X2": 75,
-          "Y": 10
+          "X2": 79,
+          "Y": 9
         },
         {
-          "X1": 75,
+          "X1": 79,
           "X2": 85,
-          "Y": 20
+          "Y": 18
         },
         {
           "X1": 85,
@@ -54,10 +54,10 @@
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
-      "MinVWC": 28,
+      "MinVWC": 15,
       "Name": "Sun pots",
       "Number": 0,
-      "RunTimeMultiplier": 0.8,
+      "RunTimeMultiplier": 0.6,
       "SoilConfig": {
         "MaxVWC": 40,
         "Name": "Potting Mix"
@@ -69,7 +69,7 @@
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
-      "MinVWC": 25,
+      "MinVWC": 15,
       "Name": "Front",
       "Number": 1,
       "RunTimeMultiplier": 1.5,
@@ -84,7 +84,7 @@
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
-      "MinVWC": 20,
+      "MinVWC": 15,
       "Name": "Ground back roses",
       "Number": 2,
       "RunTimeMultiplier": 1.5,
@@ -99,10 +99,10 @@
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
-      "MinVWC": 28,
+      "MinVWC": 15,
       "Name": "Shade pots",
       "Number": 3,
-      "RunTimeMultiplier": 1,
+      "RunTimeMultiplier": 0.6,
       "SoilConfig": {
         "MaxVWC": 40,
         "Name": "Sandy Loam"
@@ -113,7 +113,7 @@
       "DepthIn": 16,
       "Enabled": true,
       "GetsRain": true,
-      "MaxVWC": 30,
+      "MaxVWC": 35,
       "MinVWC": 15,
       "Name": "Succulents",
       "Number": 4,
@@ -129,7 +129,7 @@
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
-      "MinVWC": 25,
+      "MinVWC": 15,
       "Name": "Ground back trees",
       "Number": 5,
       "RunTimeMultiplier": 1.5,
@@ -144,7 +144,7 @@
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
-      "MinVWC": 20,
+      "MinVWC": 15,
       "Name": "Basement",
       "Number": 6,
       "RunTimeMultiplier": 1.5,
@@ -159,10 +159,10 @@
       "Enabled": true,
       "GetsRain": true,
       "MaxVWC": 35,
-      "MinVWC": 25,
+      "MinVWC": 15,
       "Name": "Trees",
       "Number": 7,
-      "RunTimeMultiplier": 3,
+      "RunTimeMultiplier": 1,
       "SoilConfig": {
         "MaxVWC": 35,
         "Name": "Sandy Loam"

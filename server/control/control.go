@@ -12,10 +12,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
-	"sync"
 	"time"
 
 	"irctl/server/control/weather"
+
 	log "github.com/golang/glog"
 	"github.com/kylelemons/godebug/pretty"
 )
@@ -33,9 +33,10 @@ var (
 	// CommandRunning reports whether a manual or auto command is currently
 	// running. It should be set to true under lock before commencing an
 	// operation that can turn on a valve.
+	// Note this can race with HTTP handler for running zone manually but
+	// due to lack of CanLock functionality in sync.Mutex making this race
+	// free would be more trouble than it's worth.
 	CommandRunning = false
-	// CommandRunningMu locks CommandRunning.
-	CommandRunningMu sync.RWMutex
 )
 
 // RunParams is a collection of run options.
@@ -124,10 +125,6 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 		log.Infof("Manual command is running, will retry later.")
 		return false, nil
 	}
-
-	// Locking excludes manual (web UI) runs from happening.
-	CommandRunningMu.Lock()
-	defer CommandRunningMu.Unlock()
 
 	// Close all valves directly on the valve controller for safety/recovery.
 	// Nothing should be running at this point in the loop.
@@ -284,7 +281,8 @@ func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipFor
 }
 
 func (c *Controller) runZones(runtimes map[int]time.Duration) error {
-	log.Infof("runZones with %d zones.", c.systemConfig.NumZones())	
+	log.Infof("runZones with %d zones.", c.systemConfig.NumZones())
+	CommandRunning = true
 	for znum := 0; znum < c.systemConfig.NumZones(); znum++ {
 		runtime, ok := runtimes[znum]
 		if !ok {
@@ -331,7 +329,7 @@ func (c *Controller) runZones(runtimes map[int]time.Duration) error {
 		}
 		log.Infof("Set VWC to max %3.2f after run.", z.MaxVWC)
 	}
-
+	CommandRunning = false
 	return nil
 }
 

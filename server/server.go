@@ -240,8 +240,7 @@ func runzoneHandler(w http.ResponseWriter, r *http.Request) {
 		httpError(w, r, "Another manual or auto run is currently in progress.", http.StatusInternalServerError)
 		return
 	}
-	control.CommandRunningMu.Lock()
-	defer control.CommandRunningMu.Unlock()
+
 	control.CommandRunning = true
 
 	err = valveController.OpenValve(int(num))
@@ -290,7 +289,6 @@ func runzoneStopHandler(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("CloseValve %d failed: %s", num, err)
 		return
 	}
-	control.CommandRunningMu.Unlock()
 	control.CommandRunning = false
 
 	fmt.Fprintf(w, "OK")
