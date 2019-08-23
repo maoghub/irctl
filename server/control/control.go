@@ -71,7 +71,7 @@ func Run(rparam *RunParams, kv KVStore, cg weather.ConditionsGetter, zc ZoneCont
 		pretty.Sprint(*rparam), kv, cg, zc, er)
 	ctrl := NewController(rparam, kv, cg, zc, er)
 	for {
-		if _, err := ctrl.RunOnce(time.Now()); err != nil {
+		if err := ctrl.RunOnce(time.Now()); err != nil {
 			er.Report(err)
 		}
 		time.Sleep(runInterval)
@@ -101,8 +101,7 @@ func NewController(rparam *RunParams, kv KVStore, cg weather.ConditionsGetter, z
 	}
 }
 
-// RunOnce runs the entire loop once. It returns a bool to indicate whether
-// the loop was run, and an error code. The loop is not run either if it has
+// RunOnce runs the entire loop once. The loop is not run either if it has
 // already completed today, or is not yet scheduled to run.
 // It uses:
 //   kv to persist state
@@ -118,12 +117,12 @@ func NewController(rparam *RunParams, kv KVStore, cg weather.ConditionsGetter, z
 // Idle. Zones can only go to Running from Idle state.
 // All state is stored in the KV store. If there's a crash when a zone is
 // running, upon restart its state is changed from Running to Complete.
-func (c *Controller) RunOnce(now time.Time) (bool, error) {
+func (c *Controller) RunOnce(now time.Time) (error) {
 	log.Infof("RunOnce at time %s.", now.Format("Mon 2 Jan 2006 15:04"))
 
 	if CommandRunning {
 		log.Infof("Manual command is running, will retry later.")
-		return false, nil
+		return  nil
 	}
 
 	// Close all valves directly on the valve controller for safety/recovery.
@@ -134,18 +133,25 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 	c.systemConfig, c.algorithm, err = readConfig(c.rparam)
 	if err != nil {
 		// can't do anything without a config, return and try again.
-		return false, err
+		return  err
 	}
 	log.Infof("Read config from %s.", c.rparam.ConfigPath)
 
 	c.dataLogger = NewDataLogger(c.rparam.DataLogPath)
 
 	// alreadyRan will be true only if ALL zones were successfully completed.
-	if alreadyRan, err := checkIfRanToday(c.kvStore, now); alreadyRan || err != nil {
+	alreadyRan, err := checkIfRanToday(c.kvStore, now);
+	if err != nil {
+		return false, err
+	}
+
+		// alreadyRan will be true only if ALL zones were successfully completed.
+	if alreadyRan {
+		log.Info("Already ran today. Resetting zones and updating predicted schedule for tomorrow.")
 		// Since all ran successfully, transition states from Complete to Idle.
 		if err := c.zoneController.ResetZones(c.systemConfig.NumZones()); err != nil {
 			// If this fails, zones will not be able to run.
-			log.Error(err)
+			return true, err
 		}
 		// This is to show the predicted runtimes for tomorrow in the web UI. The times will be
 		// recalculated based on the most accurate conditions before they are run, so the actual
@@ -154,12 +160,11 @@ func (c *Controller) RunOnce(now time.Time) (bool, error) {
 		_, _, tempForecast, precipForecast := c.getConditions(now)
 		tomorrowRuntimes, err := c.calculateRuntimes(tempForecast, precipForecast, 0.0, now)
 		if err != nil {
-			log.Error(err)
+			return true, err
 		} else if err := c.dataLogger.WriteRuntimes(tomorrow(now), c.systemConfig.NumZones(), tomorrowRuntimes); err != nil {
-			log.Error(err)
+			return true, err
 		}
-		log.Infof("Already ran today is %v.", alreadyRan)
-		return alreadyRan, err
+		return true, err
 	}
 
 	// If current time is before scheduled run time, exit.
