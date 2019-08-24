@@ -44,6 +44,11 @@ type ConditionsEntry struct {
 // the logger root and the date portion of Time t,
 //  e.g. ../data/conditions/2017/12/26.log
 func (l *DataLogger) WriteConditions(t time.Time, iconStr string, tempStr, precipStr float64) error {
+	// For some reason, older conditions entries have an unknown icon. This applies to days
+	// that have already been written so it's ok to skip.
+	if iconStr == "unknown" {
+		return nil
+	}
 	fp := l.conditionsFilePath(t)
 	if err := createDirIfMissing(fp); err != nil {
 		return err
