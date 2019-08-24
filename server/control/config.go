@@ -7,7 +7,9 @@ import (
 )
 
 const (
+	// PosInf represents positive infinity.
 	PosInf float64 = 1e99
+	// NegInf represents negative infinity.
 	NegInf float64 = -1e99
 )
 
@@ -19,6 +21,7 @@ type SystemConfig struct {
 	SoilConfigMap           map[string]*SoilConfig
 }
 
+// NumZones returns the number of zones in sc.
 func (sc *SystemConfig) NumZones() int {
 	if len(sc.ZoneConfigs) == 0 {
 		return 0

@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	kVNumAttempts   int           = 10
-	kVRetryInterval time.Duration = 1 * time.Minute
+	kvNumAttempts   int           = 10
+	kvRetryInterval time.Duration = 1 * time.Minute
 	kvGCInterval    time.Duration = 24 * time.Hour
 	kvDiscardRatio                = 0.5
 )
@@ -59,6 +59,7 @@ type BadgerKVStore struct {
 	lastGC time.Time
 }
 
+// NewBadgerKVStore creates a new BadgerKVStore and returns a ptr to it.
 func NewBadgerKVStore(dbPath string) (*BadgerKVStore, error) {
 	opts := badger.DefaultOptions
 	opts.Dir = dbPath
@@ -113,7 +114,7 @@ func (kv *BadgerKVStore) Get(key string) (string, bool, error) {
 		return "", false, nil
 	}
 
-	if val, err = RetryThenFail(getFunc, kVNumAttempts, kVRetryInterval); err != nil {
+	if val, err = RetryThenFail(getFunc, kvNumAttempts, kvRetryInterval); err != nil {
 		return "", true, err
 	}
 
@@ -137,7 +138,7 @@ func (kv *BadgerKVStore) Set(key, value string) error {
 		})
 	})
 
-	_, err := RetryThenFail(setFunc, kVNumAttempts, kVRetryInterval)
+	_, err := RetryThenFail(setFunc, kvNumAttempts, kvRetryInterval)
 	kv.runGC()
 	return err
 }
@@ -165,5 +166,5 @@ func RetryThenFail(fn RetryFunction, attempts int, retryInterval time.Duration) 
 		time.Sleep(retryInterval)
 	}
 
-	return nil, fmt.Errorf("Call to %v failed after %f attempts: %s", fn, attempts, err)
+	return nil, fmt.Errorf("Call to %v failed after %d attempts: %s", fn, attempts, err)
 }

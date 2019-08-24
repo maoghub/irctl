@@ -1,4 +1,4 @@
-// package control contains the logic for the control run loop. A run loop is
+// Package control contains the logic for the control run loop. A run loop is
 // an execution of the run algorithm based on the state saved in the KV store.
 // In general, most run loops will exit immediately with no work to do.
 // If the current time is later than the start time, RunOnce will check whether
@@ -117,12 +117,12 @@ func NewController(rparam *RunParams, kv KVStore, cg weather.ConditionsGetter, z
 // Idle. Zones can only go to Running from Idle state.
 // All state is stored in the KV store. If there's a crash when a zone is
 // running, upon restart its state is changed from Running to Complete.
-func (c *Controller) RunOnce(now time.Time) (error) {
+func (c *Controller) RunOnce(now time.Time) error {
 	log.Infof("RunOnce at time %s.", now.Format("Mon 2 Jan 2006 15:04"))
 
 	if CommandRunning {
 		log.Infof("Manual command is running, will retry later.")
-		return  nil
+		return nil
 	}
 
 	// Close all valves directly on the valve controller for safety/recovery.
@@ -133,56 +133,59 @@ func (c *Controller) RunOnce(now time.Time) (error) {
 	c.systemConfig, c.algorithm, err = readConfig(c.rparam)
 	if err != nil {
 		// can't do anything without a config, return and try again.
-		return  err
+		return err
 	}
 	log.Infof("Read config from %s.", c.rparam.ConfigPath)
 
 	c.dataLogger = NewDataLogger(c.rparam.DataLogPath)
 
 	// alreadyRan will be true only if ALL zones were successfully completed.
-	alreadyRan, err := checkIfRanToday(c.kvStore, now);
+	alreadyRan, err := checkIfRanToday(c.kvStore, now)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-		// alreadyRan will be true only if ALL zones were successfully completed.
+	// alreadyRan will be true only if ALL zones were successfully completed.
 	if alreadyRan {
 		log.Info("Already ran today. Resetting zones and updating predicted schedule for tomorrow.")
 		// Since all ran successfully, transition states from Complete to Idle.
 		if err := c.zoneController.ResetZones(c.systemConfig.NumZones()); err != nil {
 			// If this fails, zones will not be able to run.
-			return true, err
+			return err
 		}
 		// This is to show the predicted runtimes for tomorrow in the web UI. The times will be
 		// recalculated based on the most accurate conditions before they are run, so the actual
 		// runtimes may differ. This prediction can only be done after VWC is updated after
 		// today's run.
 		_, _, tempForecast, precipForecast := c.getConditions(now)
-		tomorrowRuntimes, err := c.calculateRuntimes(tempForecast, precipForecast, 0.0, now)
+		tomorrowRuntimes, _, err := c.calculateRuntimes(tempForecast, precipForecast, 0.0, now)
 		if err != nil {
-			return true, err
+			return err
 		} else if err := c.dataLogger.WriteRuntimes(tomorrow(now), c.systemConfig.NumZones(), tomorrowRuntimes); err != nil {
-			return true, err
+			return err
 		}
-		return true, err
+		return err
 	}
 
 	// If current time is before scheduled run time, exit.
 	log.Infof("Current time is %s, scheduled time is %s.", now.Format(timeOfDayFormat), c.systemConfig.GlobalConfig.RunTimeAM.Format(timeOfDayFormat))
 	if tooEarly(now, c.systemConfig.GlobalConfig.RunTimeAM) {
-		return false, nil
+		return nil
 	}
 
 	tempYesterday, precipYesterday, _, precipForecast := c.getConditions(now)
-	runtimes, err := c.calculateRuntimes(tempYesterday, precipYesterday, precipForecast, now)
+	runtimes, nonRunVWCs, err := c.calculateRuntimes(tempYesterday, precipYesterday, precipForecast, now)
 	if err != nil {
-		return false, err
+		return err
 	}
+
+	// Update VWC in those zones that will not be run.
+	c.updateVWCInNonRunZones(nonRunVWCs)
 
 	// Returns success only if ALL zones ran correctly. If not, runtimes and ran today will not
 	// be updated and run loop will attempt to re-run any remaining zones.
 	if err := c.runZones(runtimes); err != nil {
-		return false, err
+		return err
 	}
 
 	log.Infof("Writing runtimes.")
@@ -197,7 +200,7 @@ func (c *Controller) RunOnce(now time.Time) (error) {
 		c.errorReporter.Report(err)
 	}
 
-	return true, nil
+	return nil
 }
 
 // getConditions repeatedly tries to get current and forecast conditions. If it is unsuccessful
@@ -244,8 +247,8 @@ func (c *Controller) getConditions(now time.Time) (tempY, precipY, tempT, precip
 	return ty, py, tf, pf
 }
 
-func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipForecast float64, now time.Time) (map[int]time.Duration, error) {
-	runtimes := make(map[int]time.Duration)
+func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipForecast float64, now time.Time) (map[int]time.Duration, map[int]Pct, error) {
+	runtimes, vwc := make(map[int]time.Duration), make(map[int]Pct)
 	for znum := 0; znum < c.systemConfig.NumZones(); znum++ {
 		z, ok := c.systemConfig.ZoneConfigs[znum]
 		if !ok {
@@ -265,26 +268,38 @@ func (c *Controller) calculateRuntimes(tempYesterday, precipYesterday, precipFor
 		log.Infof("Zone %d VWC: %3.2f -> %3.2f", znum, vWC, newVWC)
 		// Check if VWC is below the threshold. If so, run the zone, otherwise
 		// just update it to new value.
+		zrunTime := time.Duration(0)
 		if newVWC >= z.MinVWC {
-			if err := updateStateAndVWC(c.zoneController, c.kvStore, znum, float64(newVWC)); err != nil {
-				c.errorReporter.Report(err)
-				continue
-			}
-			log.Infof("Update VWC to %3.2f, don't run zone.", newVWC)
+			vwc[znum] = newVWC
+			log.Infof("Zone new VWC %.2f is above minimum of %.2f, don't run zone.", newVWC, z.MinVWC)
 		} else {
 			runDuration, err := c.algorithm.CalculateRuntime(newVWC, z.MaxVWC, precipForecast, z)
 			if err != nil {
 				c.errorReporter.Report(err)
 				continue
 			}
-			runtimes[znum] = time.Duration(float64(runDuration.Nanoseconds()) * z.RunTimeMultiplier)
-			log.Infof("Below minimum of %3.2f, run time is %2.0f mins x mult of %1.1f = %3.0f minutes.", z.MinVWC, runDuration.Minutes(), z.RunTimeMultiplier, runtimes[znum].Minutes())
+			zrunTime = time.Duration(float64(runDuration.Nanoseconds()) * z.RunTimeMultiplier)
+			log.Infof("Below minimum of %3.2f, run time is %2.0f mins x mult of %1.1f = %3.0f minutes.", z.MinVWC, runDuration.Minutes(), z.RunTimeMultiplier, zrunTime.Minutes())
 		}
+		runtimes[znum] = zrunTime
 	}
 
-	return runtimes, nil
+	return runtimes, vwc, nil
 }
 
+// updateVWCInNonRunZones updates the VWC for the zones in the map to the supplied values.
+func (c *Controller) updateVWCInNonRunZones(vwcs map[int]Pct) {
+	for z, vwc := range vwcs {
+		if err := SetVWC(c.kvStore,z , float64(vwc)); err != nil {
+			c.errorReporter.Report(err)
+		}
+	}
+}
+
+// runZones runs the zones for the amount of time in the provided runtimes map.
+// It stops any zones that are currently running, as this condition indicates a crash.
+// It updates the VWC to the max for each zone that was run. The zone must be 
+// in Idle state to be run. 
 func (c *Controller) runZones(runtimes map[int]time.Duration) error {
 	log.Infof("runZones with %d zones.", c.systemConfig.NumZones())
 	CommandRunning = true
@@ -431,6 +446,7 @@ func GetVWC(kv KVStore, znum int) (float64, error) {
 
 // SetVWC sets the VWC for the given zone number to val.
 func SetVWC(kv KVStore, znum int, val float64) error {
+	log.Infof("SetVWC zone %d to %.1f", znum, val)
 	return kv.Set(vwcKey(znum), fmt.Sprint(val))
 }
 

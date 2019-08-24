@@ -12,9 +12,13 @@ import (
 type ZoneState string
 
 const (
+	// Unknown is an unknown state.
 	Unknown  ZoneState = "Unknown"
+	// Idle is the idle state.
 	Idle     ZoneState = "Idle"
+	// Running is the running state.
 	Running  ZoneState = "Running"
+	// Complete is the completed state.
 	Complete ZoneState = "Complete"
 )
 
